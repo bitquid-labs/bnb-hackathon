@@ -161,10 +161,8 @@ contract Vaults is ReentrancyGuard, Ownable {
     event PoolUpdated(uint256 indexed poolId, uint256 apy, uint256 _minPeriod);
     event ClaimAttempt(uint256, uint256, address);
 
-    constructor(address _initialOwner, address _bqBTC) Ownable(_initialOwner) {
+    constructor(address _initialOwner) Ownable(_initialOwner) {
         initialOwner = _initialOwner;
-        bqBTC = IbqBTC(_bqBTC);
-        bqBTCAddress = _bqBTC;
     }
 
     function createVault(
@@ -256,18 +254,21 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 totalAmount = 0;
         for (uint256 i = 0; i < vault.pools.length; i++) {
             uint256 poolId = vault.pools[i].id;
+            uint256 poolPercentage = vaultPercentageSplits[_vaultId][poolId];
+            uint256 percentage_amount = (poolPercentage * _amount) / 100;
+            uint256 value = (msg.value * poolPercentage) / 100;
             CoverLib.DepositParams memory depositParam = CoverLib
                 .DepositParams({
                     depositor: msg.sender,
                     poolId: poolId,
-                    amount: _amount,
+                    amount: percentage_amount,
                     period: _period,
                     pdt: CoverLib.DepositType.Vault,
                     adt: vault.assetType,
                     asset: vault.asset
                 });
             (uint256 amount, uint256 dailyPayout) = IPoolContract.deposit{
-                value: msg.value
+                value: value
             }(depositParam);
             totalDailyPayout += dailyPayout;
             totalAmount += amount;
@@ -373,6 +374,16 @@ contract Vaults is ReentrancyGuard, Ownable {
         );
         ICoverContract = ICover(_coverContract);
         coverContract = _coverContract;
+    }
+
+    function setPool(address _poolontract) external onlyOwner {
+        require(poolContract == address(0), "Governance already set");
+        require(
+            _poolontract != address(0),
+            "Governance address cannot be zero"
+        );
+        IPoolContract = IPool(_poolontract);
+        poolContract = _poolontract;
     }
 
     modifier onlyGovernance() {

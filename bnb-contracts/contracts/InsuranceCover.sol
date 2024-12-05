@@ -73,15 +73,7 @@ interface ILP {
     )
         external
         view
-        returns (
-            string memory name,
-            CoverLib.RiskType riskType,
-            uint256 apy,
-            uint256 minPeriod,
-            uint256 tvl,
-            bool isActive,
-            uint256 percentageSplitBalance
-        );
+        returns (CoverLib.Pool memory);
 
     function reducePercentageSplit(
         uint256 _poolId,
@@ -228,21 +220,13 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
                 revert NameAlreadyExists();
             }
         }
-        (
-            ,
-            CoverLib.RiskType risk,
-            ,
-            ,
-            uint256 tvl,
-            ,
-            uint256 percentageSplitBalance
-        ) = lpContract.getPool(poolId);
+        CoverLib.Pool memory pool = lpContract.getPool(poolId);
 
-        if (risk != riskType || capacity > percentageSplitBalance) {
+        if (pool.riskType != riskType || capacity > pool.percentageSplitBalance) {
             revert WrongPool();
         }
 
-        uint256 maxAmount = (tvl * ((capacity * 1e18) / 100)) / 1e18;
+        uint256 maxAmount = (pool.tvl * ((capacity * 1e18) / 100)) / 1e18;
         return (maxAmount);
     }
 
@@ -256,23 +240,15 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         uint256 _cost,
         uint256 _poolId
     ) public onlyOwner {
-        (
-            ,
-            CoverLib.RiskType risk,
-            ,
-            ,
-            uint256 tvl,
-            ,
-            uint256 _percentageSplitBalance
-        ) = lpContract.getPool(_poolId);
+        CoverLib.Pool memory pool = lpContract.getPool(_poolId);
 
-        if (risk != _riskType || _capacity > _percentageSplitBalance) {
+        if (pool.riskType != _riskType || _capacity > pool.percentageSplitBalance) {
             revert WrongPool();
         }
 
         CoverLib.Cover storage cover = covers[_coverId];
 
-        uint256 _maxAmount = (tvl * ((_capacity * 1e18) / 100)) / 1e18;
+        uint256 _maxAmount = (pool.tvl * ((_capacity * 1e18) / 100)) / 1e18;
 
         if (cover.coverValues > _maxAmount) {
             revert WrongPool();
@@ -480,10 +456,10 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
 
     function updateMaxAmount(uint256 _coverId) public onlyPool nonReentrant {
         CoverLib.Cover storage cover = covers[_coverId];
-        (, , , , uint256 tvl, , ) = lpContract.getPool(cover.poolId);
+        CoverLib.Pool memory pool = lpContract.getPool(cover.poolId);
         // require(tvl > 0, "TVL is zero");
         require(cover.capacity > 0, "Invalid cover capacity");
-        uint256 amount = (tvl * ((cover.capacity * 1e18) / 100)) / 1e18;
+        uint256 amount = (pool.tvl * ((cover.capacity * 1e18) / 100)) / 1e18;
         covers[_coverId].capacityAmount = amount;
         covers[_coverId].maxAmount = (covers[_coverId].capacityAmount -
             covers[_coverId].coverValues);

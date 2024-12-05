@@ -77,6 +77,44 @@ library CoverLib {
         CoverLib.AssetDepositType assetType;
     }
 
+    struct PoolParams {
+        uint256 poolId;
+        CoverLib.RiskType riskType;
+        string poolName;
+        uint256 apy;
+        uint256 minPeriod;
+        uint8 leverage;
+        uint256 investmentArm;
+        CoverLib.AssetDepositType adt;
+        address asset;
+    }
+
+    struct Deposits {
+        address lp;
+        uint256 amount;
+        uint256 poolId;
+        uint256 dailyPayout;
+        CoverLib.Status status;
+        uint256 daysLeft;
+        uint256 startDate;
+        uint256 expiryDate;
+        uint256 accruedPayout;
+        CoverLib.DepositType pdt; // Vault deposit or normal pool deposit?
+    }
+
+    struct PoolInfo {
+        string poolName;
+        uint256 poolId;
+        uint256 dailyPayout;
+        uint256 depositAmount;
+        uint256 apy;
+        uint256 minPeriod;
+        uint256 tvl;
+        uint256 tcp; // Total claim paid to users
+        bool isActive; // Pool status to handle soft deletion
+        uint256 accruedPayout;
+    }
+
     enum Status {
         Active,
         Due,
