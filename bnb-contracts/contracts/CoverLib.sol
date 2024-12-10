@@ -102,6 +102,21 @@ library CoverLib {
         CoverLib.DepositType pdt; // Vault deposit or normal pool deposit?
     }
 
+    struct GenericDepositDetails {
+        address lp;
+        uint256 amount;
+        uint256 poolId;
+        uint256 dailyPayout;
+        CoverLib.Status status;
+        uint256 daysLeft;
+        uint256 startDate;
+        uint256 expiryDate;
+        uint256 accruedPayout;
+        CoverLib.DepositType pdt;
+        CoverLib.AssetDepositType adt;
+        address asset; // Vault deposit or normal pool deposit?
+    }
+
     struct PoolInfo {
         string poolName;
         uint256 poolId;

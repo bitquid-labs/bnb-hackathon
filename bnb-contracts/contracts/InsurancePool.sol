@@ -554,7 +554,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         emit ClaimPaid(msg.sender, pool.poolName, proposalParam.claimAmount);
     }
 
-    function getUserDeposit(
+    function getUserPoolDeposit(
         uint256 _poolId,
         address _user
     ) public view returns (CoverLib.Deposits memory) {
@@ -572,7 +572,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         if (currentTime > userDeposit.expiryDate) {
             currentTime = userDeposit.expiryDate;
         }
-        uint256 claimableDays = (currentTime - lastClaimTime) / 5 minutes;
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
         userDeposit.accruedPayout = userDeposit.dailyPayout * claimableDays;
         if (userDeposit.expiryDate <= block.timestamp) {
             userDeposit.daysLeft = 0;
@@ -581,6 +581,58 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             userDeposit.daysLeft = (timeLeft + 1 days - 1) / 1 days;
         }
         return userDeposit;
+    }
+
+    function getUserGenericDeposit(
+        uint256 _poolId,
+        address _user, 
+        CoverLib.DepositType pdt
+    ) public view returns (CoverLib.GenericDepositDetails memory) {
+        CoverLib.Deposits memory userDeposit = deposits[_user][_poolId][pdt];
+        CoverLib.Pool memory pool = pools[_poolId];
+        uint256 claimTime = ICoverContract.getLastClaimTime(_user, _poolId);
+        uint lastClaimTime;
+        if (claimTime == 0) {
+            lastClaimTime = userDeposit.startDate;
+        } else {
+            lastClaimTime = claimTime;
+        }
+        uint256 currentTime = block.timestamp;
+        if (currentTime > userDeposit.expiryDate) {
+            currentTime = userDeposit.expiryDate;
+        }
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
+        userDeposit.accruedPayout = userDeposit.dailyPayout * claimableDays;
+        if (userDeposit.expiryDate <= block.timestamp) {
+            userDeposit.daysLeft = 0;
+        } else {
+            uint256 timeLeft = userDeposit.expiryDate - block.timestamp;
+            userDeposit.daysLeft = (timeLeft + 1 days - 1) / 1 days;
+        }
+
+        return CoverLib.GenericDepositDetails({
+            lp: userDeposit.lp,
+            amount: userDeposit.amount,
+            poolId: userDeposit.poolId,
+            dailyPayout: userDeposit.dailyPayout,
+            status: userDeposit.status,
+            daysLeft: userDeposit.daysLeft,
+            startDate: userDeposit.startDate,
+            expiryDate: userDeposit.expiryDate,
+            accruedPayout: userDeposit.accruedPayout,
+            pdt: userDeposit.pdt,
+            adt: pool.assetType,
+            asset: pool.asset
+        });
+    }
+
+    // Limit who can call this function
+    function setUserDepositToZero(
+        uint256 poolId,
+        address user,
+        CoverLib.DepositType pdt
+    ) public nonReentrant {
+        deposits[user][poolId][pdt].amount = 0;
     }
 
     function getPoolTVL(uint256 _poolId) public view returns (uint256) {

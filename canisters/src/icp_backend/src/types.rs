@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use alloy::primitives::{Address, U256};
 use candid::{CandidType, Deserialize, Nat, Principal};
 use serde::Serialize;
 
@@ -132,6 +133,9 @@ pub struct Networks {
     pub name: String,
     pub rpc_url: String,
     pub supported_assets: Vec<String>,
+    pub cover_address: String,
+    pub gov_address: String,
+    pub evm_pool_contract_address: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -158,4 +162,20 @@ pub struct JsonRpcResult {
 pub struct JsonRpcError {
     pub code: isize,
     pub message: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GenericDepositDetail {
+    pub lp: Address,
+    pub amount: U256,
+    pub pool_id: U256,
+    pub daily_payout: U256,
+    pub status: u8,
+    pub days_left: U256,
+    pub start_date: U256,
+    pub expiry_date: U256,
+    pub accrued_payout: U256,
+    pub pdt: u8,
+    pub adt: u8,
+    pub asset: Address,
 }
