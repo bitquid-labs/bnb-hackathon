@@ -58,6 +58,8 @@ interface IVault {
         uint256 startDate;
         uint256 expiryDate;
         uint256 accruedPayout;
+        CoverLib.AssetDepositType assetType;
+        address asset;
     }
 
     function getVault(uint256 vaultId) external view returns (Vault memory);
@@ -65,6 +67,10 @@ interface IVault {
         uint256 vaultId,
         address user
     ) external view returns (VaultDeposit memory);
+    function setUserVaultDepositToZero(
+        uint256 vaultId,
+        address user
+    ) external; 
 }
 
 interface IbqBTC {
@@ -410,7 +416,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             require(success, "Native asset transfer failed");
         }
 
-        IVaultContract.getUserVaultDeposit(_vaultId, msg.sender);
+        IVaultContract.setUserVaultDepositToZero(_vaultId, msg.sender);
     }
 
     function deposit(

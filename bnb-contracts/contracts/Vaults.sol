@@ -122,6 +122,8 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 startDate;
         uint256 expiryDate;
         uint256 accruedPayout;
+        CoverLib.AssetDepositType assetType;
+        address asset;
     }
 
     struct PoolInfo {
@@ -283,7 +285,9 @@ contract Vaults is ReentrancyGuard, Ownable {
             daysLeft: _period,
             startDate: block.timestamp,
             expiryDate: block.timestamp + (_period * 1 days),
-            accruedPayout: 0
+            accruedPayout: 0,
+            assetType: vault.assetType,
+            asset: vault.asset
         });
         userVaultDeposits[msg.sender][_vaultId] = userDeposit;
         emit Deposited(msg.sender, _amount, vault.vaultName);
@@ -343,6 +347,7 @@ contract Vaults is ReentrancyGuard, Ownable {
         return userVaultDeposits[user][vaultId];
     }
 
+    // Revisit who can call this function
     function setUserVaultDepositToZero(
         uint256 vaultId,
         address user
