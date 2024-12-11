@@ -135,6 +135,7 @@ pub struct Networks {
     pub supported_assets: Vec<String>,
     pub cover_address: String,
     pub gov_address: String,
+    pub vault_contract: String,
     pub evm_pool_contract_address: String,
 }
 
@@ -176,6 +177,21 @@ pub struct GenericDepositDetail {
     pub expiry_date: U256,
     pub accrued_payout: U256,
     pub pdt: u8,
+    pub adt: u8,
+    pub asset: Address,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UserVaultDeposit {
+    pub lp: Address,
+    pub amount: U256,
+    pub vault_id: U256,
+    pub daily_payout: U256,
+    pub status: u8,
+    pub days_left: U256,
+    pub start_date: U256,
+    pub expiry_date: U256,
+    pub accrued_payout: U256,
     pub adt: u8,
     pub asset: Address,
 }

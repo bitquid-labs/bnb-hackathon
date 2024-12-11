@@ -1,24 +1,27 @@
-use alloy::contract::{ContractInstance, Interface};
+use alloy::network::{EthereumWallet, TransactionBuilder};
 use alloy::primitives::U256;
-use alloy::sol_types::SolCall;
+use alloy::providers::Provider;
+use alloy::providers::ProviderBuilder;
+use alloy::rpc::types::TransactionRequest;
+use alloy::signers::icp::IcpSigner;
+use alloy::signers::Signer;
+use alloy::sol_types::{SolCall, SolValue};
 use alloy::transports::http::reqwest::Url;
+use alloy::transports::icp::IcpConfig;
 use alloy::{primitives::Address, sol};
 use candid::{CandidType, Deserialize, Nat, Principal};
-use evm_rpc_canister_types::EvmRpcCanister;
-use ic_cdk::api::call::call;
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, TransformContext,
 };
 use ic_cdk_macros::*;
 use serde::Serialize;
-use serde_json::Value;
 use std::collections::HashMap;
 use std::{cell::RefCell, str::FromStr};
 use types::{
     Deposit, EthCallParams, GenericDepositDetail, JsonRpcRequest, JsonRpcResult, Networks, Pool,
-    Proposal, ProposalStatus,
+    UserVaultDeposit,
 };
-use util::{from_hex, to_hex};
+use util::{create_icp_signer, from_hex, generate_rpc_service, to_hex};
 
 mod types;
 mod util;
@@ -30,7 +33,16 @@ sol! {
     #[derive(Debug, Serialize, Deserialize)]
     interface IERC20 {
         function balanceOf(address account) external view returns (uint256);
+        function transfer(address recipient, uint256 amount) external returns (bool);
+
     }
+}
+
+sol! {
+    #[allow(missing_docs, clippy::too_many_arguments)]
+    #[sol(rpc)]
+    ERC20Token,
+    "../../abi/ERC20.json"
 }
 
 sol! {
@@ -50,7 +62,7 @@ sol! {
         address asset; // Vault deposit or normal pool deposit?
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
     enum Status {
         Active,
         Due,
@@ -70,13 +82,79 @@ sol! {
     }
 
     #[derive(Debug, Serialize, Deserialize)]
+    enum ProposalStaus {
+        Submitted,
+        Pending,
+        Approved,
+        Claimed,
+        Rejected
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct VaultDeposit {
+        address lp;
+        uint256 amount;
+        uint256 vaultId;
+        uint256 dailyPayout;
+        Status status;
+        uint256 daysLeft;
+        uint256 startDate;
+        uint256 expiryDate;
+        uint256 accruedPayout;
+        AssetDepositType assetType;
+        address asset;
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    enum RiskType {
+        Low,
+        Medium,
+        High
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Proposal {
+        uint256 id;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        uint256 createdAt;
+        uint256 deadline;
+        uint256 timeleft;
+        ProposalStaus status;
+        bool executed;
+        ProposalParams proposalParam;
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct ProposalParams {
+        address user;
+        RiskType riskType;
+        uint256 coverId;
+        string txHash;
+        string description;
+        uint256 poolId;
+        uint256 claimAmount;
+        AssetDepositType adt;
+        address asset;
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
     interface IPool {
         function getUserGenericDeposit(uint256 _poolId, address _user, DepositType pdt) external view returns (GenericDepositDetails memory);
+    }
+
+    interface IVault {
+        function getUserVaultDeposit(uint256 vaultId, address user) public view returns (VaultDeposit memory);
+    }
+
+    interface IGov {
+        function getProposalDetails(uint256 _proposalId) external returns (Proposal memory);
     }
 }
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
+    static NONCE: RefCell<Option<u64>> = RefCell::new(None);
 }
 
 #[derive(CandidType, Deserialize, Default)]
@@ -91,10 +169,13 @@ struct State {
 }
 
 #[init]
-fn init(owner: Principal) {
+async fn init(owner: Principal) {
+    let signer = create_icp_signer().await;
+    let address = signer.address();
     STATE.with(|state| {
         let mut state = state.borrow_mut();
         state.owner = Some(owner);
+        state.icp_pool_contract_address = address.to_string();
     });
 }
 
@@ -250,42 +331,25 @@ async fn pool_withdraw(
     pool_id: u64,
     user: String,
     pool_deposit_type: u8,
-    chain_id: Nat,
-) -> Result<(), String> {
-    let caller = ic_cdk::caller();
-    let path = std::env::current_dir()
-        .expect("msg")
-        .join("../testnet-v1-contracts/artifacts/contracts/InsurancePool.sol/InsurancePool.json");
-    let artifacts = std::fs::read(path).expect("Failed to read artifact");
-    let json: Value = serde_json::from_slice(&artifacts).expect("msg");
-    let abi_value = json.get("abi").expect("Failed to get ABI from artifact");
-    let abi = serde_json::from_str(&abi_value.to_string()).expect("msg");
+    chain_id: u64,
+) -> Result<String, String> {
+    let nat_chain_id = Nat::from(chain_id);
 
-    let (network, pool_canister_id) = STATE.with(|state| {
+    let network = STATE.with(|state| {
         let state = state.borrow();
 
-        let network = match state.supported_networks.get(&chain_id) {
+        let network = match state.supported_networks.get(&nat_chain_id) {
             Some(network) => network,
             None => panic!("Network with chain_id {} not found", chain_id),
         };
 
-        let canister_id = match state.icp_pool_canister {
-            Some(canister_id) => canister_id,
-            None => panic!("Not found"),
-        };
-
-        (network, canister_id)
+        network.clone()
     });
 
     let pool_contract_address = match Address::from_str(&network.evm_pool_contract_address) {
         Ok(address) => address,
         Err(_) => panic!("Error parsing pool contract address"),
     };
-
-    let provider = EvmRpcCanister(pool_canister_id);
-
-    let evm_pool_contract =
-        ContractInstance::new(pool_contract_address, provider, Interface::new(abi));
 
     let user_address = match Address::from_str(&user) {
         Ok(address) => address,
@@ -350,7 +414,7 @@ async fn pool_withdraw(
 
     let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
 
-    let decoded_result = <GenericDepositDetails as SolCall>::abi_decode(&result, false)
+    let decoded_result = GenericDepositDetails::abi_decode(&result, false)
         .map_err(|e| format!("Failed to decode response: {}", e))?;
     println!("Decoded Result: {:?}", decoded_result);
 
@@ -378,50 +442,342 @@ async fn pool_withdraw(
         return Err("Must be pool withdrawal".to_string());
     }
 
-    Ok(())
+    let signer = create_icp_signer().await;
+    match deposit_detail.adt {
+        0 => {
+            let hash = match send_eth(
+                signer,
+                deposit_detail.amount,
+                user_address,
+                network.rpc_url,
+                chain_id,
+            )
+            .await
+            {
+                Ok(hash) => hash,
+                Err(e) => {
+                    return Err(format!("Could not get transaction: {}", e));
+                }
+            };
+
+            Ok(hash)
+        }
+        1 => {
+            let hash = match send_erc20_token(
+                signer,
+                deposit_detail.amount,
+                user_address,
+                network.rpc_url,
+                chain_id,
+                deposit_detail.asset,
+            )
+            .await
+            {
+                Ok(hash) => hash,
+                Err(e) => {
+                    return Err(format!("Could not get transaction: {}", e));
+                }
+            };
+
+            Ok(hash)
+        }
+        _ => {
+            return Err(format!("Wrong Asset Deposit Type: {}", deposit_detail.adt));
+        }
+    }
 }
 
-#[update(name = "withdraw")]
-async fn withdraw(pool_id: Nat, amount: Nat) -> Result<(), String> {
-    let caller = ic_cdk::caller();
+#[update(name = "vaultwithdraw")]
+async fn vault_withdraw(
+    vault_id: u64,
+    user: String,
+    pool_deposit_type: u8,
+    chain_id: u64,
+) -> Result<String, String> {
+    let nat_chain_id = Nat::from(chain_id);
 
-    let (amount_to_mint, bq_btc_address) = STATE.with(|state| {
-        let mut state = state.borrow_mut();
-        let bq_btc_address = state
-            .bq_btc_address
-            .ok_or("bqBTC canister address not set".to_string())?;
-        let pool = state.pools.get_mut(&pool_id).ok_or("Pool not found")?;
+    let network = STATE.with(|state| {
+        let state = state.borrow();
 
-        if !pool.is_active {
-            return Err("Pool is inactive".to_string());
+        let network = match state.supported_networks.get(&nat_chain_id) {
+            Some(network) => network,
+            None => panic!("Network with chain_id {} not found", chain_id),
+        };
+
+        network.clone()
+    });
+
+    let vault_contract_address = match Address::from_str(&network.vault_contract) {
+        Ok(address) => address,
+        Err(_) => panic!("Error parsing vault contract address"),
+    };
+
+    let user_address = match Address::from_str(&user) {
+        Ok(address) => address,
+        Err(e) => panic!("Error parsing user address {}", e),
+    };
+
+    let pdt = match pool_deposit_type {
+        0 => DepositType::Normal,
+        1 => DepositType::Vault,
+        _ => return Err("Invalid deposit type".to_string()),
+    };
+
+    let vault_call = IVault::getUserVaultDepositCall {
+        vaultId: U256::from(vault_id),
+        user: user_address,
+    };
+
+    let call_data = vault_call.abi_encode();
+
+    let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
+        id: next_id(),
+        jsonrpc: "2.0".to_string(),
+        method: "eth_call".to_string(),
+        params: (
+            EthCallParams {
+                to: vault_contract_address.to_string(),
+                data: format!("0x{}", to_hex(&call_data)),
+            },
+            "latest".to_string(),
+        ),
+    })
+    .map_err(|e| format!("Failed to serialize JSON-RPC request: {}", e))?;
+
+    let request_headers = vec![HttpHeader {
+        name: "Content-Type".to_string(),
+        value: "application/json".to_string(),
+    }];
+
+    let request = CanisterHttpRequestArgument {
+        url: network.rpc_url.clone(),
+        max_response_bytes: Some(MAX_RESPONSE_BYTES),
+        method: HttpMethod::POST,
+        headers: request_headers,
+        body: Some(json_rpc_payload.as_bytes().to_vec()),
+        transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
+    };
+
+    let (response,) = http_request(request, HTTP_CYCLES)
+        .await
+        .map_err(|(code, msg)| format!("HTTP request failed: {:?} {:?}", code, msg))?;
+
+    let json: JsonRpcResult = serde_json::from_str(
+        std::str::from_utf8(&response.body)
+            .map_err(|e| format!("Failed to convert response to UTF-8: {}", e))?,
+    )
+    .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
+
+    let raw_result = json
+        .result
+        .ok_or("No result in JSON-RPC response".to_string())?;
+
+    let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
+
+    let decoded_result = VaultDeposit::abi_decode(&result, false)
+        .map_err(|e| format!("Failed to decode response: {}", e))?;
+    println!("Decoded Result: {:?}", decoded_result);
+
+    let vault_deposit_detail = UserVaultDeposit {
+        lp: decoded_result.lp,
+        amount: decoded_result.amount,
+        vault_id: decoded_result.vaultId,
+        daily_payout: decoded_result.dailyPayout,
+        status: match decoded_result.status {
+            Status::Active => 0,
+            Status::Due => 1,
+            Status::Withdrawn => 2,
+            _ => return Err("Invalid status value".to_string()),
+        },
+        days_left: decoded_result.daysLeft,
+        start_date: decoded_result.startDate,
+        expiry_date: decoded_result.expiryDate,
+        accrued_payout: decoded_result.accruedPayout,
+        adt: decoded_result.assetType.into(),
+        asset: decoded_result.asset,
+    };
+
+    if pdt != DepositType::Vault {
+        return Err("Must be vault withdrawal".to_string());
+    }
+
+    let signer = create_icp_signer().await;
+    match vault_deposit_detail.adt {
+        0 => {
+            let hash = match send_eth(
+                signer,
+                vault_deposit_detail.amount,
+                user_address,
+                network.rpc_url,
+                chain_id,
+            )
+            .await
+            {
+                Ok(hash) => hash,
+                Err(e) => {
+                    return Err(format!("Could not get transaction: {}", e));
+                }
+            };
+
+            Ok(hash)
         }
+        1 => {
+            let hash = match send_erc20_token(
+                signer,
+                vault_deposit_detail.amount,
+                user_address,
+                network.rpc_url,
+                chain_id,
+                vault_deposit_detail.asset,
+            )
+            .await
+            {
+                Ok(hash) => hash,
+                Err(e) => {
+                    return Err(format!("Could not get transaction: {}", e));
+                }
+            };
 
-        if let Some(caller_deposit) = pool.deposits.get_mut(&caller) {
-            let current_time = Nat::from(ic_cdk::api::time() / 1_000_000_000);
-            if current_time < caller_deposit.expiry_date {
-                return Err("Cant withdraw before the end of a deposit period".to_string());
-            }
-            if caller_deposit.status == Status::Withdrawn {
-                return Err("Caller has already withdrawn".to_string());
-            }
-            if caller_deposit.amount == Nat::from(0u64) {
-                return Err("Caller deposit is 0".to_string());
-            }
-            if amount > caller_deposit.amount {
-                return Err("Amount is more than caller deposit".to_string());
-            }
-
-            caller_deposit.amount -= amount.clone();
-            pool.tvl -= amount.clone();
-            Ok((amount.clone(), bq_btc_address))
-        } else {
-            Err("No deposit found for caller".to_string())
+            Ok(hash)
         }
-    })?;
+        _ => {
+            return Err(format!(
+                "Wrong Asset Deposit Type: {}",
+                vault_deposit_detail.adt
+            ));
+        }
+    }
+}
 
-    let mint_result: Result<(), _> = call(bq_btc_address, "mint", (caller, amount_to_mint)).await;
+#[update(name = "claimProposalFunds")]
+async fn claim_proposal_funds(
+    proposal_id: u64,
+    user: String,
+    chain_id: u64,
+) -> Result<String, String> {
+    let nat_chain_id = Nat::from(chain_id);
 
-    mint_result.map_err(|err| format!("Error minting BQ BTC: {:?}", err))
+    let network = STATE.with(|state| {
+        let state = state.borrow();
+
+        let network = match state.supported_networks.get(&nat_chain_id) {
+            Some(network) => network,
+            None => panic!("Network with chain_id {} not found", chain_id),
+        };
+
+        network.clone()
+    });
+
+    let gov_contract_address = match Address::from_str(&network.gov_address) {
+        Ok(address) => address,
+        Err(_) => panic!("Error parsing gov contract address"),
+    };
+
+    let user_address = match Address::from_str(&user) {
+        Ok(address) => address,
+        Err(e) => panic!("Error parsing user address {}", e),
+    };
+
+    let gov_call = IGov::getProposalDetailsCall {
+        _proposalId: U256::from(proposal_id),
+    };
+
+    let call_data = gov_call.abi_encode();
+
+    let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
+        id: next_id(),
+        jsonrpc: "2.0".to_string(),
+        method: "eth_call".to_string(),
+        params: (
+            EthCallParams {
+                to: gov_contract_address.to_string(),
+                data: format!("0x{}", to_hex(&call_data)),
+            },
+            "latest".to_string(),
+        ),
+    })
+    .map_err(|e| format!("Failed to serialize JSON-RPC request: {}", e))?;
+
+    let request_headers = vec![HttpHeader {
+        name: "Content-Type".to_string(),
+        value: "application/json".to_string(),
+    }];
+
+    let request = CanisterHttpRequestArgument {
+        url: network.rpc_url.clone(),
+        max_response_bytes: Some(MAX_RESPONSE_BYTES),
+        method: HttpMethod::POST,
+        headers: request_headers,
+        body: Some(json_rpc_payload.as_bytes().to_vec()),
+        transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
+    };
+
+    let (response,) = http_request(request, HTTP_CYCLES)
+        .await
+        .map_err(|(code, msg)| format!("HTTP request failed: {:?} {:?}", code, msg))?;
+
+    let json: JsonRpcResult = serde_json::from_str(
+        std::str::from_utf8(&response.body)
+            .map_err(|e| format!("Failed to convert response to UTF-8: {}", e))?,
+    )
+    .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
+
+    let raw_result = json
+        .result
+        .ok_or("No result in JSON-RPC response".to_string())?;
+
+    let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
+
+    let decoded_result = Proposal::abi_decode(&result, false)
+        .map_err(|e| format!("Failed to decode response: {}", e))?;
+    println!("Decoded Result: {:?}", decoded_result);
+
+    let signer = create_icp_signer().await;
+    match decoded_result.proposalParam.adt {
+        AssetDepositType::Native => {
+            let hash = match send_eth(
+                signer,
+                decoded_result.proposalParam.claimAmount,
+                user_address,
+                network.rpc_url,
+                chain_id,
+            )
+            .await
+            {
+                Ok(hash) => hash,
+                Err(e) => {
+                    return Err(format!("Could not get transaction: {}", e));
+                }
+            };
+
+            Ok(hash)
+        }
+        AssetDepositType::ERC20 => {
+            let hash = match send_erc20_token(
+                signer,
+                decoded_result.proposalParam.claimAmount,
+                user_address,
+                network.rpc_url,
+                chain_id,
+                decoded_result.proposalParam.asset,
+            )
+            .await
+            {
+                Ok(hash) => hash,
+                Err(e) => {
+                    return Err(format!("Could not get transaction: {}", e));
+                }
+            };
+
+            Ok(hash)
+        }
+        _ => {
+            return Err(format!(
+                "Wrong Asset Deposit Type: {:?}",
+                decoded_result.proposalParam.adt
+            ));
+        }
+    }
 }
 
 #[query(name = "getUserDeposit")]
@@ -463,6 +819,7 @@ fn add_new_network(
     pool_contract: String,
     gov_contract: String,
     cover_contract: String,
+    vault_address: String,
 ) -> Result<(), String> {
     let nat_chain_id = Nat::from(chain_id);
     let caller = ic_cdk::caller();
@@ -472,6 +829,7 @@ fn add_new_network(
         supported_assets: assets,
         cover_address: cover_contract,
         gov_address: gov_contract,
+        vault_contract: vault_address,
         evm_pool_contract_address: pool_contract,
     };
     if new_network_rpc.trim().is_empty() || network_name.trim().is_empty() {
@@ -514,6 +872,110 @@ fn add_network_asset(chain_id: u64, asset: String) -> Result<(), String> {
 
         Ok(())
     })
+}
+
+async fn send_eth(
+    signer: IcpSigner,
+    amount: U256,
+    to: Address,
+    rpc_url: String,
+    chain_id: u64,
+) -> Result<String, String> {
+    let address = signer.address();
+
+    let wallet = EthereumWallet::from(signer);
+    let rpc_service = generate_rpc_service(rpc_url);
+    let config = IcpConfig::new(rpc_service);
+    let provider = ProviderBuilder::new()
+        .with_gas_estimation()
+        .wallet(wallet)
+        .on_icp(config);
+
+    let maybe_nonce = NONCE.with_borrow(|maybe_nonce| maybe_nonce.map(|nonce| nonce + 1));
+
+    let nonce = if let Some(nonce) = maybe_nonce {
+        nonce
+    } else {
+        provider.get_transaction_count(address).await.unwrap_or(0)
+    };
+
+    let tx = TransactionRequest::default()
+        .with_to(to)
+        .with_value(amount)
+        .with_nonce(nonce)
+        .with_chain_id(chain_id);
+    let transport_result = provider.send_transaction(tx.clone()).await;
+    match transport_result {
+        Ok(builder) => {
+            let node_hash = *builder.tx_hash();
+            let tx_response = provider.get_transaction_by_hash(node_hash).await.unwrap();
+
+            match tx_response {
+                Some(tx) => {
+                    NONCE.with_borrow_mut(|nonce| {
+                        *nonce = Some(tx.nonce);
+                    });
+                    Ok(format!("{:?}", tx.hash.to_string()))
+                }
+                None => Err("Could not get transaction.".to_string()),
+            }
+        }
+        Err(e) => Err(format!("{:?}", e)),
+    }
+}
+
+async fn send_erc20_token(
+    signer: IcpSigner,
+    amount: U256,
+    to: Address,
+    rpc_url: String,
+    chain_id: u64,
+    token_address: Address,
+) -> Result<String, String> {
+    let address = signer.address();
+
+    let wallet = EthereumWallet::from(signer);
+    let rpc_service = generate_rpc_service(rpc_url);
+    let config = IcpConfig::new(rpc_service);
+    let provider = ProviderBuilder::new()
+        .with_gas_estimation()
+        .wallet(wallet)
+        .on_icp(config);
+
+    let maybe_nonce = NONCE.with_borrow(|maybe_nonce| maybe_nonce.map(|nonce| nonce + 1));
+
+    let nonce = if let Some(nonce) = maybe_nonce {
+        nonce
+    } else {
+        provider.get_transaction_count(address).await.unwrap_or(0)
+    };
+
+    let contract = ERC20Token::new(token_address, provider.clone());
+
+    match contract
+        .transfer(to, amount)
+        .nonce(nonce)
+        .chain_id(chain_id)
+        .from(address)
+        .send()
+        .await
+    {
+        Ok(builder) => {
+            let node_hash = *builder.tx_hash();
+            let tx_response = provider.get_transaction_by_hash(node_hash).await.unwrap();
+
+            match tx_response {
+                Some(tx) => {
+                    NONCE.with_borrow_mut(|nonce| {
+                        *nonce = Some(tx.nonce);
+                    });
+                    Ok(format!("{:?}", tx.hash.to_string()))
+                }
+                None => Err("Could not get transaction.".to_string()),
+            }
+        }
+        Err(e) => Err(format!("{:?}", e)),
+    }
 }
 
 #[update(name = "setPoolContractAddress")]
