@@ -18,8 +18,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::{cell::RefCell, str::FromStr};
 use types::{
-    Deposit, EthCallParams, GenericDepositDetail, JsonRpcRequest, JsonRpcResult, Networks, Pool,
-    UserVaultDeposit,
+    EthCallParams, GenericDepositDetail, JsonRpcRequest, JsonRpcResult, Networks, UserVaultDeposit,
 };
 use util::{create_icp_signer, from_hex, generate_rpc_service, to_hex};
 
@@ -81,7 +80,7 @@ sol! {
         Vault
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, PartialEq)]
     enum ProposalStaus {
         Submitted,
         Pending,
@@ -141,10 +140,13 @@ sol! {
     #[derive(Debug, Serialize, Deserialize)]
     interface IPool {
         function getUserGenericDeposit(uint256 _poolId, address _user, DepositType pdt) external view returns (GenericDepositDetails memory);
+        function setUserDepositToZero(uint256 poolId, address user, DepositType pdt) external;
+        function finalizeProposalClaim(uint256 _proposalId, address user) external;
     }
 
     interface IVault {
-        function getUserVaultDeposit(uint256 vaultId, address user) public view returns (VaultDeposit memory);
+        function getUserVaultDeposit(uint256 vaultId, address user) external view returns (VaultDeposit memory);
+        function setUserVaultDepositToZero(uint256 vaultId, address user) external;
     }
 
     interface IGov {
@@ -159,8 +161,6 @@ thread_local! {
 
 #[derive(CandidType, Deserialize, Default)]
 struct State {
-    pools: HashMap<Nat, Pool>,
-    pool_count: Nat,
     owner: Option<Principal>,
     icp_pool_contract_address: String,
     icp_pool_canister: Option<Principal>,
@@ -188,18 +188,6 @@ fn next_id() -> u64 {
         let id = *next_id;
         *next_id = next_id.wrapping_add(1);
         id
-    })
-}
-
-#[query(name = "getPool")]
-fn get_pool(pool_id: Nat) -> Result<Pool, String> {
-    STATE.with(|state| {
-        let state = state.borrow();
-        state
-            .pools
-            .get(&pool_id)
-            .cloned()
-            .ok_or("Pool not found".to_string())
     })
 }
 
@@ -231,7 +219,7 @@ async fn get_network_tvl(new_network_rpc: String, chain_id: Nat) -> Result<Nat, 
 
         let network = match state.supported_networks.get(&chain_id) {
             Some(network) => network,
-            None => panic!("Network with chain_id {} not found", chain_id),
+            None => panic!("Network with chain_id {chain_id} not found"),
         };
 
         let pool_contract_address = match Address::from_str(&state.icp_pool_contract_address) {
@@ -370,49 +358,8 @@ async fn pool_withdraw(
 
     let call_data = pool_call.abi_encode();
 
-    let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
-        id: next_id(),
-        jsonrpc: "2.0".to_string(),
-        method: "eth_call".to_string(),
-        params: (
-            EthCallParams {
-                to: pool_contract_address.to_string(),
-                data: format!("0x{}", to_hex(&call_data)),
-            },
-            "latest".to_string(),
-        ),
-    })
-    .map_err(|e| format!("Failed to serialize JSON-RPC request: {}", e))?;
-
-    let request_headers = vec![HttpHeader {
-        name: "Content-Type".to_string(),
-        value: "application/json".to_string(),
-    }];
-
-    let request = CanisterHttpRequestArgument {
-        url: network.rpc_url.clone(),
-        max_response_bytes: Some(MAX_RESPONSE_BYTES),
-        method: HttpMethod::POST,
-        headers: request_headers,
-        body: Some(json_rpc_payload.as_bytes().to_vec()),
-        transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
-    };
-
-    let (response,) = http_request(request, HTTP_CYCLES)
-        .await
-        .map_err(|(code, msg)| format!("HTTP request failed: {:?} {:?}", code, msg))?;
-
-    let json: JsonRpcResult = serde_json::from_str(
-        std::str::from_utf8(&response.body)
-            .map_err(|e| format!("Failed to convert response to UTF-8: {}", e))?,
-    )
-    .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
-
-    let raw_result = json
-        .result
-        .ok_or("No result in JSON-RPC response".to_string())?;
-
-    let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
+    let result =
+        make_json_rpc_request(&pool_contract_address, call_data, network.rpc_url.clone()).await?;
 
     let decoded_result = GenericDepositDetails::abi_decode(&result, false)
         .map_err(|e| format!("Failed to decode response: {}", e))?;
@@ -441,6 +388,21 @@ async fn pool_withdraw(
     if pdt != DepositType::Normal {
         return Err("Must be pool withdrawal".to_string());
     }
+
+    let pool_set_call = IPool::setUserDepositToZeroCall {
+        poolId: U256::from(pool_id),
+        user: user_address,
+        pdt: pdt,
+    };
+
+    let set_call_data = pool_set_call.abi_encode();
+
+    let _result = make_json_rpc_request(
+        &pool_contract_address,
+        set_call_data,
+        network.rpc_url.clone(),
+    )
+    .await?;
 
     let signer = create_icp_signer().await;
     match deposit_detail.adt {
@@ -530,53 +492,16 @@ async fn vault_withdraw(
 
     let call_data = vault_call.abi_encode();
 
-    let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
-        id: next_id(),
-        jsonrpc: "2.0".to_string(),
-        method: "eth_call".to_string(),
-        params: (
-            EthCallParams {
-                to: vault_contract_address.to_string(),
-                data: format!("0x{}", to_hex(&call_data)),
-            },
-            "latest".to_string(),
-        ),
-    })
-    .map_err(|e| format!("Failed to serialize JSON-RPC request: {}", e))?;
-
-    let request_headers = vec![HttpHeader {
-        name: "Content-Type".to_string(),
-        value: "application/json".to_string(),
-    }];
-
-    let request = CanisterHttpRequestArgument {
-        url: network.rpc_url.clone(),
-        max_response_bytes: Some(MAX_RESPONSE_BYTES),
-        method: HttpMethod::POST,
-        headers: request_headers,
-        body: Some(json_rpc_payload.as_bytes().to_vec()),
-        transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
-    };
-
-    let (response,) = http_request(request, HTTP_CYCLES)
-        .await
-        .map_err(|(code, msg)| format!("HTTP request failed: {:?} {:?}", code, msg))?;
-
-    let json: JsonRpcResult = serde_json::from_str(
-        std::str::from_utf8(&response.body)
-            .map_err(|e| format!("Failed to convert response to UTF-8: {}", e))?,
-    )
-    .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
-
-    let raw_result = json
-        .result
-        .ok_or("No result in JSON-RPC response".to_string())?;
-
-    let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
+    let result =
+        make_json_rpc_request(&vault_contract_address, call_data, network.rpc_url.clone()).await?;
 
     let decoded_result = VaultDeposit::abi_decode(&result, false)
         .map_err(|e| format!("Failed to decode response: {}", e))?;
     println!("Decoded Result: {:?}", decoded_result);
+
+    if decoded_result.amount <= U256::from(0) {
+        return Err(format!("No active deposit for user {}", decoded_result.lp));
+    }
 
     let vault_deposit_detail = UserVaultDeposit {
         lp: decoded_result.lp,
@@ -600,6 +525,20 @@ async fn vault_withdraw(
     if pdt != DepositType::Vault {
         return Err("Must be vault withdrawal".to_string());
     }
+
+    let vault_set_call = IVault::setUserVaultDepositToZeroCall {
+        vaultId: U256::from(vault_id),
+        user: user_address,
+    };
+
+    let set_call_data = vault_set_call.abi_encode();
+
+    let _result = make_json_rpc_request(
+        &vault_contract_address,
+        set_call_data,
+        network.rpc_url.clone(),
+    )
+    .await?;
 
     let signer = create_icp_signer().await;
     match vault_deposit_detail.adt {
@@ -656,21 +595,23 @@ async fn claim_proposal_funds(
     chain_id: u64,
 ) -> Result<String, String> {
     let nat_chain_id = Nat::from(chain_id);
-
     let network = STATE.with(|state| {
         let state = state.borrow();
-
         let network = match state.supported_networks.get(&nat_chain_id) {
             Some(network) => network,
             None => panic!("Network with chain_id {} not found", chain_id),
         };
-
         network.clone()
     });
 
     let gov_contract_address = match Address::from_str(&network.gov_address) {
         Ok(address) => address,
         Err(_) => panic!("Error parsing gov contract address"),
+    };
+
+    let pool_contract_address = match Address::from_str(&network.evm_pool_contract_address) {
+        Ok(address) => address,
+        Err(_) => panic!("Error parsing pool contract address"),
     };
 
     let user_address = match Address::from_str(&user) {
@@ -684,53 +625,30 @@ async fn claim_proposal_funds(
 
     let call_data = gov_call.abi_encode();
 
-    let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
-        id: next_id(),
-        jsonrpc: "2.0".to_string(),
-        method: "eth_call".to_string(),
-        params: (
-            EthCallParams {
-                to: gov_contract_address.to_string(),
-                data: format!("0x{}", to_hex(&call_data)),
-            },
-            "latest".to_string(),
-        ),
-    })
-    .map_err(|e| format!("Failed to serialize JSON-RPC request: {}", e))?;
-
-    let request_headers = vec![HttpHeader {
-        name: "Content-Type".to_string(),
-        value: "application/json".to_string(),
-    }];
-
-    let request = CanisterHttpRequestArgument {
-        url: network.rpc_url.clone(),
-        max_response_bytes: Some(MAX_RESPONSE_BYTES),
-        method: HttpMethod::POST,
-        headers: request_headers,
-        body: Some(json_rpc_payload.as_bytes().to_vec()),
-        transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
-    };
-
-    let (response,) = http_request(request, HTTP_CYCLES)
-        .await
-        .map_err(|(code, msg)| format!("HTTP request failed: {:?} {:?}", code, msg))?;
-
-    let json: JsonRpcResult = serde_json::from_str(
-        std::str::from_utf8(&response.body)
-            .map_err(|e| format!("Failed to convert response to UTF-8: {}", e))?,
-    )
-    .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
-
-    let raw_result = json
-        .result
-        .ok_or("No result in JSON-RPC response".to_string())?;
-
-    let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
+    let result =
+        make_json_rpc_request(&gov_contract_address, call_data, network.rpc_url.clone()).await?;
 
     let decoded_result = Proposal::abi_decode(&result, false)
         .map_err(|e| format!("Failed to decode response: {}", e))?;
     println!("Decoded Result: {:?}", decoded_result);
+
+    if decoded_result.status != ProposalStaus::Approved {
+        return Err(format!("Proposal is not approved"));
+    }
+
+    let pool_set_call = IPool::finalizeProposalClaimCall {
+        _proposalId: U256::from(proposal_id),
+        user: user_address,
+    };
+
+    let set_call_data = pool_set_call.abi_encode();
+
+    let _result = make_json_rpc_request(
+        &pool_contract_address,
+        set_call_data,
+        network.rpc_url.clone(),
+    )
+    .await?;
 
     let signer = create_icp_signer().await;
     match decoded_result.proposalParam.adt {
@@ -778,18 +696,6 @@ async fn claim_proposal_funds(
             ));
         }
     }
-}
-
-#[query(name = "getUserDeposit")]
-pub async fn get_user_deposit(pool_id: Nat, user: Principal) -> Result<Deposit, String> {
-    STATE.with(|state| {
-        let state = state.borrow();
-        let pool = state.pools.get(&pool_id).ok_or("Pool should be found")?;
-
-        let user_deposit = pool.deposits.get(&user).ok_or("User deposit not found")?;
-
-        Ok(user_deposit.clone())
-    })
 }
 
 #[query(name = "getOwner")]
@@ -976,6 +882,58 @@ async fn send_erc20_token(
         }
         Err(e) => Err(format!("{:?}", e)),
     }
+}
+
+async fn make_json_rpc_request(
+    contract_address: &Address,
+    call_data: Vec<u8>,
+    rpc_url: String,
+) -> Result<Vec<u8>, String> {
+    let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
+        id: next_id(),
+        jsonrpc: "2.0".to_string(),
+        method: "eth_call".to_string(),
+        params: (
+            EthCallParams {
+                to: contract_address.to_string(),
+                data: format!("0x{}", to_hex(&call_data)),
+            },
+            "latest".to_string(),
+        ),
+    })
+    .map_err(|e| format!("Failed to serialize JSON-RPC request: {}", e))?;
+
+    let request_headers = vec![HttpHeader {
+        name: "Content-Type".to_string(),
+        value: "application/json".to_string(),
+    }];
+
+    let request = CanisterHttpRequestArgument {
+        url: rpc_url.clone(),
+        max_response_bytes: Some(MAX_RESPONSE_BYTES),
+        method: HttpMethod::POST,
+        headers: request_headers,
+        body: Some(json_rpc_payload.as_bytes().to_vec()),
+        transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
+    };
+
+    let (response,) = http_request(request, HTTP_CYCLES)
+        .await
+        .map_err(|(code, msg)| format!("HTTP request failed: {:?} {:?}", code, msg))?;
+
+    let json: JsonRpcResult = serde_json::from_str(
+        std::str::from_utf8(&response.body)
+            .map_err(|e| format!("Failed to convert response to UTF-8: {}", e))?,
+    )
+    .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
+
+    let raw_result = json
+        .result
+        .ok_or("No result in JSON-RPC response".to_string())?;
+
+    let result = from_hex(&raw_result).map_err(|_| "Failed to decode response data".to_string())?;
+
+    Ok(result)
 }
 
 #[update(name = "setPoolContractAddress")]
