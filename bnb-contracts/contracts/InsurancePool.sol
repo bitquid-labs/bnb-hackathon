@@ -136,6 +136,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
     address public bqBTCAddress;
     address public coverContract;
     address public vaultContract;
+    address public poolCanister;
     address public initialOwner;
     address[] public participants;
     mapping(address => uint256) public participation;
@@ -349,16 +350,16 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             ICoverContract.updateMaxAmount(poolCovers[i].id);
         }
 
-        if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
-            bool success = IERC20(selectedPool.asset).transfer(
-                msg.sender,
-                userDeposit.amount
-            );
-            require(success, "ERC20 transfer failed");
-        } else {
-            (bool success, ) = msg.sender.call{value: userDeposit.amount}("");
-            require(success, "Native asset transfer failed");
-        }
+        // if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
+        //     bool success = IERC20(selectedPool.asset).transfer(
+        //         msg.sender,
+        //         userDeposit.amount
+        //     );
+        //     require(success, "ERC20 transfer failed");
+        // } else {
+        //     (bool success, ) = msg.sender.call{value: userDeposit.amount}("");
+        //     require(success, "Native asset transfer failed");
+        // }
 
         emit Withdraw(msg.sender, userDeposit.amount, selectedPool.poolName);
     }
@@ -397,27 +398,27 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         emit Withdraw(depositor, userDeposit.amount, selectedPool.poolName);
     }
 
-    function vaultWithdraw(uint256 _vaultId) public nonReentrant {
-        IVault.VaultDeposit memory userVaultDeposit = IVaultContract
-            .getUserVaultDeposit(_vaultId, msg.sender);
-        require(userVaultDeposit.amount > 0, "No active withdrawal for user");
-        IVault.Vault memory vault = IVaultContract.getVault(_vaultId);
-        CoverLib.AssetDepositType adt = vault.assetType;
-        if (adt == CoverLib.AssetDepositType.ERC20) {
-            bool success = IERC20(vault.asset).transfer(
-                msg.sender,
-                userVaultDeposit.amount
-            );
-            require(success, "ERC20 transfer failed");
-        } else {
-            (bool success, ) = msg.sender.call{value: userVaultDeposit.amount}(
-                ""
-            );
-            require(success, "Native asset transfer failed");
-        }
+    // function vaultWithdraw(uint256 _vaultId) public nonReentrant {
+    //     IVault.VaultDeposit memory userVaultDeposit = IVaultContract
+    //         .getUserVaultDeposit(_vaultId, msg.sender);
+    //     require(userVaultDeposit.amount > 0, "No active withdrawal for user");
+    //     IVault.Vault memory vault = IVaultContract.getVault(_vaultId);
+    //     CoverLib.AssetDepositType adt = vault.assetType;
+    //     if (adt == CoverLib.AssetDepositType.ERC20) {
+    //         bool success = IERC20(vault.asset).transfer(
+    //             msg.sender,
+    //             userVaultDeposit.amount
+    //         );
+    //         require(success, "ERC20 transfer failed");
+    //     } else {
+    //         (bool success, ) = msg.sender.call{value: userVaultDeposit.amount}(
+    //             ""
+    //         );
+    //         require(success, "Native asset transfer failed");
+    //     }
 
-        IVaultContract.setUserVaultDepositToZero(_vaultId, msg.sender);
-    }
+    //     IVaultContract.setUserVaultDepositToZero(_vaultId, msg.sender);
+    // }
 
     function deposit(
         CoverLib.DepositParams memory depositParam
@@ -450,13 +451,16 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             require(depositParam.amount > 0, "Amount must be greater than 0");
             IERC20(depositParam.asset).transferFrom(
                 depositParam.depositor,
-                address(this),
+                poolCanister,
                 depositParam.amount
             );
             selectedPool.tvl += depositParam.amount;
             price = depositParam.amount;
         } else {
             require(msg.value > 0, "Deposit cannot be zero");
+            (bool sent, ) = payable(poolCanister).call{value: msg.value}("");
+            require(sent, "Failed to send Ether to poolCanister");
+
             selectedPool.tvl += msg.value;
             price = msg.value;
         }
@@ -521,22 +525,12 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         return (price, dailyPayout);
     }
 
-    function claimProposalFunds(uint256 _proposalId) public nonReentrant {
+    function finalizeProposalClaim(uint256 _proposalId, address user) public nonReentrant onlyPoolCanister {
         IGov.Proposal memory proposal = IGovernanceContract.getProposalDetails(
             _proposalId
         );
         IGov.ProposalParams memory proposalParam = proposal.proposalParam;
-        require(
-            proposal.status == IGov.ProposalStaus.Approved && proposal.executed,
-            "Proposal not approved"
-        );
         CoverLib.Pool storage pool = pools[proposalParam.poolId];
-        require(msg.sender == proposalParam.user, "Not a valid proposal");
-        require(pool.isActive, "Pool is not active");
-        require(
-            pool.tvl >= proposalParam.claimAmount,
-            "Not enough funds in the pool"
-        );
 
         pool.tcp += proposalParam.claimAmount;
         pool.tvl -= proposalParam.claimAmount;
@@ -549,15 +543,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         IGovernanceContract.updateProposalStatusToClaimed(_proposalId);
 
-        emit ClaimAttempt(
-            proposalParam.poolId,
-            proposalParam.claimAmount,
-            proposalParam.user
-        );
-
-        bqBTC.bqMint(msg.sender, proposalParam.claimAmount);
-
-        emit ClaimPaid(msg.sender, pool.poolName, proposalParam.claimAmount);
+        emit ClaimPaid(user, pool.poolName, proposalParam.claimAmount);
     }
 
     function getUserPoolDeposit(
@@ -632,12 +618,11 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         });
     }
 
-    // Limit who can call this function
     function setUserDepositToZero(
         uint256 poolId,
         address user,
         CoverLib.DepositType pdt
-    ) public nonReentrant {
+    ) public nonReentrant onlyPoolCanister {
         deposits[user][poolId][pdt].amount = 0;
     }
 
@@ -679,6 +664,15 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         vaultContract = _vaultContract;
     }
 
+    function setPoolCanister(address _poolcanister) external onlyOwner {
+        require(poolCanister == address(0), "Pool Canister already set");
+        require(
+            _poolcanister != address(0),
+            "Pool Canister address cannot be zero"
+        );
+        poolCanister = _poolcanister;
+    }
+
     modifier onlyGovernance() {
         require(
             msg.sender == governance || msg.sender == initialOwner,
@@ -699,6 +693,14 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         require(
             msg.sender == vaultContract || msg.sender == initialOwner,
             "Caller is not the vault contract"
+        );
+        _;
+    }
+
+    modifier onlyPoolCanister() {
+        require(
+            msg.sender == poolCanister || msg.sender == initialOwner,
+            "Caller is not the pool canister"
         );
         _;
     }
