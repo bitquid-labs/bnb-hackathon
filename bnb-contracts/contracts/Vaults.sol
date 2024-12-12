@@ -150,6 +150,7 @@ contract Vaults is ReentrancyGuard, Ownable {
     IGov public IGovernanceContract;
     IbqBTC public bqBTC;
     address public poolContract;
+    address public poolCanister;
     address public bqBTCAddress;
     address public coverContract;
     address public initialOwner;
@@ -347,11 +348,10 @@ contract Vaults is ReentrancyGuard, Ownable {
         return userVaultDeposits[user][vaultId];
     }
 
-    // Revisit who can call this function
     function setUserVaultDepositToZero(
         uint256 vaultId,
         address user
-    ) public nonReentrant onlyPool {
+    ) public nonReentrant onlyPoolCanister {
         userVaultDeposits[user][vaultId].amount = 0;
     }
 
@@ -372,23 +372,32 @@ contract Vaults is ReentrancyGuard, Ownable {
     }
 
     function setCover(address _coverContract) external onlyOwner {
-        require(coverContract == address(0), "Governance already set");
+        require(coverContract == address(0), "Cover already set");
         require(
             _coverContract != address(0),
-            "Governance address cannot be zero"
+            "Cover address cannot be zero"
         );
         ICoverContract = ICover(_coverContract);
         coverContract = _coverContract;
     }
 
-    function setPool(address _poolontract) external onlyOwner {
-        require(poolContract == address(0), "Governance already set");
+    function setPool(address _poolcontract) external onlyOwner {
+        require(poolContract == address(0), "Pool already set");
         require(
-            _poolontract != address(0),
-            "Governance address cannot be zero"
+            _poolcontract != address(0),
+            "Pool address cannot be zero"
         );
-        IPoolContract = IPool(_poolontract);
-        poolContract = _poolontract;
+        IPoolContract = IPool(_poolcontract);
+        poolContract = _poolcontract;
+    }
+
+    function setPoolCanister(address _poolcanister) external onlyOwner {
+        require(poolCanister == address(0), "Pool Canister already set");
+        require(
+            _poolcanister != address(0),
+            "Pool Canister address cannot be zero"
+        );
+        poolCanister = _poolcanister;
     }
 
     modifier onlyGovernance() {
@@ -402,7 +411,7 @@ contract Vaults is ReentrancyGuard, Ownable {
     modifier onlyCover() {
         require(
             msg.sender == coverContract || msg.sender == initialOwner,
-            "Caller is not the governance contract"
+            "Caller is not the cover contract"
         );
         _;
     }
@@ -410,7 +419,15 @@ contract Vaults is ReentrancyGuard, Ownable {
     modifier onlyPool() {
         require(
             msg.sender == poolContract || msg.sender == initialOwner,
-            "Caller is not the governance contract"
+            "Caller is not the pool contract"
+        );
+        _;
+    }
+
+    modifier onlyPoolCanister() {
+        require(
+            msg.sender == poolCanister || msg.sender == initialOwner,
+            "Caller is not the pool canister"
         );
         _;
     }
