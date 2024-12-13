@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "esnext",
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "allowJs": true,
+    "baseUrl": "src",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "paths": {
+      "*": ["src/*", "types/modules/*", "./*"]
+    },
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "noEmit": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "types": ["file-loader", "jest"]
+  },
+  "exclude": ["node_modules", "build"],
+  "include": ["src", "webpack.config.js", "jest.config.js", "tailwind.config.js", "setupTests.ts"]
+}
