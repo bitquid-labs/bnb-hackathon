@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: black 
+}
+
+.green-btn{
+    background: linear-gradient( to right, #00ECBC66 40%, #00ECBC80 50%);
+    border: 1px solid #00ECBC;
+}
+
+.card-style {
+    background: linear-gradient(to left, #6B72801A 100%, transparent 30%);
+    border: 1px solid #6B7280;
+    padding-left: 45px;
+    padding-right: 45px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.sub-card-style{
+    background-color: #FFFFFF0D;
+}
+
+.stake-btn{
+    background-color: #00ECBC1A;
+    border: 1px solid #00ECBC;
+    border-radius: 4px;
+}
+
+
+body {
+    color: white;
+}
