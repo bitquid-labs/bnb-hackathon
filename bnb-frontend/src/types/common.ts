@@ -48,3 +48,10 @@ export const riskTypeNames = [
   'Stablecoin Vulnerability',
   'Protocol Vulnerability',
 ];
+
+
+export const enum CoverDueTo {
+  NoneSelected,
+  SmartContract,
+  SevereOracle,
+}

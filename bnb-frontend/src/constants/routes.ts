@@ -4,6 +4,7 @@ import IconDashboard from '../assets/icons/IconDashboard';
 import IconStrategyManager from '../assets/icons/IconStrategyManager';
 import IconMyAssets from '../assets/icons/IconMyAssets';
 import IconCovers from 'assets/icons/IconCovers';
+import CoverDetailPage from 'pages/CoverDetailPage';
 
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const StrategyManagerPage = lazy(() => import ('../pages/StrategyManagerPage'));
@@ -15,6 +16,7 @@ enum AppRoutes {
   StrategyManger = '/strategymanager',
   MyAssetsPage = '/myassets',
   CoversPage = '/covers',
+  CoverDetailPage = '/coverdetail/:id',
 }
 
 export const appRoutes = [
@@ -22,6 +24,7 @@ export const appRoutes = [
   {key: 'StrategyManger', path: AppRoutes.StrategyManger, element: StrategyManagerPage},
   {key: 'MyAssetsPage', path: AppRoutes.MyAssetsPage, element: MyAssetsPage},
   {key: 'covers', path: AppRoutes.CoversPage, element: CoversPage},
+  {key: 'coverdetail', path: AppRoutes.CoverDetailPage, element: CoverDetailPage},
 ];
 
 export const headerLinks = [
