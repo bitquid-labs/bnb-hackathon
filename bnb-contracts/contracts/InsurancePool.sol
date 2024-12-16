@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import "./CoverLib.sol";
 
+interface IERC20Extended is IERC20 {
+    function decimals() external view returns (uint8);
+}
+
 interface ICover {
     function updateMaxAmount(uint256 _coverId) external;
     function getDepositClaimableDays(
@@ -144,6 +148,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
     IGov public IGovernanceContract;
     IbqBTC public bqBTC;
     address public bqBTCAddress;
+    address private nullAsset = 0x0000000000000000000000000000000000000000;
     address public coverContract;
     address public vaultContract;
     address public poolCanister;
@@ -165,7 +170,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         busdPriceFeed = AggregatorV3Interface(0x9331b55D9830EF609A2aBCfAc0FBCE050A52fdEa); 
         usdtPriceFeed = AggregatorV3Interface(0xEca2605f0BCF2BA5966372C99837b1F182d3D620);
 
-        assetPriceFeeds[0x0000000000000000000000000000000000000000] = bnbPriceFeed;
+        assetPriceFeeds[nullAsset] = bnbPriceFeed;
         assetPriceFeeds[0x6ce8dA28E2f864420840cF74474eFf5fD80E65B8] = wbtcPriceFeed;
         assetPriceFeeds[_bqBtc] = wbtcPriceFeed;
         assetPriceFeeds[0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee] = busdPriceFeed;
@@ -199,6 +204,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         newPool.leverage = params.leverage;
         newPool.percentageSplitBalance = 100 - params.investmentArm;
         newPool.assetType = params.adt;
+        newPool.asset = params.asset;
 
         emit PoolCreated(params.poolId, params.poolName);
     }
@@ -241,8 +247,19 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         uint256 _poolId
     ) public view returns (CoverLib.Pool memory) {
         CoverLib.Pool memory pool = pools[_poolId];
-        uint256 priceInUSD = getPriceInUSD(pool.asset);
-        pool.tvl = (priceInUSD * pool.totalUnit) /  1e18;
+        uint256 priceInUSD;
+        uint256 decimals;
+
+        if (pool.isActive && pool.asset == nullAsset) {
+            priceInUSD = getPriceInUSD(nullAsset);
+            decimals = 18;
+        } else {
+            priceInUSD = getPriceInUSD(pool.asset);
+            IERC20Extended token = IERC20Extended(pool.asset);
+            decimals = token.decimals();
+        }
+        uint256 scaledTotalUnit = pool.totalUnit * (10 ** (18 - decimals));
+        pool.tvl = (priceInUSD * scaledTotalUnit) / 1e18;
         
         return pool;
     }
@@ -251,8 +268,19 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         CoverLib.Pool[] memory result = new CoverLib.Pool[](poolCount);
         for (uint256 i = 1; i <= poolCount; i++) {
             CoverLib.Pool memory pool = pools[i];
-            uint256 priceInUSD = getPriceInUSD(pool.asset);
-            uint256 tvl = (priceInUSD * pool.totalUnit) /  1e18;
+            uint256 priceInUSD;
+            uint256 decimals;
+
+            if (pool.isActive && pool.asset == nullAsset) {
+                priceInUSD = getPriceInUSD(nullAsset);
+                decimals = 18;
+            } else {
+                priceInUSD = getPriceInUSD(pool.asset);
+                IERC20Extended token = IERC20Extended(pool.asset);
+                decimals = token.decimals();
+            }
+            uint256 scaledTotalUnit = pool.totalUnit * (10 ** (18 - decimals));
+            uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
             result[i - 1] = CoverLib.Pool({
                 id: i,
                 poolName: pool.poolName,
@@ -480,17 +508,12 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
             require(depositParam.amount > 0, "Amount must be greater than 0");
-            IERC20(depositParam.asset).transferFrom(
-                depositParam.depositor,
-                address(this),
-                depositParam.amount
-            );
+            IERC20(depositParam.asset).transferFrom(msg.sender, address(this), depositParam.amount);
+
             selectedPool.totalUnit += depositParam.amount;
             price = depositParam.amount;
         } else {
             require(msg.value > 0, "Deposit cannot be zero");
-            (bool sent, ) = payable(address(this)).call{value: msg.value}("");
-            require(sent, "Failed depositing to pool");
 
             selectedPool.totalUnit += msg.value;
             price = msg.value;
@@ -688,8 +711,21 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
     function getPoolTVL(uint256 _poolId) public view returns (uint256) {
         CoverLib.Pool memory pool = pools[_poolId];
-        uint256 priceInUSD = getPriceInUSD(pool.asset);
-        uint256 tvl = (priceInUSD * pool.totalUnit) /  1e18;
+        uint256 priceInUSD;
+        uint256 decimals;
+
+        if (pool.isActive && pool.asset == nullAsset) {
+            priceInUSD = getPriceInUSD(nullAsset);
+            decimals = 18;
+        } else {
+            priceInUSD = getPriceInUSD(pool.asset);
+            IERC20Extended token = IERC20Extended(pool.asset);
+            decimals = token.decimals();
+        }
+        
+        uint256 scaledTotalUnit = pool.totalUnit * (10 ** (18 - decimals));
+
+        uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
         return tvl;
     }
 
@@ -737,14 +773,14 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         vaultContract = _vaultContract;
     }
 
-    function setPoolCanister(address _poolcanister) external onlyOwner {
-        require(poolCanister == address(0), "Pool Canister already set");
-        require(
-            _poolcanister != address(0),
-            "Pool Canister address cannot be zero"
-        );
-        poolCanister = _poolcanister;
-    }
+    // function setPoolCanister(address _poolcanister) external onlyOwner {
+    //     require(poolCanister == address(0), "Pool Canister already set");
+    //     require(
+    //         _poolcanister != address(0),
+    //         "Pool Canister address cannot be zero"
+    //     );
+    //     poolCanister = _poolcanister;
+    // }
 
     modifier onlyGovernance() {
         require(
