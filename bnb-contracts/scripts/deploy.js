@@ -13,7 +13,7 @@ async function main() {
       "BQ BTC",
       "bqBTC",
       18,
-      200000000000000,
+      2000000000000000,
       OWNER,
       ALT_TOKEN,
       100
@@ -23,31 +23,10 @@ async function main() {
     console.log(`BQ BTC Address: ${bqBTCAddress}`);
 
     const InsurancePool = await ethers.getContractFactory("InsurancePool");
-    const insurancePool = await InsurancePool.deploy(OWNER);
+    const insurancePool = await InsurancePool.deploy(OWNER, bqBTCAddress);
     const poolAddress = await insurancePool.getAddress();
 
     console.log(`Pool Address: ${poolAddress}`);
-
-    // const Governance = await ethers.getContractFactory("Governance");
-    // const governance = await Governance.deploy(
-    //   bqtokenAddress,
-    //   poolAddress,
-    //   5,
-    //   OWNER
-    // );
-    // const govAddress = await governance.getAddress();
-
-    // console.log(`Gov Address: ${govAddress}`);
-
-    const InsuraceCover = await ethers.getContractFactory("InsuranceCover");
-    const coverContract = await InsuraceCover.deploy(
-      poolAddress,
-      OWNER,
-      bqBTCAddress
-    );
-
-    const coverAddress = await coverContract.getAddress();
-    console.log(`Cover Address: ${coverAddress}`);
 
     const vault = await ethers.getContractFactory("Vaults");
     const vaultContract = await vault.deploy(OWNER);
@@ -55,12 +34,37 @@ async function main() {
     const vaultAddress = await vaultContract.getAddress();
     console.log(`Vault Address: ${vaultAddress}`);
 
+    const Governance = await ethers.getContractFactory("Governance");
+    const governance = await Governance.deploy(
+      bqBTCAddress,
+      poolAddress,
+      1,
+      OWNER
+    );
+    const govAddress = await governance.getAddress();
+
+    console.log(`Gov Address: ${govAddress}`);
+
+    const InsuraceCover = await ethers.getContractFactory("InsuranceCover");
+    const coverContract = await InsuraceCover.deploy(
+      poolAddress,
+      vaultAddress,
+      OWNER,
+      bqBTCAddress,
+      govAddress
+    );
+
+    const coverAddress = await coverContract.getAddress();
+    console.log(`Cover Address: ${coverAddress}`);
+
     console.log("Setting contracts...");
 
     await insurancePool.setCover(coverAddress);
     await insurancePool.setVault(vaultAddress);
+    await insurancePool.setGovernance(govAddress);
     await vaultContract.setCover(coverAddress);
     await vaultContract.setPool(poolAddress);
+    await vaultContract.setGovernance(govAddress);
     await bqBTC.setContracts(poolAddress, coverAddress, vaultAddress);
 
     console.log("All contracts set");
