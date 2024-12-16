@@ -29,7 +29,7 @@ interface IVault {
         address asset;
     }
 
-    function getVault(uint256 vaultId) external view returns (Vault memory)
+    function getVault(uint256 vaultId) external view returns (Vault memory);
 }
 
 interface ILP {
@@ -174,7 +174,8 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         address _lpContract,
         address _vaultContract,
         address _initialOwner,
-        address _bqBTC
+        address _bqBTC,
+        address _gov
     ) Ownable(_initialOwner) {
         lpContract = ILP(_lpContract);
         vaultContract = IVault(_vaultContract);
@@ -182,6 +183,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         lpAddress = _lpContract;
         bqBTC = IbqBTC(_bqBTC);
         bqBTCAddress = _bqBTC;
+        governance = _gov;
     }
 
     function createCover(
@@ -346,8 +348,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             require(success, "ERC20 transfer failed");
         } else {
             require(msg.value > 0, "Cover value cannot be zero");
-            (bool sent, ) = payable(address(this)).call{value: msg.value}("");
-            require(sent, "Failed to purchase cover");
             coverFeeBalance += _coverFee;
         }
 
@@ -530,10 +530,8 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         } else {
             assetCoverFeeBalance = coverFeeBalance;
         }
-
-        if (claimableAmount > assetCoverFeeBalance) {
-            revert InsufficientCoverBalance();
-        }
+        
+        require(claimableAmount <= assetCoverFeeBalance, "Insufficient cover balance");
         NextLpClaimTime[msg.sender][_poolId] = block.timestamp;
 
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
@@ -577,7 +575,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         }
 
         uint256 assetCoverFeeBalance;
-        vaultContract.Vault memory selectedVault = vaultContract.getVault(vaultId);
+        IVault.Vault memory selectedVault = vaultContract.getVault(vaultId);
 
         if (selectedVault.assetType == CoverLib.AssetDepositType.ERC20) {
             uint256 balance = IERC20(selectedVault.asset).balanceOf(address(this));
@@ -586,9 +584,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             assetCoverFeeBalance = coverFeeBalance;
         }
 
-        if (totalClaim > assetCoverFeeBalance) {
-            revert InsufficientCoverBalance();
-        }
+        require(totalClaim <= assetCoverFeeBalance, "Insufficient cover balance");
 
         LastVaultClaimTime[msg.sender][vaultId] = block.timestamp;
         if (selectedVault.assetType == CoverLib.AssetDepositType.ERC20) {
