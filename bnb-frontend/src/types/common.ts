@@ -1,3 +1,5 @@
+import { Address } from "viem";
+
 export interface IIcon {
   className?: string;
   fill?: string;
@@ -10,21 +12,58 @@ export const enum RiskType {
   Protocol,
 }
 
+export const enum ADT {
+  Native,
+  ERC20
+}
+
 export interface ICover {
   id?: bigint | undefined;
-  riskType?: RiskType | undefined;
-  capacity?: bigint | undefined;
-  capacityAmount?: bigint | undefined;
-  chains?: string | string;
-  CID?: string | undefined;
-  cost?: bigint | undefined;
   coverName?: string | undefined;
+  riskType?: RiskType | undefined;
+  chains?: string | string;
+  capacity?: bigint | undefined;
+  cost?: bigint | undefined;
+  capacityAmount?: bigint | undefined;
   coverValues?: bigint | undefined;
-  currentBalance?: bigint | undefined;
-  dailyCost?: bigint | undefined;
   maxAmount?: bigint | undefined;
   poolId?: bigint | undefined;
-  securityRating?: bigint | undefined;
+  CID?: string | undefined;
+  adt: ADT | undefined;
+  asset: string | undefined;
+  // currentBalance?: bigint | undefined;
+  // dailyCost?: bigint | undefined;
+  // securityRating?: bigint | undefined;
+}
+
+export interface IPool {
+  id?: bigint | undefined,
+  poolName?: string | undefined,
+  riskType?: RiskType | undefined,
+  apy?: bigint | undefined,
+  minPeriod?: bigint | undefined,
+  totalUnit?: bigint | undefined,
+  tvl?: bigint | undefined,
+  baseValue?: bigint | undefined,
+  coverUnits?: bigint | undefined,
+  tcp?: bigint | undefined,
+  isActive?: boolean | undefined,
+  percentageSplitBalance?: bigint | undefined,
+  investmentArmPercent?: bigint | undefined,
+  leverage?: bigint | undefined,
+  asset?: Address | undefined,
+  assetType?: ADT | undefined,
+}
+
+export interface IVault {
+  id?: bigint | undefined,
+  vaultName?: string | undefined,
+  pools?: IPool[] | [],
+  minInv?: bigint | undefined,
+  maxInv?: bigint | undefined,
+  minPeriod?: bigint | undefined,
+  assetType?: ADT | undefined,
+  asset?: Address | undefined,
 }
 
 export interface IUserCover {

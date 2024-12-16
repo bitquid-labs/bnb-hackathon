@@ -5,6 +5,7 @@ import ICoverABI from './abis/InsuranceCover.json';
 import InsurancePool from './abis/InsurancePool.json';
 import BQToken from './abis/BQToken.json';
 import bqBTC from './abis/bqBTC.json';
+import VaultABI from './abis/Vault.json';
 
 export type AddressesType = {
   [key: string]: Address;
@@ -25,7 +26,7 @@ export const GovContract: ContractType = {
     rsk: '0x483842959b2457179561820E9e676da53B63bCD0',
     core: '0x95bEa6bdd0f0adaC1714910069128a4B7F75e135',
     bitlayer: '0x238E8Be85D7C58E85AFAd4eaB80C69333957359A',
-    bsc: '0x03298FFb837DA30a3bc70C898C63B7670dA0C2b8',
+    bscTest: '0x0aA3B3B8181259b21CC2F32025B54359cf1053b1',
   },
 };
 
@@ -39,7 +40,7 @@ export const ICoverContract: ContractType = {
     rsk: '0xfAB08717d5779DBe49Aa6b547b553593f52744c0',
     core: '0xEbC11e13375DEc4c43118b8f530b0dc31fF9e4a7',
     bitlayer: '0x325fEb760bBD9117a0be901FCA79F10D87FDF709',
-    bsc: '0x6d01868cd9616062Ec4bA399812da6AC8Ac89948',
+    bscTest: '0xAeedD9787593Cb9E6182cF764658eDEcDfFB1050',
   },
 };
 
@@ -53,7 +54,7 @@ export const InsurancePoolContract: ContractType = {
     rsk: '0x68543e919B6cd5D884E22Ed85f912daE5De2371b',
     core: '0xFe0330bCAafb69BFB5B6038Be0eBfDB65E2EE10f',
     bitlayer: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
-    bsc: '0x2047885da51F7f1B24C9186189B6e4bbE902d382',
+    bscTest: '0x6E61FB62f0F976C8A301CAa55903f512aFB795B7',
   },
 };
 
@@ -67,7 +68,7 @@ export const BQTokenContract: ContractType = {
     rsk: '0x7cBDCa7f78B3A43Da33892bdF7D10c80351b799c',
     core: '0xeC523e0e1f4039Fc5210d8f849Aa96363647586e',
     bitlayer: '0x3B4990516950C355Da590ec8E034c02802d4daF2',
-    bsc: '0x62F7B0030bb0827a2B685eDC028a021168e9eEF7',
+    bscTest: '0x62F7B0030bb0827a2B685eDC028a021168e9eEF7',
   },
 };
 
@@ -81,6 +82,21 @@ export const BQBTCTokenContract: ContractType = {
     rsk: '0x1EfE902d6aFf44d3C8d245f2d4144db84964a9b4',
     core: '0xd4d6D32774267870CB38dd00af8B7edB96eBEfC7',
     bitlayer: '0x260E26e2Cdcdf05C4C93d7a2bd380AaE9D13d0BF',
-    bsc: '0xC0015ace24aa369A842fc89855e03bdEB94b965f',
+    bscTest: '0x8A414B42f79bc4792eB9D55cA23465A73cE2d4ef',
+  },
+};
+
+
+export const VaultContract: ContractType = {
+  abi: VaultABI,
+  addresses: {
+    pwr: '0x8666c1046f5DD971C0Cf1578291e8A1A413B149f',
+    merlin: '0xd80f79bC4cf0AC7094b22aB1a3E4010cFeB78669',
+    bob: '0x325fEb760bBD9117a0be901FCA79F10D87FDF709',
+    bevm: '0x1bc400fe309268A39D3b68093A14257c2c87C531',
+    rsk: '0x68543e919B6cd5D884E22Ed85f912daE5De2371b',
+    core: '0xFe0330bCAafb69BFB5B6038Be0eBfDB65E2EE10f',
+    bitlayer: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
+    bscTest: '0xdcb6256afd4e9bf395B846F9Ee78C7EE9c20Cd2e',
   },
 };

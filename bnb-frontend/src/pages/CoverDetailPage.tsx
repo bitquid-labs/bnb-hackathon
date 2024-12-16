@@ -3,7 +3,7 @@ import { bnToNumber, numberToBN } from "lib/number";
 import React, { ChangeEvent, useMemo, useState } from "react";
 import { TiInfoLarge } from "react-icons/ti";
 import { useParams, useNavigate } from "react-router";
-import { CoverDueTo, ICover, RiskType } from "types/common";
+import { ADT, CoverDueTo, ICover, RiskType } from "types/common";
 import Buy from "views/CoverDetail/Buy";
 import Preview from "views/CoverDetail/Preview";
 import { calculateCoverFee } from "lib/utils";
@@ -15,6 +15,7 @@ import { Cover } from "views/Covers/Cover";
 import IconArrowLeft from "assets/icons/IconArrowLeft";
 import MoreCovers from "views/CoverDetail/MoreCovers";
 import SocialLinks from "components/SocialLInks";
+import { ChainType } from "lib/wagmi";
 
 const CoverDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -38,6 +39,11 @@ const CoverDetailPage: React.FC = () => {
     });
   }, [availableCovers, id]);
 
+  const coverADT = useMemo(() => {
+    if (!coverDetail) return undefined;
+    return coverDetail.adt;
+  }, [coverDetail]);
+
   const coverFee = useMemo(() => {
     return calculateCoverFee(
       parseFloat(coverAmount),
@@ -55,29 +61,37 @@ const CoverDetailPage: React.FC = () => {
   };
 
   const handleBuyCover = async () => {
-    const params = [
-      Number(id), // coverId
-      numberToBN(coverAmount), // coverAmount
-      coverPeriod, // coverPeriod
-      parseUnits(coverFee.toString(), 18),
-    ];
+    if (!coverDetail) return;
+    if (coverADT === ADT.Native) {
+      const params = [
+        Number(id), // coverId
+        numberToBN(coverAmount), // coverAmount
+        coverPeriod, // coverPeriod
+        parseUnits(coverFee.toString(), 18),  //  coverFee
+      ];
 
-    try {
-      await writeContract({
-        abi: ICoverContract.abi,
-        address: ICoverContract.addresses["merlin"],
-        functionName: "purchaseCover",
-        args: params,
-      });
-    } catch (err) {
-      console.log(err);
+      try {
+        writeContract({
+          abi: ICoverContract.abi,
+          address: ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
+          functionName: "purchaseCover",
+          args: params,
+          value: parseUnits(coverFee.toString(), 18),
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
     }
   };
 
   return (
     <div className="w-full max-w-1220 mx-auto pt-70">
       <div className="w-full flex justify-start">
-        <div className="flex items-center p-14 border border-[#6B7280] bg-[#6B72801A] rounded-10 cursor-pointer" onClick={() => navigate("/covers")}>
+        <div
+          className="flex items-center p-14 border border-[#6B7280] bg-[#6B72801A] rounded-10 cursor-pointer"
+          onClick={() => navigate("/covers")}
+        >
           <IconArrowLeft />
           <span className="ml-12">Buy Covers</span>
         </div>
@@ -86,9 +100,11 @@ const CoverDetailPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="bg-[#FFF] rounded-full w-47 h-47 overflow-hidden">
-              <img className="w-full" src={coverDetail?.CID} alt='cover-logo' />
+              <img className="w-full" src={coverDetail?.CID} alt="cover-logo" />
             </div>
-            <div className="ml-10 color-[#F1F1F1] text-20">{coverDetail?.coverName}</div>
+            <div className="ml-10 color-[#F1F1F1] text-20">
+              {coverDetail?.coverName}
+            </div>
           </div>
           <div
             className="my-[4px] flex items-center justify-center gap-[8px] rounded border border-[#363636] bg-[#292929] p-3 text-[14px]"
@@ -124,7 +140,7 @@ const CoverDetailPage: React.FC = () => {
                 handleBuyCover={handleBuyCover}
                 error={error}
                 coverPeriod={coverPeriod}
-                logo={coverDetail?.CID || ''}
+                logo={coverDetail?.CID || ""}
                 isLoading={false}
               />
             </div>
@@ -139,7 +155,7 @@ const CoverDetailPage: React.FC = () => {
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
         </div>
         <div className="w-full">
-          <MoreCovers 
+          <MoreCovers
             currentCoverId={Number(id)}
             riskType={coverDetail?.riskType}
           />

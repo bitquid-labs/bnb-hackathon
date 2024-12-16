@@ -12,7 +12,7 @@ export const useAllAvailableCovers = () => {
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { data: availableCovers, refetch } = useReadContract({
     abi: ICoverContract.abi,
-    address: ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'merlin'],
+    address: ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
     functionName: 'getAllAvailableCovers',
     args: [],
   });

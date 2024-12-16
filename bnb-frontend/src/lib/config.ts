@@ -6,7 +6,7 @@ import { bevm } from 'constants/chains/BEVM';
 import { rsk } from 'constants/chains/RSK';
 import { core } from 'constants/chains/Core';
 import { bitlayer } from 'constants/chains/Bitlayer';
-import { bsc } from 'viem/chains';
+import { bscTest } from 'constants/chains/bscTest';
 
 import '@rainbow-me/rainbowkit/styles.css';
 
@@ -21,6 +21,8 @@ import {
   bitgetWallet,
   binanceWallet 
 } from '@rainbow-me/rainbowkit/wallets';
+
+export const MainChain = bscTest;
 
 export const projectId = process.env.REACT_APP_PROJECT_ID;
 
@@ -50,12 +52,12 @@ const connectors = connectorsForWallets(
 
 const config = createConfig({
   connectors,
-  chains: [merlin, core, bitlayer, bsc],
+  chains: [merlin, core, bitlayer, bscTest],
   transports: {
     [merlin.id]: http(),
     [core.id]: http(),
     [bitlayer.id]: http(),
-    [bsc.id]: http(),
+    [bscTest.id]: http(),
   },
   ssr: true,
 });
