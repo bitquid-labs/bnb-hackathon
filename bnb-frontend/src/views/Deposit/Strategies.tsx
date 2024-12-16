@@ -32,6 +32,7 @@ const Strategies: React.FC = () => {
         {vaults.map((vault, index) => {
           return (
             <StrategyCard
+              id={Number(vault.id)}
               name={vault.vaultName || ''}
               minInvestment={Number(vault.minInv) || 0}
               tenurePeriod={Number(vault.minPeriod) || 0}

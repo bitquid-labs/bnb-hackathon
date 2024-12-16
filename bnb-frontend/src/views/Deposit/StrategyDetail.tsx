@@ -2,19 +2,21 @@ import IconBitcoin from "assets/icons/IconBitcoin";
 import { BQBTCTokenContract, VaultContract } from "constants/contracts";
 import { ChainType } from "lib/wagmi";
 import React, { useState } from "react";
+import { useParams } from "react-router";
 import { parseUnits } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 
 const StrategyDetail: React.FC = () => {
+  const {id} = useParams();
   const [stakeAmount, setStakeAmount] = useState('');
   const {address, chain} = useAccount();
   const {writeContractAsync} = useWriteContract();
 
   const handleStake = async () => {
     const params = [
-      1, // vaultId
-      0, // amount
-      32, // period
+      Number(id), // vaultId
+      parseUnits(stakeAmount, 18), // amount
+      250, // period
     ];
 
     try {
@@ -23,7 +25,7 @@ const StrategyDetail: React.FC = () => {
         address: VaultContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
         functionName: 'vaultDeposit',
         args: params,
-        value: parseUnits('0.01', 18)
+        value: parseUnits(stakeAmount, 18)
       })
     } catch (e) {
       console.log("error:", e)
