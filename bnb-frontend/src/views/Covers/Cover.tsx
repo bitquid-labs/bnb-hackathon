@@ -6,6 +6,7 @@ import Button from 'components/common/Button';
 import { ICover } from 'types/common';
 // import { CoverContext } from '@/contexts/CoverContext';
 import { bnToNumber, getRiskTypeName } from 'lib/number';
+import { useNavigate } from 'react-router';
 
 export type CoverProps = {
   cover: ICover,
@@ -19,12 +20,15 @@ export const Cover: React.FC<CoverProps> = (props) => {
   const annualCost = useMemo(() => {
     return Number(cost);
   }, [cost]);
+  const navigate = useNavigate();
 
   // const { setSelectedCover } = useContext(CoverContext)!;
   // const router = useRouter();
 
-  const handleLinkDetail = useCallback(
+  const handleCoverDetail = useCallback(
     (cover: ICover) => {
+      console.log('cover: ', cover)
+      navigate(`/coverdetail/${id}`);
       // setSelectedCover(cover);
       // router.push(`/cover/${id}`);
     },
@@ -78,7 +82,7 @@ export const Cover: React.FC<CoverProps> = (props) => {
           size='lg'
           className='min-w-[216px] rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC] w-full'
           wrapperClassName='w-full'
-          onClick={() => handleLinkDetail(props.cover)}
+          onClick={() => handleCoverDetail(props.cover)}
           disabled={props.disabled}
         >
           Buy Cover

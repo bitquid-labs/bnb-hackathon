@@ -42,6 +42,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
             <div>Product</div>
             <div className='flex items-center gap-[10px]'>
               <div className='h-[32px] w-[32px] bg-[#D9D9D9] rounded-full overflow-hidden'>
+                <img className="w-full" src={logo} alt='cover-logo' />
                 {/* <img
                   className='h-full w-full rounded-full'
                   src={logo}
@@ -101,7 +102,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
         {address && (
           <Button
             isLoading={isLoading}
-            className='w-fit min-w-302 rounded-8 bg-gradient-to-r from-[#00ECBC] to-[#005746] py-16 text-center'
+            className='w-fit min-w-302 rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] py-16 text-center border border-[#00ECBC]'
             onClick={handleBuyCover}
             disabled={!!error}
           >

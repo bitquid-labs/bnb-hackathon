@@ -1,7 +1,7 @@
 import React from "react";
 import UserStatus from "views/Dashboard/UserStatus";
 import RiskCards from "views/Dashboard/RiskCards";
-import SocialLinks from "views/Dashboard/SocialLInks";
+import SocialLinks from "components/SocialLInks";
 
 const DashboardPage : React.FC = () => {
   return (

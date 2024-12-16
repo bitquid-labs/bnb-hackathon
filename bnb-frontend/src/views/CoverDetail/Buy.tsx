@@ -36,7 +36,7 @@ const Buy: React.FC<BuyProps> = (props) => {
         <div className="flex h-auto rounded border border-[#2F3A42] p-5">
           <input
             className={cn(
-              "placeholder:text-light/50 min-w-0 flex-auto border-none bg-transparent p-0 px-3 focus:border-none focus:outline-none focus:outline-offset-0 focus:ring-0"
+              "placeholder:text-light/50 min-w-0 flex-auto border-none bg-transparent p-0 px-12 focus:border-none focus:outline-none focus:outline-offset-0 focus:ring-0"
             )}
             placeholder="Enter Amount"
             value={coverAmount || ""}
