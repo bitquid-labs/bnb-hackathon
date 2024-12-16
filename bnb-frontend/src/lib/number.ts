@@ -24,3 +24,7 @@ export function formatDate(date: Date): string {
 
   return `${month}/${day}/${year}`;
 }
+
+export function UNIXToDate(timestamp: bigint) {
+  return new Date(Number(timestamp) * 1000);
+}

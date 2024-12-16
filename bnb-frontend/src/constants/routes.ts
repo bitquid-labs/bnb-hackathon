@@ -10,6 +10,8 @@ const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const StrategyManagerPage = lazy(() => import ('../pages/StrategyManagerPage'));
 const MyAssetsPage = lazy(() => import ('../pages/MyAssetsPage'));
 const CoversPage = lazy(() => import ('../pages/CoversPage'));
+const MyCoversPage = lazy(() => import ('../pages/MyCoversPage'));
+
 
 enum AppRoutes {
   Dashboard = '/dashboard',
@@ -17,6 +19,7 @@ enum AppRoutes {
   MyAssetsPage = '/myassets',
   CoversPage = '/covers',
   CoverDetailPage = '/coverdetail/:id',
+  MyCoversPage = '/mycovers',
 }
 
 export const appRoutes = [
@@ -25,6 +28,7 @@ export const appRoutes = [
   {key: 'MyAssetsPage', path: AppRoutes.MyAssetsPage, element: MyAssetsPage},
   {key: 'covers', path: AppRoutes.CoversPage, element: CoversPage},
   {key: 'coverdetail', path: AppRoutes.CoverDetailPage, element: CoverDetailPage},
+  {key: 'mycovers', path: AppRoutes.MyCoversPage, element: MyCoversPage},
 ];
 
 export const headerLinks = [
@@ -32,4 +36,5 @@ export const headerLinks = [
   {name: 'Covers', url: AppRoutes.CoversPage, icon: IconCovers},
   {name: 'strategymanager', url: AppRoutes.StrategyManger, icon: IconStrategyManager},
   {name: 'myassets', url: AppRoutes.MyAssetsPage, icon: IconMyAssets},
+  {name: 'mycovers', url: AppRoutes.MyCoversPage, icon: IconMyAssets},
 ];
