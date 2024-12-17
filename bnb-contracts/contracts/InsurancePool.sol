@@ -267,38 +267,40 @@ contract InsurancePool is ReentrancyGuard, Ownable {
     function getAllPools() public view returns (CoverLib.Pool[] memory) {
         CoverLib.Pool[] memory result = new CoverLib.Pool[](poolCount);
         for (uint256 i = 1; i <= poolCount; i++) {
-            CoverLib.Pool memory pool = pools[i];
-            uint256 priceInUSD;
-            uint256 decimals;
+            CoverLib.Pool memory pool = getPool(i);
+            result[i - 1] = pool;
+            // CoverLib.Pool memory pool = pools[i];
+            // uint256 priceInUSD;
+            // uint256 decimals;
 
-            if (pool.isActive && pool.asset == nullAsset) {
-                priceInUSD = getPriceInUSD(nullAsset);
-                decimals = 18;
-            } else {
-                priceInUSD = getPriceInUSD(pool.asset);
-                IERC20Extended token = IERC20Extended(pool.asset);
-                decimals = token.decimals();
-            }
-            uint256 scaledTotalUnit = pool.totalUnit * (10 ** (18 - decimals));
-            uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
-            result[i - 1] = CoverLib.Pool({
-                id: i,
-                poolName: pool.poolName,
-                riskType: pool.riskType,
-                apy: pool.apy,
-                minPeriod: pool.minPeriod,
-                totalUnit: pool.totalUnit,
-                tvl: tvl,
-                baseValue: pool.baseValue,
-                coverUnits: pool.coverUnits,
-                tcp: pool.tcp,
-                isActive: pool.isActive,
-                percentageSplitBalance: pool.percentageSplitBalance,
-                investmentArmPercent: pool.investmentArmPercent,
-                leverage: pool.leverage,
-                asset: pool.asset,
-                assetType: pool.assetType
-            });
+            // if (pool.isActive && pool.asset == nullAsset) {
+            //     priceInUSD = getPriceInUSD(nullAsset);
+            //     decimals = 18;
+            // } else {
+            //     priceInUSD = getPriceInUSD(pool.asset);
+            //     IERC20Extended token = IERC20Extended(pool.asset);
+            //     decimals = token.decimals();
+            // }
+            // uint256 scaledTotalUnit = pool.totalUnit * (10 ** (18 - decimals));
+            // uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
+            // result[i - 1] = CoverLib.Pool({
+            //     id: i,
+            //     poolName: pool.poolName,
+            //     riskType: pool.riskType,
+            //     apy: pool.apy,
+            //     minPeriod: pool.minPeriod,
+            //     totalUnit: pool.totalUnit,
+            //     tvl: tvl,
+            //     baseValue: pool.baseValue,
+            //     coverUnits: pool.coverUnits,
+            //     tcp: pool.tcp,
+            //     isActive: pool.isActive,
+            //     percentageSplitBalance: pool.percentageSplitBalance,
+            //     investmentArmPercent: pool.investmentArmPercent,
+            //     leverage: pool.leverage,
+            //     asset: pool.asset,
+            //     assetType: pool.assetType
+            // });
         }
         return result;
     }
