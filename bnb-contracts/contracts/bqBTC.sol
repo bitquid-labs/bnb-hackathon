@@ -81,6 +81,11 @@ contract bqBTC is ERC20, Ownable {
         emit Mint(account, mintAmount, currentChainId, nativeSent);
     }
 
+    // Would remove
+    function normalMint(address account, uint256 btcAmount) external payable {
+        _mint(account, btcAmount);
+    }
+
     function burn(address account, uint256 amount) external {
         require(
             msg.sender == initialOwner ||
