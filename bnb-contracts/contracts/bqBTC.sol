@@ -82,7 +82,7 @@ contract bqBTC is ERC20, Ownable {
     }
 
     // Would remove
-    function normalMint(address account, uint256 btcAmount) external payable {
+    function normalMint(address account, uint256 btcAmount) external {
         _mint(account, btcAmount);
     }
 
