@@ -48,19 +48,21 @@ interface ILP {
     struct Pool {
         uint256 id;
         string poolName;
+        string rating;
         CoverLib.RiskType riskType;
         uint256 apy;
         uint256 minPeriod;
+        uint256 totalUnit;
         uint256 tvl;
         uint256 baseValue;
-        uint256 coverTvl;
+        uint256 coverUnits;
         uint256 tcp;
         bool isActive;
         uint256 percentageSplitBalance;
         uint256 investmentArmPercent;
         uint8 leverage;
         address asset;
-        AssetDepositType assetType;
+        CoverLib.AssetDepositType assetType;
     }
 
     enum Status {
