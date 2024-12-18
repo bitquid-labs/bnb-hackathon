@@ -64,6 +64,7 @@ library CoverLib {
     struct Pool {
         uint256 id;
         string poolName;
+        string rating;
         CoverLib.RiskType riskType;
         uint256 apy;
         uint256 minPeriod;
@@ -84,6 +85,7 @@ library CoverLib {
         uint256 poolId;
         CoverLib.RiskType riskType;
         string poolName;
+        string rating;
         uint256 apy;
         uint256 minPeriod;
         uint8 leverage;
