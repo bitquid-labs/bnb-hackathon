@@ -192,6 +192,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         CoverLib.Pool storage newPool = pools[params.poolId];
         newPool.id = params.poolId;
         newPool.poolName = params.poolName;
+        newPool.rating = params.rating;
         newPool.apy = params.apy;
         newPool.totalUnit = 0;
         newPool.minPeriod = params.minPeriod;
@@ -398,6 +399,8 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             "Deposit period has not ended"
         );
 
+        uint256 decimals;
+        uint256 priceInUSD;
         userDeposit.status = CoverLib.Status.Withdrawn;
         selectedPool.totalUnit -= userDeposit.amount;
         uint256 baseValue = selectedPool.totalUnit -
@@ -410,6 +413,19 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         for (uint i = 0; i < poolCovers.length; i++) {
             ICoverContract.updateMaxAmount(poolCovers[i].id);
         }
+
+        if (selectedPool.isActive && selectedPool.asset == nullAsset) {
+            priceInUSD = getPriceInUSD(nullAsset);
+            decimals = 18;
+        } else {
+            priceInUSD = getPriceInUSD(selectedPool.asset);
+            IERC20Extended token = IERC20Extended(selectedPool.asset);
+            decimals = token.decimals();
+        }
+        
+        uint256 scaledTotalUnit = selectedPool.totalUnit * (10 ** (18 - decimals));
+
+        selectedPool.tvl = (priceInUSD * scaledTotalUnit) / 1e18;
 
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
             bool success = IERC20(selectedPool.asset).transfer(
@@ -443,6 +459,9 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             "Deposit period has not ended"
         );
 
+        uint256 decimals;
+        uint256 priceInUSD;
+
         userDeposit.status = CoverLib.Status.Due;
         selectedPool.totalUnit -= userDeposit.amount;
         uint256 baseValue = selectedPool.totalUnit -
@@ -455,6 +474,19 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         for (uint i = 0; i < poolCovers.length; i++) {
             ICoverContract.updateMaxAmount(poolCovers[i].id);
         }
+
+        if (selectedPool.isActive && selectedPool.asset == nullAsset) {
+            priceInUSD = getPriceInUSD(nullAsset);
+            decimals = 18;
+        } else {
+            priceInUSD = getPriceInUSD(selectedPool.asset);
+            IERC20Extended token = IERC20Extended(selectedPool.asset);
+            decimals = token.decimals();
+        }
+        
+        uint256 scaledTotalUnit = selectedPool.totalUnit * (10 ** (18 - decimals));
+
+        selectedPool.tvl = (priceInUSD * scaledTotalUnit) / 1e18;
 
         emit Withdraw(depositor, userDeposit.amount, selectedPool.poolName);
     }
@@ -507,16 +539,22 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         );
 
         uint256 price;
+        uint256 decimals;
+        uint256 priceInUSD;
 
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
             require(depositParam.amount > 0, "Amount must be greater than 0");
             IERC20(depositParam.asset).transferFrom(msg.sender, address(this), depositParam.amount);
-
             selectedPool.totalUnit += depositParam.amount;
             price = depositParam.amount;
+
+            priceInUSD = getPriceInUSD(selectedPool.asset);
+            IERC20Extended token = IERC20Extended(selectedPool.asset);
+            decimals = token.decimals();
         } else {
             require(msg.value > 0, "Deposit cannot be zero");
-
+            priceInUSD = getPriceInUSD(nullAsset);
+            decimals = 18;
             selectedPool.totalUnit += msg.value;
             price = msg.value;
         }
@@ -526,8 +564,13 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         uint256 coverUnits = baseValue * selectedPool.leverage;
 
+        uint256 scaledTotalUnit = selectedPool.totalUnit * (10 ** (18 - decimals));
+        uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
+
         selectedPool.coverUnits = coverUnits;
         selectedPool.baseValue = baseValue;
+        selectedPool.tvl = tvl;
+
 
         uint256 dailyPayout = (price * selectedPool.apy) / 100 / 365;
         CoverLib.Deposits memory userDeposit = CoverLib.Deposits({
