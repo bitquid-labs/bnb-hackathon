@@ -1,5 +1,5 @@
 import IconBitcoin from "assets/icons/IconBitcoin";
-import { BQBTCTokenContract, VaultContract } from "constants/contracts";
+import { BQBTCTokenContract, InsurancePoolContract, VaultContract } from "constants/contracts";
 import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
 import { useVault } from "hooks/contracts/useVault";
 import { bnToNumber, numberToBN } from "lib/number";
@@ -24,6 +24,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
 
   const vaultData = useVault(id);
 
+
   const assetType = useMemo(() => {
     if (vaultData) {
       return vaultData?.assetType
@@ -34,12 +35,27 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
     if (vaultData) return vaultData?.asset;
   }, [vaultData])
 
-  const depositIntoVault = async (amount: string, period: string) => {
+  const depositIntoVault = async (amount: string, period: string, value: string) => {
     const params = [
       Number(id), // vaultId
       parseUnits(amount, 18), // amount
       Number(period), // period
     ];
+
+    try {
+      await writeContractAsync({
+        abi: VaultContract.abi,
+        address:
+        VaultContract.addresses[
+          (chain as ChainType)?.chainNickName || "bscTest"
+        ],
+        functionName: 'vaultDeposit',
+        args: params,
+        value: parseUnits(value, 18),
+      })
+    } catch (error) {
+      console.log('error:', error)
+    }
   }
 
   const approveTokenTransfer = async (amount: number) => {
@@ -48,16 +64,17 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
         abi: erc20Abi,
         address: assetAddress as Address,
         functionName: "approve",
-        args: [VaultContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+        args: [InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
       })  
     } catch (error) {
       console.log('error: ', error)
     }
   } 
 
-  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(assetAddress, VaultContract.addresses[
+  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(assetAddress, InsurancePoolContract.addresses[
     (chain as ChainType)?.chainNickName || "bscTest"
   ], 18);
+  console.log('vault detail', vaultData, 'token approved:', approvedTokenAmount)
 
   const handleStake = async () => {
     if (!vaultData || !stakeAmount || !stakePeriod) return;
@@ -65,7 +82,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
     setIsLoading(true);
 
     if (assetType === ADT.Native) {
-      
+      await depositIntoVault("0", stakePeriod, stakeAmount)
     } else {
       if (approvedTokenAmount < parseFloat(stakeAmount)) {
         setLoadingMessage("Approving Tokens...")
@@ -76,28 +93,29 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
       }
 
       setLoadingMessage("Submitting...")
-      // await depositIntoVault(ADT.ERC20, assetAddress, "0");
+      await depositIntoVault(stakeAmount, stakePeriod, "0");
+      setIsLoading(false);
     }
-    const params = [
-      Number(id), // vaultId
-      parseUnits(stakeAmount, 18), // amount
-      Number(stakePeriod), // period
-    ];
+    // const params = [
+    //   Number(id), // vaultId
+    //   parseUnits(stakeAmount, 18), // amount
+    //   Number(stakePeriod), // period
+    // ];
 
-    try {
-      await writeContractAsync({
-        abi: VaultContract.abi,
-        address:
-          VaultContract.addresses[
-            (chain as ChainType)?.chainNickName || "bscTest"
-          ],
-        functionName: "vaultDeposit",
-        args: params,
-        value: parseUnits(stakeAmount, 18),
-      });
-    } catch (e) {
-      console.log("error:", e);
-    }
+    // try {
+    //   await writeContractAsync({
+    //     abi: VaultContract.abi,
+    //     address:
+    //       VaultContract.addresses[
+    //         (chain as ChainType)?.chainNickName || "bscTest"
+    //       ],
+    //     functionName: "vaultDeposit",
+    //     args: params,
+    //     value: parseUnits(stakeAmount, 18),
+    //   });
+    // } catch (e) {
+    //   console.log("error:", e);
+    // }
   };
 
   const handleMintBQBTC = async () => {
@@ -167,7 +185,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               onClick={() => handleStake()}
               className="h-45 flex items-center justify-center  px-35 rounded-9 border border-[#6B728099] bg-gradient-to-r from-[rgba(0,236,188,0.8)] to-[rgba(32,81,102,0.096)] cursor-pointer"
             >
-              STAKE NOW
+              {isLoading ? loadingMessage : 'Stake Now'}
             </div>
           </div>
           <div className="flex flex-col">
