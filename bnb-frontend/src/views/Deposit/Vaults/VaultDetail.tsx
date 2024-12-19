@@ -1,11 +1,13 @@
 import IconBitcoin from "assets/icons/IconBitcoin";
 import { BQBTCTokenContract, VaultContract } from "constants/contracts";
+import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
 import { useVault } from "hooks/contracts/useVault";
-import { bnToNumber } from "lib/number";
+import { bnToNumber, numberToBN } from "lib/number";
 import { ChainType } from "lib/wagmi";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "react-router";
-import { parseUnits } from "viem";
+import { ADT } from "types/common";
+import { Address, erc20Abi, parseUnits } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 
 type Props = {
@@ -17,10 +19,65 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
   const [stakePeriod, setStakePeriod] = useState("");
   const { address, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const [loadingMessage, setLoadingMessage] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const vaultData = useVault(id);
 
+  const assetType = useMemo(() => {
+    if (vaultData) {
+      return vaultData?.assetType
+    }
+  }, [vaultData])
+
+  const assetAddress = useMemo(() => {
+    if (vaultData) return vaultData?.asset;
+  }, [vaultData])
+
+  const depositIntoVault = async (amount: string, period: string) => {
+    const params = [
+      Number(id), // vaultId
+      parseUnits(amount, 18), // amount
+      Number(period), // period
+    ];
+  }
+
+  const approveTokenTransfer = async (amount: number) => {
+    try {
+      await writeContractAsync({
+        abi: erc20Abi,
+        address: assetAddress as Address,
+        functionName: "approve",
+        args: [VaultContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+      })  
+    } catch (error) {
+      console.log('error: ', error)
+    }
+  } 
+
+  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(assetAddress, VaultContract.addresses[
+    (chain as ChainType)?.chainNickName || "bscTest"
+  ], 18);
+
   const handleStake = async () => {
+    if (!vaultData || !stakeAmount || !stakePeriod) return;
+
+    setIsLoading(true);
+
+    if (assetType === ADT.Native) {
+      
+    } else {
+      if (approvedTokenAmount < parseFloat(stakeAmount)) {
+        setLoadingMessage("Approving Tokens...")
+        await approveTokenTransfer(parseFloat(stakeAmount))
+        setLoadingMessage("")
+        setIsLoading(false);
+        return
+      }
+
+      setLoadingMessage("Submitting...")
+      // await depositIntoVault(ADT.ERC20, assetAddress, "0");
+    }
     const params = [
       Number(id), // vaultId
       parseUnits(stakeAmount, 18), // amount

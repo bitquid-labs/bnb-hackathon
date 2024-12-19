@@ -513,6 +513,11 @@
                 "type": "string"
               },
               {
+                "internalType": "string",
+                "name": "rating",
+                "type": "string"
+              },
+              {
                 "internalType": "enum CoverLib.RiskType",
                 "name": "riskType",
                 "type": "uint8"
@@ -644,6 +649,11 @@
             "type": "string"
           },
           {
+            "internalType": "string",
+            "name": "rating",
+            "type": "string"
+          },
+          {
             "internalType": "enum CoverLib.RiskType",
             "name": "riskType",
             "type": "uint8"
@@ -748,6 +758,11 @@
               {
                 "internalType": "string",
                 "name": "poolName",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "rating",
                 "type": "string"
               },
               {

@@ -44,6 +44,7 @@ export interface ICover {
 export interface IPool {
   id?: bigint | undefined,
   poolName?: string | undefined,
+  rating?: string | undefined,
   riskType?: RiskType | undefined,
   apy?: bigint | undefined,
   minPeriod?: bigint | undefined,

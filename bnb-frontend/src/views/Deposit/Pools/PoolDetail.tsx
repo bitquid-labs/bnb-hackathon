@@ -44,7 +44,9 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
   const handleDepositPeriodChange = (newVal: number) => {
     setDepositPeriod(newVal);
   };
-  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(assetAddress, 18);
+  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(assetAddress, InsurancePoolContract.addresses[
+    (chain as ChainType)?.chainNickName || "bscTest"
+  ], 18);
 
   const approveTokenTransfer = async (amount: number) => {
     try {
@@ -59,6 +61,8 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
     }
   }
 
+  console.log('pool detail:', poolData, approvedTokenAmount)
+
   const depositIntoPool = async (assetType: ADT, __assetAddress: string, value: string) => {
     const params = [
       address,
@@ -69,6 +73,8 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
       assetType,
       __assetAddress,
     ]
+
+    console.log('params:', params)
 
     try {
       await writeContractAsync({
@@ -98,6 +104,8 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
       if (approvedTokenAmount < parseFloat(depositAmount)) {
         setLoadingMessage("Approve Tokens ...")
         await approveTokenTransfer(parseFloat(depositAmount))
+        setLoadingMessage("")
+        setIsLoading(false);
         return;
       }
       setLoadingMessage("Submitting ...")

@@ -5,14 +5,14 @@ import { useEffect } from "react";
 import { erc20Abi } from "viem";
 import { useAccount, useBlockNumber, useReadContract } from "wagmi";
 
-export const useERC20TokenApprovedTokenAmount = (indexToken: string | undefined, decimals: number, fastFetch: boolean = false) => {
+export const useERC20TokenApprovedTokenAmount = (indexToken: string | undefined, target: string | undefined, decimals: number, fastFetch: boolean = false) => {
   const {address, chain} = useAccount();
   const {data: blockNumber} = useBlockNumber({watch: true});
   const {data: allowance, refetch} = useReadContract({
     abi: erc20Abi,
     address: indexToken as `0x${string}`,
     functionName: 'allowance',
-    args: [address as `0x${string}`, InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`],
+    args: [address as `0x${string}`, target as `0x${string}`],
     query: {
       refetchInterval: fastFetch ? 200 : 5000
     }
