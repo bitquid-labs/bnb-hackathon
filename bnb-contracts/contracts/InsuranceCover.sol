@@ -17,6 +17,21 @@ interface IbqBTC {
     ) external returns (bool);
 }
 
+interface IVault {
+    struct Vault {
+        uint256 id;
+        string vaultName;
+        CoverLib.Pool[] pools;
+        uint256 minInv;
+        uint256 maxInv;
+        uint256 minPeriod;
+        CoverLib.AssetDepositType assetType;
+        address asset;
+    }
+
+    function getVault(uint256 vaultId) external view returns (Vault memory);
+}
+
 interface ILP {
     struct Deposits {
         address lp;
@@ -28,24 +43,6 @@ interface ILP {
         uint256 startDate;
         uint256 expiryDate;
         uint256 accruedPayout;
-    }
-
-    struct Pool {
-        uint256 id;
-        string poolName;
-        CoverLib.RiskType riskType;
-        uint256 apy;
-        uint256 minPeriod;
-        uint256 tvl;
-        uint256 baseValue;
-        uint256 coverTvl;
-        uint256 tcp;
-        bool isActive;
-        uint256 percentageSplitBalance;
-        uint256 investmentArmPercent;
-        uint8 leverage;
-        address asset;
-        AssetDepositType assetType;
     }
 
     enum Status {
@@ -114,9 +111,11 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
     uint public coverFeeBalance;
     ILP public lpContract;
     IbqBTC public bqBTC;
+    IVault public vaultContract;
     address public bqBTCAddress;
     address public lpAddress;
     address public governance;
+    address public vaultAddress;
     address[] public participants;
     mapping(address => uint256) public participation;
 
@@ -155,13 +154,18 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
 
     constructor(
         address _lpContract,
+        address _vaultContract,
         address _initialOwner,
-        address _bqBTC
+        address _bqBTC,
+        address _gov
     ) Ownable(_initialOwner) {
         lpContract = ILP(_lpContract);
+        vaultContract = IVault(_vaultContract);
+        vaultAddress = _vaultContract;
         lpAddress = _lpContract;
         bqBTC = IbqBTC(_bqBTC);
         bqBTCAddress = _bqBTC;
+        governance = _gov;
     }
 
     function createCover(
@@ -174,7 +178,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         uint256 _cost,
         uint256 _poolId
     ) public onlyOwner {
-        uint256 _maxAmount = _validateAndGetPoolInfo(
+        (uint256 _maxAmount, address _asset, CoverLib.AssetDepositType _adt) = _validateAndGetPoolInfo(
             _coverName,
             _poolId,
             _riskType,
@@ -195,7 +199,9 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             coverValues: 0,
             maxAmount: _maxAmount,
             poolId: _poolId,
-            CID: _cid
+            CID: _cid,
+            adt: _adt,
+            asset: _asset
         });
         covers[coverId] = cover;
         coverIds.push(coverId);
@@ -210,7 +216,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         uint256 poolId,
         CoverLib.RiskType riskType,
         uint256 capacity
-    ) internal view returns (uint256) {
+    ) internal view returns (uint256, address, CoverLib.AssetDepositType) {
         CoverLib.Cover[] memory coversInPool = lpContract.getPoolCovers(poolId);
         for (uint256 i = 0; i < coversInPool.length; i++) {
             if (
@@ -226,8 +232,8 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             revert WrongPool();
         }
 
-        uint256 maxAmount = (pool.tvl * ((capacity * 1e18) / 100)) / 1e18;
-        return (maxAmount);
+        uint256 maxAmount = (pool.totalUnit * capacity) / 100;
+        return (maxAmount, pool.asset, pool.assetType);
     }
 
     function updateCover(
@@ -248,7 +254,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
 
         CoverLib.Cover storage cover = covers[_coverId];
 
-        uint256 _maxAmount = (pool.tvl * ((_capacity * 1e18) / 100)) / 1e18;
+        uint256 _maxAmount = (pool.totalUnit * _capacity) / 100;
 
         if (cover.coverValues > _maxAmount) {
             revert WrongPool();
@@ -296,7 +302,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         uint256 _coverValue,
         uint256 _coverPeriod,
         uint256 _coverFee
-    ) public nonReentrant {
+    ) public payable nonReentrant {
         if (_coverFee <= 0) {
             revert InvalidAmount();
         }
@@ -308,6 +314,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         }
 
         CoverLib.Cover storage cover = covers[_coverId];
+
         if (_coverValue > cover.maxAmount) {
             revert InsufficientPoolBalance();
         }
@@ -318,7 +325,13 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             revert InsufficientPoolBalance();
         }
 
-        bqBTC.burn(msg.sender, _coverFee);
+        if (cover.adt == CoverLib.AssetDepositType.ERC20) {
+            bool success = IERC20(cover.asset).transferFrom(msg.sender, address(this), _coverFee);
+            require(success, "ERC20 transfer failed");
+        } else {
+            require(msg.value > 0, "Cover value cannot be zero");
+            coverFeeBalance += _coverFee;
+        }
 
         cover.coverValues = newCoverValues;
         cover.maxAmount = cover.capacityAmount - newCoverValues;
@@ -356,8 +369,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             participants.push(msg.sender);
         }
         participation[msg.sender] += 1;
-
-        coverFeeBalance += _coverFee;
 
         emit CoverPurchased(msg.sender, _coverValue, _coverFee, cover.riskType);
     }
@@ -457,9 +468,8 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
     function updateMaxAmount(uint256 _coverId) public onlyPool nonReentrant {
         CoverLib.Cover storage cover = covers[_coverId];
         CoverLib.Pool memory pool = lpContract.getPool(cover.poolId);
-        // require(tvl > 0, "TVL is zero");
         require(cover.capacity > 0, "Invalid cover capacity");
-        uint256 amount = (pool.tvl * ((cover.capacity * 1e18) / 100)) / 1e18;
+        uint256 amount = (pool.totalUnit * cover.capacity) / 100;
         covers[_coverId].capacityAmount = amount;
         covers[_coverId].maxAmount = (covers[_coverId].capacityAmount -
             covers[_coverId].coverValues);
@@ -486,23 +496,37 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             currentTime = depositInfo.expiryDate;
         }
 
-        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;   Uncomment
-
-        uint256 claimableDays = (currentTime - lastClaimTime) / 5 minutes;
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
         if (claimableDays <= 0) {
             revert NoClaimableReward();
         }
         uint256 claimableAmount = depositInfo.dailyPayout * claimableDays;
 
-        if (claimableAmount > coverFeeBalance) {
-            revert InsufficientPoolBalance();
+        uint256 assetCoverFeeBalance;
+        CoverLib.Pool memory selectedPool = lpContract.getPool(_poolId);
+
+        if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
+            uint256 balance = IERC20(selectedPool.asset).balanceOf(address(this));
+            assetCoverFeeBalance = balance;
+        } else {
+            assetCoverFeeBalance = coverFeeBalance;
         }
+        
+        require(claimableAmount <= assetCoverFeeBalance, "Insufficient cover balance");
         NextLpClaimTime[msg.sender][_poolId] = block.timestamp;
 
-        bqBTC.bqMint(msg.sender, claimableAmount);
-
-        coverFeeBalance -= claimableAmount;
+        if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
+            bool success = IERC20(selectedPool.asset).transfer(
+                msg.sender,
+                claimableAmount
+            );
+            require(success, "ERC20 transfer failed");
+        } else {
+            (bool success, ) = msg.sender.call{value: claimableAmount}("");
+            require(success, "Native asset transfer failed");
+            coverFeeBalance -= claimableAmount;
+        }
 
         emit PayoutClaimed(msg.sender, _poolId, claimableAmount);
     }
@@ -532,10 +556,30 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             totalClaim += claimableAmount;
         }
 
-        LastVaultClaimTime[msg.sender][vaultId] = block.timestamp;
-        bqBTC.bqMint(msg.sender, totalClaim);
+        uint256 assetCoverFeeBalance;
+        IVault.Vault memory selectedVault = vaultContract.getVault(vaultId);
 
-        coverFeeBalance -= totalClaim;
+        if (selectedVault.assetType == CoverLib.AssetDepositType.ERC20) {
+            uint256 balance = IERC20(selectedVault.asset).balanceOf(address(this));
+            assetCoverFeeBalance = balance;
+        } else {
+            assetCoverFeeBalance = coverFeeBalance;
+        }
+
+        require(totalClaim <= assetCoverFeeBalance, "Insufficient cover balance");
+
+        LastVaultClaimTime[msg.sender][vaultId] = block.timestamp;
+        if (selectedVault.assetType == CoverLib.AssetDepositType.ERC20) {
+            bool success = IERC20(selectedVault.asset).transfer(
+                msg.sender,
+                totalClaim
+            );
+            require(success, "ERC20 transfer failed");
+        } else {
+            (bool success, ) = msg.sender.call{value: totalClaim}("");
+            require(success, "Native asset transfer failed");
+            coverFeeBalance -= totalClaim;
+        }
 
         emit PayoutClaimed(msg.sender, vaultId, totalClaim);
     }

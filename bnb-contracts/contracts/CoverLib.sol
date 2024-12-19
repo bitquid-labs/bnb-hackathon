@@ -17,13 +17,15 @@ library CoverLib {
         string coverName;
         RiskType riskType;
         string chains;
-        uint256 capacity;
+        uint256 capacity; // Capacity/percentage assigned to the cover from the pool
         uint256 cost;
-        uint256 capacityAmount;
+        uint256 capacityAmount; // Total capacity amount based on the balance of the pool
         uint256 coverValues;
-        uint256 maxAmount;
+        uint256 maxAmount; // Max unit of asset available
         uint256 poolId;
         string CID;
+        CoverLib.AssetDepositType adt;
+        address asset; // Asset accept for cover, should be same with the pool
     }
 
     struct GenericCoverInfo {
@@ -62,12 +64,14 @@ library CoverLib {
     struct Pool {
         uint256 id;
         string poolName;
+        string rating;
         CoverLib.RiskType riskType;
         uint256 apy;
         uint256 minPeriod;
+        uint256 totalUnit;
         uint256 tvl;
         uint256 baseValue;
-        uint256 coverTvl;
+        uint256 coverUnits;
         uint256 tcp;
         bool isActive;
         uint256 percentageSplitBalance;
@@ -81,6 +85,7 @@ library CoverLib {
         uint256 poolId;
         CoverLib.RiskType riskType;
         string poolName;
+        string rating;
         uint256 apy;
         uint256 minPeriod;
         uint8 leverage;
@@ -124,7 +129,7 @@ library CoverLib {
         uint256 depositAmount;
         uint256 apy;
         uint256 minPeriod;
-        uint256 tvl;
+        uint256 totalUnit;
         uint256 tcp; // Total claim paid to users
         bool isActive; // Pool status to handle soft deletion
         uint256 accruedPayout;
