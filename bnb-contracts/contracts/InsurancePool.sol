@@ -24,28 +24,10 @@ interface ICover {
 }
 
 interface IVault {
-    struct Pool {
-        uint256 id;
-        string poolName;
-        CoverLib.RiskType riskType;
-        uint256 apy;
-        uint256 minPeriod;
-        uint256 tvl;
-        uint256 baseValue;
-        uint256 coverUnits;
-        uint256 tcp;
-        bool isActive;
-        uint256 percentageSplitBalance;
-        uint256 investmentArmPercent;
-        uint8 leverage;
-        address asset;
-        CoverLib.AssetDepositType assetType;
-    }
-
     struct Vault {
         uint256 id;
         string vaultName;
-        Pool[] pools;
+        CoverLib.Pool[] pools;
         uint256 minInv;
         uint256 maxInv;
         uint256 minPeriod;
@@ -544,7 +526,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
             require(depositParam.amount > 0, "Amount must be greater than 0");
-            IERC20(depositParam.asset).transferFrom(msg.sender, address(this), depositParam.amount);
+            IERC20(depositParam.asset).transferFrom(depositParam.depositor, address(this), depositParam.amount);
             selectedPool.totalUnit += depositParam.amount;
             price = depositParam.amount;
 

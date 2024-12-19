@@ -45,26 +45,6 @@ interface ILP {
         uint256 accruedPayout;
     }
 
-    struct Pool {
-        uint256 id;
-        string poolName;
-        string rating;
-        CoverLib.RiskType riskType;
-        uint256 apy;
-        uint256 minPeriod;
-        uint256 totalUnit;
-        uint256 tvl;
-        uint256 baseValue;
-        uint256 coverUnits;
-        uint256 tcp;
-        bool isActive;
-        uint256 percentageSplitBalance;
-        uint256 investmentArmPercent;
-        uint8 leverage;
-        address asset;
-        CoverLib.AssetDepositType assetType;
-    }
-
     enum Status {
         Active,
         Expired
@@ -252,7 +232,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             revert WrongPool();
         }
 
-        uint256 maxAmount = (pool.tvl * capacity) / 100;
+        uint256 maxAmount = (pool.totalUnit * capacity) / 100;
         return (maxAmount, pool.asset, pool.assetType);
     }
 
@@ -274,7 +254,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
 
         CoverLib.Cover storage cover = covers[_coverId];
 
-        uint256 _maxAmount = (pool.tvl * ((_capacity * 1e18) / 100)) / 1e18;
+        uint256 _maxAmount = (pool.totalUnit * _capacity) / 100;
 
         if (cover.coverValues > _maxAmount) {
             revert WrongPool();
