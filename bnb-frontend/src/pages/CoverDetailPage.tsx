@@ -39,6 +39,8 @@ const CoverDetailPage: React.FC = () => {
     });
   }, [availableCovers, id]);
 
+  console.log('coverDetail:', coverDetail)
+
   const coverADT = useMemo(() => {
     if (!coverDetail) return undefined;
     return coverDetail.adt;

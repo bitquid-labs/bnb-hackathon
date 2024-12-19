@@ -1,58 +1,69 @@
 import IconBitcoin from "assets/icons/IconBitcoin";
 import { BQBTCTokenContract, VaultContract } from "constants/contracts";
+import { useVault } from "hooks/contracts/useVault";
+import { bnToNumber } from "lib/number";
 import { ChainType } from "lib/wagmi";
 import React, { useState } from "react";
 import { useParams } from "react-router";
 import { parseUnits } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 
-const StrategyDetail: React.FC = () => {
-  const {id} = useParams();
-  const [stakeAmount, setStakeAmount] = useState('');
-  const {address, chain} = useAccount();
-  const {writeContractAsync} = useWriteContract();
+type Props = {
+  id: number;
+};
+
+const VaultDetail: React.FC<Props> = ({ id }) => {
+  const [stakeAmount, setStakeAmount] = useState("");
+  const [stakePeriod, setStakePeriod] = useState("");
+  const { address, chain } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+
+  const vaultData = useVault(id);
 
   const handleStake = async () => {
     const params = [
       Number(id), // vaultId
       parseUnits(stakeAmount, 18), // amount
-      250, // period
+      Number(stakePeriod), // period
     ];
 
     try {
       await writeContractAsync({
         abi: VaultContract.abi,
-        address: VaultContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
-        functionName: 'vaultDeposit',
+        address:
+          VaultContract.addresses[
+            (chain as ChainType)?.chainNickName || "bscTest"
+          ],
+        functionName: "vaultDeposit",
         args: params,
-        value: parseUnits(stakeAmount, 18)
-      })
+        value: parseUnits(stakeAmount, 18),
+      });
     } catch (e) {
-      console.log("error:", e)
+      console.log("error:", e);
     }
-  }
+  };
 
   const handleMintBQBTC = async () => {
-    const params = [`${address}`, parseUnits('100', 18)]
+    const params = [`${address}`, parseUnits("100", 18)];
     try {
       await writeContractAsync({
         abi: BQBTCTokenContract.abi,
         address:
           BQBTCTokenContract.addresses[(chain as ChainType)?.chainNickName],
-        functionName: 'mint',
+        functionName: "mint",
         args: params,
       });
-      console.log('succeed minting')
+      console.log("succeed minting");
     } catch (err) {
-      let errorMsg = '';
+      let errorMsg = "";
       if (err instanceof Error) {
-        if (err.message.includes('User denied transaction signature')) {
-          errorMsg = 'User denied transaction signature';
+        if (err.message.includes("User denied transaction signature")) {
+          errorMsg = "User denied transaction signature";
         }
       }
-      console.log('error minting')
+      console.log("error minting");
     }
-  }
+  };
 
   // const handleChangeStakeAmount = (value: string) => {
 
@@ -62,17 +73,19 @@ const StrategyDetail: React.FC = () => {
       {/* <button onClick={handleMintBQBTC}>Mint BQBTC</button> */}
       <div
         className="w-full rounded-40 overflow-hidden bg-gradient bg-gradient-to-b from-[#00ECBC33] to-[#83ACF000]"
-        style={{
-          // background: `
-          //     linear-gradient(0deg, rgba(0, 0, 0, 0.67), rgba(0, 0, 0, 0.67)),
-          //     radial-gradient(100% 100% at 50% 0%, rgba(0, 236, 188, 0.2) 0.27%, rgba(131, 172, 240, 0) 100%)
-          //   `,
-        }}
+        style={
+          {
+            // background: `
+            //     linear-gradient(0deg, rgba(0, 0, 0, 0.67), rgba(0, 0, 0, 0.67)),
+            //     radial-gradient(100% 100% at 50% 0%, rgba(0, 236, 188, 0.2) 0.27%, rgba(131, 172, 240, 0) 100%)
+            //   `,
+          }
+        }
       >
         <div className="flex px-95 py-52 items-center justify-between">
           <div className="flex flex-col items-start justify-center">
             <div className="text-16 font-[700] text-[#00ECBC]">
-              Strategy Name
+              {vaultData?.vaultName}
             </div>
             <div className="relative z-[10]">
               <span className="font-[700] text-48">5-7%</span>
@@ -87,14 +100,29 @@ const StrategyDetail: React.FC = () => {
                 <input
                   className="max-w-200 outline-none bg-transparent text-20 font-[700]"
                   value={stakeAmount}
-                  onChange={(e) => {setStakeAmount(e.target.value)}}
+                  onChange={(e) => {
+                    setStakeAmount(e.target.value);
+                  }}
                 />
               </div>
             </div>
-            <div 
+            <div
               onClick={() => handleStake()}
-            className="h-45 flex items-center justify-center  px-35 rounded-9 border border-[#6B728099] bg-gradient-to-r from-[rgba(0,236,188,0.8)] to-[rgba(32,81,102,0.096)] cursor-pointer">
+              className="h-45 flex items-center justify-center  px-35 rounded-9 border border-[#6B728099] bg-gradient-to-r from-[rgba(0,236,188,0.8)] to-[rgba(32,81,102,0.096)] cursor-pointer"
+            >
               STAKE NOW
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-15 font-[600]">Enter Period:</span>
+            <div className="flex items-center gap-4 bg-[#07040D] py-8 px-12 rounded-8 overflow-hidden h-45">
+              <input
+                className="max-w-200 outline-none bg-transparent text-20 font-[700]"
+                value={stakePeriod}
+                onChange={(e) => {
+                  setStakePeriod(e.target.value);
+                }}
+              />
             </div>
           </div>
         </div>
@@ -106,7 +134,7 @@ const StrategyDetail: React.FC = () => {
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  50
+                  {Number(vaultData?.minInv)}
                 </span>
                 <span className="text-[#FFF] text-12 ml-4">USD</span>
               </div>
@@ -117,7 +145,7 @@ const StrategyDetail: React.FC = () => {
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  45
+                {Number(vaultData?.minPeriod)}
                 </span>
                 <span className="text-[#FFF] text-12 ml-4">Days</span>
               </div>
@@ -141,7 +169,7 @@ const StrategyDetail: React.FC = () => {
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
                   AAA, BB, C
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">{''}</span>
+                <span className="text-[#FFF] text-12 ml-4">{""}</span>
               </div>
             </div>
           </div>
@@ -154,4 +182,4 @@ const StrategyDetail: React.FC = () => {
   );
 };
 
-export default StrategyDetail;
+export default VaultDetail;

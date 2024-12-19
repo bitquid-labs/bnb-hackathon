@@ -15,7 +15,6 @@ const DepositPage = lazy(() => import ('../pages/DepositPage'))
 
 enum AppRoutes {
   Dashboard = '/dashboard',
-  // StrategyManger = '/strategymanager',
   MyAssetsPage = '/myassets',
   CoversPage = '/covers',
   CoverDetailPage = '/coverdetail/:id',
@@ -26,7 +25,6 @@ enum AppRoutes {
 
 export const appRoutes = [
   {key: 'Dashboard', path: AppRoutes.Dashboard, element: DashboardPage},
-  // {key: 'StrategyManger', path: AppRoutes.StrategyManger, element: StrategyManagerPage},
   {key: 'MyAssetsPage', path: AppRoutes.MyAssetsPage, element: MyAssetsPage},
   {key: 'covers', path: AppRoutes.CoversPage, element: CoversPage},
   {key: 'coverdetail', path: AppRoutes.CoverDetailPage, element: CoverDetailPage},

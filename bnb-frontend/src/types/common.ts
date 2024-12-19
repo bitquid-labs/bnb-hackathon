@@ -12,6 +12,11 @@ export const enum RiskType {
   Protocol,
 }
 
+export const enum DepositType {
+  Vault,
+  Pool,
+}
+
 export const enum ADT {
   Native,
   ERC20

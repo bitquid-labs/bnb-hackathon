@@ -7,15 +7,14 @@ import networkBOBIcon from "assets/images/network_bob.png";
 import networkBSCIcon from "assets/images/network_bsc.png";
 import IconArrow from "assets/icons/IconArrow";
 
-
 const PoolDeposit: React.FC = () => {
   return (
-    <div className="w-full px-45 py-37 border border-[#6B7280] rounded-20 bg-[#0b0c0d]">
+    <div className="w-full">
+      <div className="flex items-center">
+        <img src={poolDetailIcon} className="w-25 h-25" alt="poo_detail" />
+        <h2 className="text-30 font-600 text-white pl-10">Pool #2</h2>
+      </div>
       <div className="flex justify-between items-center">
-        <div className="flex items-center">
-          <img src={poolDetailIcon} className="w-25 h-25" alt="poo_detail" />
-          <h2 className="text-30 font-600 text-white pl-10">Pool #2</h2>
-        </div>
         <div className="flex items-center text-white">
           <div className="border border-[#6B7280] rounded-10 bg-[#FFFFFF0D] py-12 px-20">
             APY: 3~5%
@@ -121,8 +120,8 @@ const PoolDeposit: React.FC = () => {
                     className="pl-10 placeholder:text-light/50 min-w-0 flex-auto border-none bg-transparent p-0 px-3 focus:border-none focus:outline-none focus:outline-offset-0 focus:ring-0"
                     readOnly
                     value={50}
-                    onChange={(e) =>
-                    {}
+                    onChange={
+                      (e) => {}
                       // handleCoverPeriodChange(
                       //   Math.max(
                       //     MIN_COVER_PERIOD,
@@ -162,7 +161,9 @@ const PoolDeposit: React.FC = () => {
               <div className="flex w-full items-start justify-between">
                 <div className="flex flex-col h-full items-center justify-between gap-5">
                   <div className="text-15 font-[600]">Selected Strategy</div>
-                  <div className="bg-[#00ECBC1A] px-40 py-5 rounded-10">Vesting</div>
+                  <div className="bg-[#00ECBC1A] px-40 py-5 rounded-10">
+                    Vesting
+                  </div>
                 </div>
                 <div className="flex flex-col h-full items-center justify-between gap-5">
                   <span className="text-15 font-[600]">Per week</span>

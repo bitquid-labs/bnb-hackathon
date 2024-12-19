@@ -7,19 +7,7 @@ import { ICover, RiskType } from 'types/common';
 import { bnToNumber } from 'lib/number';
 import { ChainType } from 'lib/wagmi';
 
-type CoverType = [
-  bigint,
-  string,
-  RiskType,
-  string,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  string
-];
+import { IPool } from 'types/common';
 
 export const usePoolInfo = (poolId: number) => {
   const { chain } = useAccount();
@@ -27,7 +15,7 @@ export const usePoolInfo = (poolId: number) => {
   const { data: poolInfo, refetch } = useReadContract({
     abi: InsurancePoolContract.abi,
     address: InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName],
-    functionName: 'pools',
+    functionName: 'getPool',
     args: [poolId],
   });
 
@@ -35,27 +23,13 @@ export const usePoolInfo = (poolId: number) => {
     refetch();
   }, [blockNumber]);
 
-  console.log('pool info:', poolInfo)
-
   if (!poolInfo) return undefined;
 
   try {
-    const result = poolInfo as CoverType;
+    const result = poolInfo as IPool;
     if (!result) return undefined;
-
-    return {
-      id: Number(result[0]),
-      coverName: result[1],
-      riskType: result[2],
-      chains: result[3],
-      capacity: Number(result[4]),
-      cost: Number(result[5]),
-      capacityAmount: bnToNumber(result[6]),
-      coverValues: bnToNumber(result[7]),
-      maxAmount: bnToNumber(result[8]),
-      poolId: Number(result[9]),
-      CID: result[10],
-    };
+    
+    return result;
   } catch (error) {
     return undefined;
   }

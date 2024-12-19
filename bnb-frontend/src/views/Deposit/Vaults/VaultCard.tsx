@@ -7,21 +7,17 @@ type VaultCardType = {
   minInvestment: number,
   tenurePeriod: number,
   tvl: number,
+  handleStake: () => void,
 }
 
-const StrategyCard: React.FC<VaultCardType> = ({
+const VaultCard: React.FC<VaultCardType> = ({
   id,
   name,
   minInvestment,
   tenurePeriod,
   tvl,
+  handleStake,
 }) => {
-  const navigate = useNavigate();
-
-  const handleVaultDetails = () => {
-    navigate(`/deposit/${id}`)
-  }
-
   const APY = '5-7'
   return (
     <div className="rounded-30 p-27 relative border border-[#00ECBC] overflow-hidden bg-gradient-to-b from-[#05050500] to-[#00ECBC4D] mx-15">
@@ -57,11 +53,11 @@ const StrategyCard: React.FC<VaultCardType> = ({
       </div>
       <div className="w-full relative z-[10]">
         <button 
-          onClick={handleVaultDetails}
+          onClick={handleStake}
         className="w-full py-8 bg-[#000000CC] border border-[#FFFFFF] rounded-9">STAKE NOW</button>
       </div>
     </div>
   )
 }
 
-export default StrategyCard;
+export default VaultCard;
