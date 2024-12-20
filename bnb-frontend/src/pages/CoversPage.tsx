@@ -10,6 +10,8 @@ const CoversPage: React.FC = () => {
   const { address } = useAccount();
   const availableCovers = useAllAvailableCovers();
 
+  console.log('available:', availableCovers)
+
   const userCovers = useAllUserCovers(address as string);
   const userCoverIds = useMemo(() => userCovers.map((cover) => cover.coverId), [userCovers]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");

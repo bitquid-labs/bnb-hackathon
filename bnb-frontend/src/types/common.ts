@@ -73,18 +73,15 @@ export interface IVault {
 }
 
 export interface IUserCover {
-  chainId?: bigint | undefined;
-  claimPaid?: bigint | undefined;
-  // coverFee?: bigint | undefined,
+  user?: string | undefined;
   coverId?: bigint | undefined;
+  riskType?: number | undefined;
   coverName?: string | undefined;
-  coverPeriod?: bigint | undefined;
   coverValue?: bigint | undefined;
+  claimPaid?: bigint | undefined;
+  coverPeriod?: bigint | undefined;
   endDay?: bigint | undefined;
   isActive?: boolean | undefined;
-  startDay?: bigint | undefined;
-  user?: string | undefined;
-  riskType?: number | undefined;
 }
 
 export const riskTypeNames = [

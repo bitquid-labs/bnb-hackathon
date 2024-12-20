@@ -8,7 +8,7 @@ import Buy from "views/CoverDetail/Buy";
 import Preview from "views/CoverDetail/Preview";
 import { calculateCoverFee } from "lib/utils";
 import { useAllAvailableCovers } from "hooks/contracts/useAllAvailableCovers";
-import { parseUnits } from "viem";
+import { Address, erc20Abi, parseUnits } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 import { ICoverContract } from "constants/contracts";
 import { Cover } from "views/Covers/Cover";
@@ -16,6 +16,7 @@ import IconArrowLeft from "assets/icons/IconArrowLeft";
 import MoreCovers from "views/CoverDetail/MoreCovers";
 import SocialLinks from "components/SocialLInks";
 import { ChainType } from "lib/wagmi";
+import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
 
 const CoverDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -25,11 +26,14 @@ const CoverDetailPage: React.FC = () => {
   const [coverDueTo, setCoverDueTo] = useState<CoverDueTo>(
     CoverDueTo.NoneSelected
   );
+  const [loadingMessage, setLoadingMessage] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const availableCovers = useAllAvailableCovers();
   const { writeContract } = useWriteContract();
   const maxCoverAmount = 0;
   const error = "";
   const navigate = useNavigate();
+  const { writeContractAsync } = useWriteContract();
 
   const coverDetail = useMemo(() => {
     if (availableCovers.length === 0) return undefined;
@@ -45,6 +49,52 @@ const CoverDetailPage: React.FC = () => {
     if (!coverDetail) return undefined;
     return coverDetail.adt;
   }, [coverDetail]);
+
+  const coverAssetAddress = useMemo(() => {
+    if (coverDetail) return coverDetail.asset;
+  }, [coverDetail])
+
+  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(coverAssetAddress, ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'], 18);
+
+  const approveTokenTransfer = async (amount: number) => {
+    try {
+      await writeContractAsync({
+        abi: erc20Abi,
+        address: coverAssetAddress as Address,
+        functionName: "approve",
+        args: [ICoverContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+      }) 
+    } catch (error) {
+      console.log('error:', error)
+    }
+  }
+
+  const purchaseCover = async (coverId: number, amount: string, period: number, value: string, fee: number) => {
+    if (!coverDetail) return;
+    const params = [
+      coverId, // coverId
+      numberToBN(amount), // coverAmount
+      period, // coverPeriod
+      parseUnits(fee.toString(), 18),  //  coverFee
+    ];
+
+    console.log('params:', params)
+
+    try {
+      await writeContractAsync({
+        abi: ICoverContract.abi,
+        address:
+        ICoverContract.addresses[
+            (chain as ChainType)?.chainNickName || "bscTest"
+          ],
+        functionName: "purchaseCover",
+        args: params,
+        value: parseUnits(value, 18),
+      });
+    } catch (error) {
+      console.log('error:', error)
+    }
+  }
 
   const coverFee = useMemo(() => {
     return calculateCoverFee(
@@ -64,27 +114,42 @@ const CoverDetailPage: React.FC = () => {
 
   const handleBuyCover = async () => {
     if (!coverDetail) return;
+    
+    setIsLoading(true);
     if (coverADT === ADT.Native) {
-      const params = [
-        Number(id), // coverId
-        numberToBN(coverAmount), // coverAmount
-        coverPeriod, // coverPeriod
-        parseUnits(coverFee.toString(), 18),  //  coverFee
-      ];
+      setLoadingMessage("Submitting ...")
+      await purchaseCover(Number(id), coverAmount,  coverPeriod, coverFee.toString(), coverFee);
+      // const params = [
+      //   Number(id), // coverId
+      //   numberToBN(coverAmount), // coverAmount
+      //   coverPeriod, // coverPeriod
+      //   parseUnits(coverFee.toString(), 18),  //  coverFee
+      // ];
 
-      try {
-        writeContract({
-          abi: ICoverContract.abi,
-          address: ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
-          functionName: "purchaseCover",
-          args: params,
-          value: parseUnits(coverFee.toString(), 18),
-        });
-      } catch (err) {
-        console.log(err);
-      }
+      // try {
+      //   writeContract({
+      //     abi: ICoverContract.abi,
+      //     address: ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
+      //     functionName: "purchaseCover",
+      //     args: params,
+      //     value: parseUnits(coverFee.toString(), 18),
+      //   });
+      // } catch (err) {
+      //   console.log(err);
+      // }
     } else {
+      if (approvedTokenAmount < parseFloat(coverAmount)) {
+        setLoadingMessage("Approve Tokens ...")
+        await approveTokenTransfer(parseFloat(coverAmount));
+        setIsLoading(false);
+        return;
+      }
+
+      await purchaseCover(Number(id), coverAmount,  coverPeriod, coverFee.toString(), coverFee);
     }
+
+    setIsLoading(true);
+    setLoadingMessage("");
   };
 
   return (
