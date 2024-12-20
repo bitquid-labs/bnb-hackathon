@@ -108,6 +108,7 @@ interface IGov {
     ) external returns (Proposal memory);
     function updateProposalStatusToClaimed(uint256 proposalId) external;
     function setUserVaultDepositToZero(uint256 vaultId, address user) external;
+    function setUserVaultDepositToWithdrawn(uint256 vaultId, address user) external;
 }
 
 contract InsurancePool is ReentrancyGuard, Ownable {
@@ -365,11 +366,13 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         return result;
     }
 
-    function poolWithdraw(uint256 _poolId) public nonReentrant {
-        CoverLib.Pool storage selectedPool = pools[_poolId];
+    function initalPoolWithdrawal(uint256 _poolId) public nonReentrant {
+        CoverLib.Pool memory selectedPool = pools[_poolId];
         CoverLib.Deposits storage userDeposit = deposits[msg.sender][_poolId][
             CoverLib.DepositType.Normal
         ];
+
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
 
         require(userDeposit.amount > 0, "No deposit found for this address");
         require(
@@ -377,8 +380,27 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             "Deposit is not active"
         );
         require(
-            block.timestamp >= userDeposit.expiryDate,
+            block.timestamp >= expiry,
             "Deposit period has not ended"
+        );
+
+        userDeposit.status = CoverLib.Status.Due;
+        userDeposit.withdrawalInitiated = block.timestamp;
+    }
+
+    function finalPoollWithdrawal(uint256 _poolId) public nonReentrant {
+        CoverLib.Pool storage selectedPool = pools[_poolId];
+        CoverLib.Deposits storage userDeposit = deposits[msg.sender][_poolId][
+            CoverLib.DepositType.Normal
+        ];
+
+        uint256 withdrawalPeriod = userDeposit.withdrawalInitiated + 1 days;
+
+        require(block.timestamp < withdrawalPeriod, "Withdrawals are only allowed after 24 hours have passed since initiation.");
+        require(userDeposit.amount > 0, "No deposit found for this address");
+        require(
+            userDeposit.status == CoverLib.Status.Due,
+            "Deposit is not Due"
         );
 
         uint256 decimals;
@@ -423,13 +445,14 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         emit Withdraw(msg.sender, userDeposit.amount, selectedPool.poolName);
     }
 
-    function withdrawUpdate(
+    function initialVaultWithdrawUpdate(
         address depositor,
         uint256 _poolId,
         CoverLib.DepositType pdt
     ) public nonReentrant onlyVault {
-        CoverLib.Pool storage selectedPool = pools[_poolId];
+        CoverLib.Pool memory selectedPool = pools[_poolId];
         CoverLib.Deposits storage userDeposit = deposits[depositor][_poolId][pdt];
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
 
         require(userDeposit.amount > 0, "No deposit found for this address");
         require(
@@ -437,15 +460,38 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             "Deposit is not active"
         );
         require(
-            block.timestamp >= userDeposit.expiryDate,
+            block.timestamp >= expiry,
             "Deposit period has not ended"
         );
+
+        userDeposit.withdrawalInitiated = block.timestamp;
+        userDeposit.status = CoverLib.Status.Due;
+    }
+
+    function finalVaultWithdrawUpdate(
+        address depositor,
+        uint256 _poolId,
+        CoverLib.DepositType pdt
+    ) public nonReentrant onlyVault {
+        CoverLib.Pool storage selectedPool = pools[_poolId];
+        CoverLib.Deposits storage userDeposit = deposits[depositor][_poolId][pdt];
+
+        uint256 withdrawalPeriod = userDeposit.withdrawalInitiated + 1 days;
+
+        require(block.timestamp < withdrawalPeriod, "Withdrawals are only allowed after 24 hours have passed since initiation.");
+        require(userDeposit.amount > 0, "No deposit found for this address");
+        require(
+            userDeposit.status == CoverLib.Status.Due,
+            "Deposit is not Due"
+        );
+
+        userDeposit.status = CoverLib.Status.Withdrawn;
 
         uint256 decimals;
         uint256 priceInUSD;
 
-        userDeposit.status = CoverLib.Status.Due;
         selectedPool.totalUnit -= userDeposit.amount;
+        
         uint256 baseValue = selectedPool.totalUnit -
             ((selectedPool.investmentArmPercent * selectedPool.totalUnit) / 100);
 
@@ -477,6 +523,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         IVault.VaultDeposit memory userVaultDeposit = IVaultContract
             .getUserVaultDeposit(_vaultId, msg.sender);
         require(userVaultDeposit.amount > 0, "No active withdrawal for user");
+        require(userVaultDeposit.status == CoverLib.Status.Withdrawn, "Deposit is not ready for withdrawals");
         IVault.Vault memory vault = IVaultContract.getVault(_vaultId);
         CoverLib.AssetDepositType adt = vault.assetType;
         if (adt == CoverLib.AssetDepositType.ERC20) {
@@ -504,10 +551,6 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         require(
             selectedPool.assetType == depositParam.adt,
             "Pool does not accept this deposit type"
-        );
-        require(
-            depositParam.period >= selectedPool.minPeriod,
-            "Period too short"
         );
         require(
             selectedPool.asset == depositParam.asset,
@@ -561,9 +604,9 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             poolId: depositParam.poolId,
             dailyPayout: dailyPayout,
             status: CoverLib.Status.Active,
-            daysLeft: depositParam.period,
+            daysLeft: selectedPool.minPeriod,
             startDate: block.timestamp,
-            expiryDate: block.timestamp + (depositParam.period * 1 days),
+            withdrawalInitiated: 0,
             accruedPayout: 0,
             pdt: depositParam.pdt
         });
@@ -663,6 +706,8 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         CoverLib.Deposits memory userDeposit = deposits[_user][_poolId][
             CoverLib.DepositType.Normal
         ];
+        CoverLib.Pool memory selectedPool = pools[_poolId];
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
         uint256 claimTime = ICoverContract.getLastClaimTime(_user, _poolId);
         uint lastClaimTime;
         if (claimTime == 0) {
@@ -671,15 +716,18 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             lastClaimTime = claimTime;
         }
         uint256 currentTime = block.timestamp;
-        if (currentTime > userDeposit.expiryDate) {
-            currentTime = userDeposit.expiryDate;
+        if (userDeposit.status != CoverLib.Status.Active) {
+            currentTime = userDeposit.withdrawalInitiated;
         }
+        // if (currentTime > expiry) {
+        //     currentTime = expiry;
+        // }
         uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
         userDeposit.accruedPayout = userDeposit.dailyPayout * claimableDays;
-        if (userDeposit.expiryDate <= block.timestamp) {
+        if (expiry <= block.timestamp) {
             userDeposit.daysLeft = 0;
         } else {
-            uint256 timeLeft = userDeposit.expiryDate - block.timestamp;
+            uint256 timeLeft = expiry - block.timestamp;
             userDeposit.daysLeft = (timeLeft + 1 days - 1) / 1 days;
         }
         return userDeposit;
@@ -692,6 +740,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
     ) public view returns (CoverLib.GenericDepositDetails memory) {
         CoverLib.Deposits memory userDeposit = deposits[_user][_poolId][pdt];
         CoverLib.Pool memory pool = pools[_poolId];
+        uint256 expiry = userDeposit.startDate + (pool.minPeriod * 1 days);
         uint256 claimTime = ICoverContract.getLastClaimTime(_user, _poolId);
         uint lastClaimTime;
         if (claimTime == 0) {
@@ -700,15 +749,18 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             lastClaimTime = claimTime;
         }
         uint256 currentTime = block.timestamp;
-        if (currentTime > userDeposit.expiryDate) {
-            currentTime = userDeposit.expiryDate;
+        if (userDeposit.status != CoverLib.Status.Active) {
+            currentTime = userDeposit.withdrawalInitiated;
         }
+        // if (currentTime > expiry) {
+        //     currentTime = expiry;
+        // }
         uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
         userDeposit.accruedPayout = userDeposit.dailyPayout * claimableDays;
-        if (userDeposit.expiryDate <= block.timestamp) {
+        if (expiry <= block.timestamp) {
             userDeposit.daysLeft = 0;
         } else {
-            uint256 timeLeft = userDeposit.expiryDate - block.timestamp;
+            uint256 timeLeft = expiry - block.timestamp;
             userDeposit.daysLeft = (timeLeft + 1 days - 1) / 1 days;
         }
 
@@ -720,7 +772,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             status: userDeposit.status,
             daysLeft: userDeposit.daysLeft,
             startDate: userDeposit.startDate,
-            expiryDate: userDeposit.expiryDate,
+            withdrawalInitiated: userDeposit.withdrawalInitiated,
             accruedPayout: userDeposit.accruedPayout,
             pdt: userDeposit.pdt,
             adt: pool.assetType,

@@ -7,23 +7,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./CoverLib.sol";
 
 interface ILP {
-    struct Deposits {
-        address lp;
-        uint256 amount;
-        uint256 poolId;
-        uint256 dailyPayout;
-        Status status;
-        uint256 daysLeft;
-        uint256 startDate;
-        uint256 expiryDate;
-        uint256 accruedPayout;
-    }
-
-    enum Status {
-        Active,
-        Expired
-    }
-
     function poolActive(uint256 poolId) external view returns (bool);
 }
 

@@ -33,7 +33,12 @@ interface IPool {
         CoverLib.DepositParams memory depositParam
     ) external payable returns (uint256, uint256);
 
-    function withdrawUpdate(
+    function initialVaultWithdrawUpdate(
+        address depositor,
+        uint256 _poolId,
+        CoverLib.DepositType pdt
+    ) external;
+    function finalVaultWithdrawUpdate(
         address depositor,
         uint256 _poolId,
         CoverLib.DepositType pdt
@@ -121,6 +126,7 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 daysLeft;
         uint256 startDate;
         uint256 expiryDate;
+        uint256 withdrawalInitiated;
         uint256 accruedPayout;
         CoverLib.AssetDepositType assetType;
         address asset;
@@ -141,7 +147,7 @@ contract Vaults is ReentrancyGuard, Ownable {
 
     mapping(uint256 => mapping(uint256 => uint256)) vaultPercentageSplits; //vault id to pool id to the pool percentage split;
     mapping(uint256 => Vault) vaults;
-    mapping(address => mapping(uint256 => mapping(CoverLib.DepositType => Deposits))) deposits;
+    mapping(address => mapping(uint256 => mapping(CoverLib.DepositType => CoverLib.Deposits))) deposits;
     mapping(address => mapping(uint256 => VaultDeposit)) userVaultDeposits;
     uint256 public vaultCount;
     address public governance;
@@ -158,7 +164,7 @@ contract Vaults is ReentrancyGuard, Ownable {
     mapping(address => uint256) public participation;
 
     event Deposited(address indexed user, uint256 amount, string pool);
-    event Withdraw(address indexed user, uint256 amount, string pool);
+    event VaultWithdrawalInitiated(address indexed user, uint256 amount, string pool);
     event ClaimPaid(address indexed recipient, string pool, uint256 amount);
     event PoolCreated(uint256 indexed id, string poolName);
     event PoolUpdated(uint256 indexed poolId, uint256 apy, uint256 _minPeriod);
@@ -231,7 +237,7 @@ contract Vaults is ReentrancyGuard, Ownable {
         Vault memory vault = vaults[_vaultId];
         for (uint256 i = 0; i < vault.pools.length; i++) {
             uint256 poolId = vault.pools[i].id;
-            IPoolContract.withdrawUpdate(
+            IPoolContract.initialVaultWithdrawUpdate(
                 msg.sender,
                 poolId,
                 CoverLib.DepositType.Vault
@@ -239,20 +245,47 @@ contract Vaults is ReentrancyGuard, Ownable {
         }
 
         userVaultDeposit.status = CoverLib.Status.Due;
+        userVaultDeposit.withdrawalInitiated = block.timestamp;
 
-        emit Withdraw(msg.sender, userVaultDeposit.amount, vault.vaultName);
+        emit VaultWithdrawalInitiated(msg.sender, userVaultDeposit.amount, vault.vaultName);
+    }
+
+    function finalVaultWithdraw(uint256 _vaultId) public nonReentrant {
+        VaultDeposit storage userVaultDeposit = userVaultDeposits[msg.sender][
+            _vaultId
+        ];
+        require(
+            userVaultDeposit.amount > 0,
+            "No deposit found for this address"
+        );
+        require(
+            userVaultDeposit.status == CoverLib.Status.Due,
+            "Deposit is not Due"
+        );
+        require(
+            block.timestamp >= userVaultDeposit.expiryDate,
+            "Deposit period has not ended"
+        );
+        Vault memory vault = vaults[_vaultId];
+        for (uint256 i = 0; i < vault.pools.length; i++) {
+            uint256 poolId = vault.pools[i].id;
+            IPoolContract.finalVaultWithdrawUpdate(
+                msg.sender,
+                poolId,
+                CoverLib.DepositType.Vault
+            );
+        }
+
+        userVaultDeposit.status = CoverLib.Status.Withdrawn;
+
+        emit VaultWithdrawalInitiated(msg.sender, userVaultDeposit.amount, vault.vaultName);
     }
 
     function vaultDeposit(
         uint256 _vaultId,
-        uint256 _amount,
-        uint256 _period
+        uint256 _amount
     ) public payable nonReentrant {
         Vault memory vault = vaults[_vaultId];
-        require(
-            _period >= vault.minPeriod,
-            "Period cannot be less than the vault min period"
-        );
         uint256 totalDailyPayout = 0;
         uint256 totalAmount = 0;
         for (uint256 i = 0; i < vault.pools.length; i++) {
@@ -265,7 +298,6 @@ contract Vaults is ReentrancyGuard, Ownable {
                     depositor: msg.sender,
                     poolId: poolId,
                     amount: percentage_amount,
-                    period: _period,
                     pdt: CoverLib.DepositType.Vault,
                     adt: vault.assetType,
                     asset: vault.asset
@@ -283,9 +315,10 @@ contract Vaults is ReentrancyGuard, Ownable {
             vaultId: _vaultId,
             dailyPayout: totalDailyPayout,
             status: CoverLib.Status.Active,
-            daysLeft: _period,
+            daysLeft: vault.minPeriod,
             startDate: block.timestamp,
-            expiryDate: block.timestamp + (_period * 1 days),
+            expiryDate: block.timestamp + (vault.minPeriod * 1 days),
+            withdrawalInitiated: 0,
             accruedPayout: 0,
             assetType: vault.assetType,
             asset: vault.asset
@@ -328,9 +361,9 @@ contract Vaults is ReentrancyGuard, Ownable {
     function getUserVaultPoolDeposits(
         uint256 vaultId,
         address user
-    ) public view returns (Deposits[] memory) {
+    ) public view returns (CoverLib.Deposits[] memory) {
         Vault memory vault = vaults[vaultId];
-        Deposits[] memory vaultDeposits = new Deposits[](vault.pools.length);
+        CoverLib.Deposits[] memory vaultDeposits = new CoverLib.Deposits[](vault.pools.length);
         for (uint256 i = 0; i < vault.pools.length; i++) {
             uint256 poolId = vault.pools[i].id;
             vaultDeposits[i] = deposits[user][poolId][
@@ -351,7 +384,7 @@ contract Vaults is ReentrancyGuard, Ownable {
     function setUserVaultDepositToZero(
         uint256 vaultId,
         address user
-    ) public nonReentrant onlyPoolCanister {
+    ) public nonReentrant onlyPool {
         userVaultDeposits[user][vaultId].amount = 0;
     }
 
