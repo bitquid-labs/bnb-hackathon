@@ -45,7 +45,7 @@ const DepositPools: React.FC = () => {
       poolId,
       parseUnits("0.001", 18),
       150,
-      DepositType.Pool,
+      DepositType.Normal,
       ADT.Native,
       "0x0000000000000000000000000000000000000000",
     ];

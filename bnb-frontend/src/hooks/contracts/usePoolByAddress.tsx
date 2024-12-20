@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { InsurancePoolContract } from 'constants/contracts';
 
 import { useAccount, useBlockNumber, useReadContract } from 'wagmi';
-import { ICover, IPool, IVault } from 'types/common';
+import { ICover, IPool, IPoolInfo, IVault } from 'types/common';
 import { ChainType } from 'lib/wagmi';
 
 export const usePoolByAddress = (address: string) => {
@@ -23,7 +23,7 @@ export const usePoolByAddress = (address: string) => {
   if (!pools) return [];
 
   try {
-    const result = pools as IPool[];
+    const result = pools as IPoolInfo[];
     if (!result) return [];
 
     return result;

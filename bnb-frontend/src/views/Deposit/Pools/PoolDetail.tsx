@@ -68,8 +68,7 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
       address,
       poolId,
       parseUnits(depositAmount, 18),
-      depositPeriod,
-      DepositType.Pool,
+      DepositType.Normal,
       assetType,
       __assetAddress,
     ]

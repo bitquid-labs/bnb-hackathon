@@ -12,7 +12,7 @@ const DepositPage: React.FC = () => {
       depositType: "Strategies",
     },
     {
-      index: DepositType.Pool,
+      index: DepositType.Normal,
       depositType: "Pools",
     },
   ];

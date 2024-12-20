@@ -13,8 +13,8 @@ export const enum RiskType {
 }
 
 export const enum DepositType {
+  Normal,
   Vault,
-  Pool,
 }
 
 export const enum ADT {
@@ -39,6 +39,19 @@ export interface ICover {
   // currentBalance?: bigint | undefined;
   // dailyCost?: bigint | undefined;
   // securityRating?: bigint | undefined;
+}
+
+export interface IPoolInfo {
+  poolName?: string | undefined,
+  poolId?: bigint | undefined,
+  dailyPayout?: bigint | undefined,
+  depositAmount?: bigint | undefined,
+  apy?: bigint | undefined,
+  minPeriod?: bigint | undefined,
+  totalUnit?: bigint | undefined,
+  tcp?: bigint | undefined,
+  isActive?: boolean | undefined,
+  accruedPayout?: bigint | undefined,
 }
 
 export interface IPool {

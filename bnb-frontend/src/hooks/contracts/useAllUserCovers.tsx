@@ -20,8 +20,6 @@ export const useAllUserCovers = (address: string) => {
     refetch();
   }, [blockNumber]);
 
-  console.log('raw user covers:', userCovers)
-
   if (!userCovers) return [];
 
   try {
