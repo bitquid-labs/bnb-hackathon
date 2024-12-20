@@ -29,22 +29,15 @@ interface IVault {
         address asset;
     }
 
+    function getUserVaultPoolDeposits(
+        uint256 vaultId,
+        address user
+    ) external view returns (CoverLib.Deposits[] memory);
+
     function getVault(uint256 vaultId) external view returns (Vault memory);
 }
 
 interface ILP {
-    struct Deposits {
-        address lp;
-        uint256 amount;
-        uint256 poolId;
-        uint256 dailyPayout;
-        Status status;
-        uint256 daysLeft;
-        uint256 startDate;
-        uint256 expiryDate;
-        uint256 accruedPayout;
-    }
-
     enum Status {
         Active,
         Expired
@@ -55,15 +48,10 @@ interface ILP {
         ERC20
     }
 
-    function getUserDeposit(
+    function getUserPoolDeposit(
         uint256 _poolId,
         address _user
-    ) external view returns (Deposits memory);
-
-    function getVaultDeposits(
-        uint256 vaultId,
-        address user
-    ) external view returns (Deposits[] memory);
+    ) external view returns (CoverLib.Deposits memory);
 
     function getPool(
         uint256 _poolId
@@ -303,7 +291,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         uint256 _coverPeriod,
         uint256 _coverFee
     ) public payable nonReentrant {
-        if (_coverFee <= 0) {
+        if (_coverFee < 0) {
             revert InvalidAmount();
         }
         if (_coverPeriod <= 27 || _coverPeriod >= 366) {
@@ -476,11 +464,11 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
     }
 
     function claimPayoutForLP(uint256 _poolId) external nonReentrant {
-        ILP.Deposits memory depositInfo = lpContract.getUserDeposit(
+        CoverLib.Deposits memory depositInfo = lpContract.getUserPoolDeposit(
             _poolId,
             msg.sender
         );
-        if (depositInfo.status != ILP.Status.Active) {
+        if (depositInfo.status != CoverLib.Status.Active) {
             revert LpNotActive();
         }
 
@@ -492,9 +480,12 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         }
 
         uint256 currentTime = block.timestamp;
-        if (currentTime > depositInfo.expiryDate) {
-            currentTime = depositInfo.expiryDate;
+        if (depositInfo.status != CoverLib.Status.Active) {
+            currentTime = depositInfo.withdrawalInitiated;
         }
+        // if (currentTime > depositInfo.expiryDate) {
+        //     currentTime = depositInfo.expiryDate;
+        // }
 
         uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
@@ -532,7 +523,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
     }
 
     function clamPayoutForVault(uint256 vaultId) external nonReentrant {
-        ILP.Deposits[] memory deposits = lpContract.getVaultDeposits(
+        CoverLib.Deposits[] memory deposits = vaultContract.getUserVaultPoolDeposits(
             vaultId,
             msg.sender
         );
@@ -545,13 +536,17 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         }
 
         uint256 currentTime = block.timestamp;
-        if (currentTime > deposits[0].expiryDate) {
-            currentTime = deposits[0].expiryDate;
+        if (deposits[0].status != CoverLib.Status.Active) {
+            currentTime = deposits[0].withdrawalInitiated;
         }
-        uint256 claimableDays = (currentTime - lastClaimTime) / 5 minutes;
+        // if (currentTime > deposits[0].expiryDate) {
+        //     currentTime = deposits[0].expiryDate;
+        // }
+
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
         for (uint256 i = 0; i < deposits.length; i++) {
-            ILP.Deposits memory deposit = deposits[i];
+            CoverLib.Deposits memory deposit = deposits[i];
             uint256 claimableAmount = deposit.dailyPayout * claimableDays;
             totalClaim += claimableAmount;
         }
@@ -588,7 +583,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         address user,
         uint256 _poolId
     ) public view returns (uint256) {
-        ILP.Deposits memory depositInfo = lpContract.getUserDeposit(
+        CoverLib.Deposits memory depositInfo = lpContract.getUserPoolDeposit(
             _poolId,
             user
         );
@@ -600,10 +595,10 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             lastClaimTime = NextLpClaimTime[user][_poolId];
         }
         uint256 currentTime = block.timestamp;
-        if (currentTime > depositInfo.expiryDate) {
-            currentTime = depositInfo.expiryDate;
+        if (depositInfo.status != CoverLib.Status.Active) {
+            currentTime = depositInfo.withdrawalInitiated;
         }
-        uint256 claimableDays = (currentTime - lastClaimTime) / 5 minutes;
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
         return claimableDays;
     }
