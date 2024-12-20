@@ -197,7 +197,7 @@
         "type": "string"
       }
     ],
-    "name": "Withdraw",
+    "name": "VaultWithdrawalInitiated",
     "type": "event"
   },
   {
@@ -330,6 +330,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_vaultId",
+        "type": "uint256"
+      }
+    ],
+    "name": "finalVaultWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "vaultId",
         "type": "uint256"
       },
@@ -381,6 +394,11 @@
           {
             "internalType": "uint256",
             "name": "expiryDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalInitiated",
             "type": "uint256"
           },
           {
@@ -461,16 +479,21 @@
           },
           {
             "internalType": "uint256",
-            "name": "expiryDate",
+            "name": "withdrawalInitiated",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
             "name": "accruedPayout",
             "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.DepositType",
+            "name": "pdt",
+            "type": "uint8"
           }
         ],
-        "internalType": "struct Vaults.Deposits[]",
+        "internalType": "struct CoverLib.Deposits[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1103,11 +1126,6 @@
       {
         "internalType": "uint256",
         "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_period",
         "type": "uint256"
       }
     ],

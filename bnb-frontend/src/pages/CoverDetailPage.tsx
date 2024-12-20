@@ -89,7 +89,7 @@ const CoverDetailPage: React.FC = () => {
           ],
         functionName: "purchaseCover",
         args: params,
-        value: parseUnits(value, 18),
+        value: parseUnits(value, 14),
       });
     } catch (error) {
       console.log('error:', error)

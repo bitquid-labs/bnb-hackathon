@@ -1,7 +1,8 @@
 import React from "react";
 import FeatureCard from "./FeatureCard";
-import featureBG2 from "assets/images/feature-bg-2.png";
 import featureBG1 from "assets/images/feature-bg-1.svg"
+import featureBG2 from "assets/images/feature-bg-2.svg"
+import featureBG3 from "assets/images/feature-bg-3.svg"
 import SectionTitle from "components/common/SectionTitle";
 
 const featuresList = [
@@ -20,7 +21,7 @@ const featuresList = [
   {
     title: "Check Assets",
     content: "Secure your assets effortlessly explore, select, and purchase covers seamlessly. ",
-    bgImg: featureBG2,
+    bgImg: featureBG3,
     learnmoreLink: "#",
   },
 ];
