@@ -253,38 +253,6 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         for (uint256 i = 1; i <= poolCount; i++) {
             CoverLib.Pool memory pool = getPool(i);
             result[i - 1] = pool;
-            // CoverLib.Pool memory pool = pools[i];
-            // uint256 priceInUSD;
-            // uint256 decimals;
-
-            // if (pool.isActive && pool.asset == nullAsset) {
-            //     priceInUSD = getPriceInUSD(nullAsset);
-            //     decimals = 18;
-            // } else {
-            //     priceInUSD = getPriceInUSD(pool.asset);
-            //     IERC20Extended token = IERC20Extended(pool.asset);
-            //     decimals = token.decimals();
-            // }
-            // uint256 scaledTotalUnit = pool.totalUnit * (10 ** (18 - decimals));
-            // uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
-            // result[i - 1] = CoverLib.Pool({
-            //     id: i,
-            //     poolName: pool.poolName,
-            //     riskType: pool.riskType,
-            //     apy: pool.apy,
-            //     minPeriod: pool.minPeriod,
-            //     totalUnit: pool.totalUnit,
-            //     tvl: tvl,
-            //     baseValue: pool.baseValue,
-            //     coverUnits: pool.coverUnits,
-            //     tcp: pool.tcp,
-            //     isActive: pool.isActive,
-            //     percentageSplitBalance: pool.percentageSplitBalance,
-            //     investmentArmPercent: pool.investmentArmPercent,
-            //     leverage: pool.leverage,
-            //     asset: pool.asset,
-            //     assetType: pool.assetType
-            // });
         }
         return result;
     }
@@ -366,13 +334,13 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         return result;
     }
 
-    function initalPoolWithdrawal(uint256 _poolId) public nonReentrant {
+    function poolWithdrawal(uint256 _poolId) public nonReentrant {
         CoverLib.Pool memory selectedPool = pools[_poolId];
         CoverLib.Deposits storage userDeposit = deposits[msg.sender][_poolId][
             CoverLib.DepositType.Normal
         ];
 
-        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 seconds);
 
         require(userDeposit.amount > 0, "No deposit found for this address");
         require(
@@ -384,24 +352,8 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             "Deposit period has not ended"
         );
 
-        userDeposit.status = CoverLib.Status.Due;
+        userDeposit.status = CoverLib.Status.Withdrawn;
         userDeposit.withdrawalInitiated = block.timestamp;
-    }
-
-    function finalPoollWithdrawal(uint256 _poolId) public nonReentrant {
-        CoverLib.Pool storage selectedPool = pools[_poolId];
-        CoverLib.Deposits storage userDeposit = deposits[msg.sender][_poolId][
-            CoverLib.DepositType.Normal
-        ];
-
-        uint256 withdrawalPeriod = userDeposit.withdrawalInitiated + 1 days;
-
-        require(block.timestamp < withdrawalPeriod, "Withdrawals are only allowed after 24 hours have passed since initiation.");
-        require(userDeposit.amount > 0, "No deposit found for this address");
-        require(
-            userDeposit.status == CoverLib.Status.Due,
-            "Deposit is not Due"
-        );
 
         uint256 decimals;
         uint256 priceInUSD;
@@ -452,7 +404,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
     ) public nonReentrant onlyVault {
         CoverLib.Pool memory selectedPool = pools[_poolId];
         CoverLib.Deposits storage userDeposit = deposits[depositor][_poolId][pdt];
-        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 seconds);
 
         require(userDeposit.amount > 0, "No deposit found for this address");
         require(
@@ -465,26 +417,6 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         );
 
         userDeposit.withdrawalInitiated = block.timestamp;
-        userDeposit.status = CoverLib.Status.Due;
-    }
-
-    function finalVaultWithdrawUpdate(
-        address depositor,
-        uint256 _poolId,
-        CoverLib.DepositType pdt
-    ) public nonReentrant onlyVault {
-        CoverLib.Pool storage selectedPool = pools[_poolId];
-        CoverLib.Deposits storage userDeposit = deposits[depositor][_poolId][pdt];
-
-        uint256 withdrawalPeriod = userDeposit.withdrawalInitiated + 1 days;
-
-        require(block.timestamp < withdrawalPeriod, "Withdrawals are only allowed after 24 hours have passed since initiation.");
-        require(userDeposit.amount > 0, "No deposit found for this address");
-        require(
-            userDeposit.status == CoverLib.Status.Due,
-            "Deposit is not Due"
-        );
-
         userDeposit.status = CoverLib.Status.Withdrawn;
 
         uint256 decimals;
@@ -851,15 +783,6 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         IVaultContract = IVault(_vaultContract);
         vaultContract = _vaultContract;
     }
-
-    // function setPoolCanister(address _poolcanister) external onlyOwner {
-    //     require(poolCanister == address(0), "Pool Canister already set");
-    //     require(
-    //         _poolcanister != address(0),
-    //         "Pool Canister address cannot be zero"
-    //     );
-    //     poolCanister = _poolcanister;
-    // }
 
     modifier onlyGovernance() {
         require(
