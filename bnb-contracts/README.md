@@ -229,12 +229,26 @@ struct VaultDeposit {
 
 # Contract Address
 
-**BQ BTC Address**: 0xF26BcD7d0139b9f4DeF6e70d72f2A60e6C909ecf
+**BQ BTC Address**: 0x21c56242e151Dbe3B2b7C149aEd05E40d2bE2f45
 
-**Pool Address**: 0xf109726E7d5B0d993548Cd077943C9aC6adEa39E
+**Pool Address**: 0x512Fe3dA42E0B95a5ADd16a22fF2Bda4F7c9F603
 
-**Cover Address**: 0x2Ad59b14Eb02768731c79D91e5Fd12e0f67448EF
+**Cover Address**: 0x30B16cbA105e5298dc2c27B9d7727b80e7754e4D
 
-**Vault Address**: 0x35e8e9A777b9F089bF97d7046721cBb23690E437
+**Vault Address**: 0xb437e00877d769a9C6803d2c6d031B0d75CE15c3
 
-**Gov Address**: 0x0876cD78B559346f474a79043fc97263810a515B
+**Gov Address**: 0x0e1538DF7327E9e3E5F21783e5bA9818920d1E59
+
+# Changes
+
+## Pool Contract
+
+- Added `getTotalUserDepositAmountinUSD` for getting total user deposit balance in dollar
+
+- Set User Deposit to 0 after deposit so `getPoolsByAddress` reduces after withdrawal
+
+## Vaults
+
+- Added `getUserVaultDeposits` to get all the vaults deposits of the user, returns the pool names as well.
+
+- Added vauly apy to the vault struct
