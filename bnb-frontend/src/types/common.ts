@@ -12,6 +12,12 @@ export const enum RiskType {
   Protocol,
 }
 
+export const enum PoolRiskType {
+  Low,
+  Medium,
+  High
+}
+
 export const enum DepositType {
   Normal,
   Vault,
@@ -64,7 +70,7 @@ export interface IPool {
   id?: bigint | undefined,
   poolName?: string | undefined,
   rating?: string | undefined,
-  riskType?: RiskType | undefined,
+  riskType?: PoolRiskType | undefined,
   apy?: bigint | undefined,
   minPeriod?: bigint | undefined,
   totalUnit?: bigint | undefined,
@@ -125,6 +131,12 @@ export const riskTypeNames = [
   'Stablecoin Vulnerability',
   'Protocol Vulnerability',
 ];
+
+export const poolRiskTypeNames = [
+  "Low",
+  "Medium",
+  "High"
+]
 
 
 export const enum CoverDueTo {

@@ -20,9 +20,10 @@ import { useVaultDeposit } from "hooks/contracts/useVaultDeposit";
 
 type Props = {
   id: number;
+  isDeposited: boolean;
 };
 
-const VaultDetail: React.FC<Props> = ({ id }) => {
+const VaultDetail: React.FC<Props> = ({ id, isDeposited }) => {
   const [stakeAmount, setStakeAmount] = useState("");
   const { address, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
@@ -156,6 +157,11 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
 
   const handleStake = async () => {
     if (!vaultData || !stakeAmount) return;
+
+    if (isDeposited) {
+      toast.info("You have already deposited into this vault");
+      return;
+    }
 
     if (balance < parseFloat(stakeAmount)) {
       toast.error("Insufficient balance");

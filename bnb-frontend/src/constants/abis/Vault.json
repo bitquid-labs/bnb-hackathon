@@ -286,6 +286,11 @@
         "type": "string"
       },
       {
+        "internalType": "enum CoverLib.RiskType",
+        "name": "risk",
+        "type": "uint8"
+      },
+      {
         "internalType": "uint256[]",
         "name": "_poolIds",
         "type": "uint256[]"
@@ -329,14 +334,75 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
-        "name": "_vaultId",
+        "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.DepositType",
+        "name": "",
+        "type": "uint8"
       }
     ],
-    "name": "finalVaultWithdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "deposits",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "lp",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "dailyPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.Status",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "daysLeft",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawalInitiated",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "accruedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.DepositType",
+        "name": "pdt",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -374,6 +440,11 @@
           {
             "internalType": "uint256",
             "name": "dailyPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vaultApy",
             "type": "uint256"
           },
           {
@@ -420,6 +491,97 @@
         "internalType": "struct Vaults.VaultDeposit",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserVaultDeposits",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "lp",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vaultId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dailyPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vaultApy",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.Status",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "daysLeft",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiryDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalInitiated",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "accruedPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "assetType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct Vaults.VaultDeposit[]",
+        "name": "",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "string[][]",
+        "name": "",
+        "type": "string[][]"
       }
     ],
     "stateMutability": "view",
@@ -524,6 +686,11 @@
             "type": "string"
           },
           {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "risk",
+            "type": "uint8"
+          },
+          {
             "components": [
               {
                 "internalType": "uint256",
@@ -617,6 +784,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "apy",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "minInv",
             "type": "uint256"
           },
@@ -644,6 +816,19 @@
         "internalType": "struct Vaults.Vault",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getVaultCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -772,6 +957,11 @@
             "type": "string"
           },
           {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "risk",
+            "type": "uint8"
+          },
+          {
             "components": [
               {
                 "internalType": "uint256",
@@ -862,6 +1052,11 @@
             "internalType": "struct CoverLib.Pool[]",
             "name": "pools",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "apy",
+            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -1104,6 +1299,90 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "userVaultDeposits",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "lp",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "vaultId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "dailyPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "vaultApy",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.Status",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "daysLeft",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expiryDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawalInitiated",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "accruedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.AssetDepositType",
+        "name": "assetType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "vaultCount",
     "outputs": [
@@ -1132,6 +1411,89 @@
     "name": "vaultDeposit",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "vaultPercentageSplits",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "vaults",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "vaultName",
+        "type": "string"
+      },
+      {
+        "internalType": "enum CoverLib.RiskType",
+        "name": "risk",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "apy",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minInv",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxInv",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.AssetDepositType",
+        "name": "assetType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

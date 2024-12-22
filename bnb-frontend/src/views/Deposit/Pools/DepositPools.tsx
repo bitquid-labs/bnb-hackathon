@@ -11,6 +11,7 @@ import useWallet from "hooks/useWallet";
 import { ChainType } from "lib/wagmi";
 import PoolList from "./PoolList";
 import PoolDetail from "./PoolDetail";
+import { usePoolByAddress } from "hooks/contracts/usePoolByAddress";
 
 type IPoolWithDetails = IPool & {
   displayDetails: boolean;
@@ -21,6 +22,11 @@ const DepositPools: React.FC = () => {
   const pools = useAllPools();
   const [poolsData, setPoolsData] = useState<IPoolWithDetails[]>([]);
   const { writeContractAsync } = useWriteContract();
+  const userPools = usePoolByAddress(address as string);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const depositedPoolIds = useMemo(() => {
+    return userPools.map((pool) => Number(pool.poolId));
+  }, [userPools])
 
   const [currentPoolId, setCurrentPoolId] = useState<number | undefined>(
     undefined
@@ -72,7 +78,10 @@ const DepositPools: React.FC = () => {
     <>
       {currentPoolId !== undefined ? (
         <div className="mt-20">
-          <PoolDetail poolId={currentPoolId} />
+          <PoolDetail 
+            poolId={currentPoolId}
+            isDeposited={depositedPoolIds.includes(currentPoolId!)}
+          />
         </div>
       ) : (
         <></>

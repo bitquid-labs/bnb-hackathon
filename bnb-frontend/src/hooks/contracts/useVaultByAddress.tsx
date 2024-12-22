@@ -3,8 +3,13 @@ import { useEffect } from 'react';
 import { InsurancePoolContract, VaultContract } from 'constants/contracts';
 
 import { useAccount, useBlockNumber, useReadContract } from 'wagmi';
-import { ICover, IPool, IPoolInfo, IVault } from 'types/common';
+import { ICover, IPool, IPoolInfo, IVault, IVaultDeposit } from 'types/common';
 import { ChainType } from 'lib/wagmi';
+
+type userDeposit = {
+  vaults: IVaultDeposit[];
+  pools: string
+}
 
 export const useVaultByAddress = (address: string) => {
   const { chain } = useAccount();
@@ -12,7 +17,7 @@ export const useVaultByAddress = (address: string) => {
   const { data: vaults, refetch } = useReadContract({
     abi: VaultContract.abi,
     address: VaultContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
-    functionName: 'userVaultDeposits',
+    functionName: 'getUserVaultDeposits',
     args: [address]
   });
 
@@ -20,16 +25,26 @@ export const useVaultByAddress = (address: string) => {
     refetch();
   }, [blockNumber]);
 
-  console.log('vaultData:', vaults, address)
-
-  if (!vaults) return [];
+  if (!vaults) return {
+    vaults: [],
+    pools: [],
+  };
 
   try {
-    const result = vaults as IPoolInfo[];
-    if (!result) return [];
+    const result = vaults as any[];
+    if (!result) return {
+      vaults: [],
+      pools: [],
+    };
 
-    return result;
+    return {
+      vaults: result[0] as IVaultDeposit[],
+      pools: result[1]
+    };
   } catch (error) {
-    return [];
+    return {
+      vaults: [],
+      pools: [],
+    };
   }
 };

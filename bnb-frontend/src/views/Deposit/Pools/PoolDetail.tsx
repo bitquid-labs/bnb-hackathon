@@ -17,12 +17,14 @@ import { toast } from "react-toastify";
 import useCallContract from "hooks/contracts/useCallContract";
 import { useTokenName } from "hooks/contracts/useTokenName";
 import { usePoolDeposit } from "hooks/contracts/usePoolDeposit";
+import { getPoolRiskTypeName } from "lib/utils";
 
 type Props = {
   poolId: number;
+  isDeposited: boolean;
 };
 
-const PoolDetail: React.FC<Props> = ({ poolId }) => {
+const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
   const { address, chain } = useAccount();
   const poolData = usePoolInfo(poolId);
   const [depositAmount, setDepositAmount] = useState("");
@@ -154,6 +156,10 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
 
   const handleDeposit = async () => {
     if (!poolData || !assetAddress) return;
+    if (isDeposited) {
+      toast.info("You have already deposited into this pool");
+      return;
+    }
 
     setIsLoading(true);
 
@@ -253,7 +259,7 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                   </div>
                 </div>
               </div>
-              <div className="my-8 w-full flex items-center justify-between">
+              <div className="my-40 w-full flex items-center justify-between">
                 {/* <div className="text-25 font-[500]">3.197</div> */}
                 <div className="text-25 font-[500]">
                   <input
@@ -270,14 +276,14 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                   </div> */}
                 </div>
               </div>
-              <div className="w-full flex items-center justify-between">
+              {/* <div className="w-full flex items-center justify-between">
                 <span className="text-12 text-[#C0C0C0] font-[400]">
                   ≈$ 639.58
                 </span>
                 <span className="text-12 text-[#C0C0C0] font-[600]">
                   Transaction Fee
                 </span>
-              </div>
+              </div> */}
               {/* <div className="w-full flex items-center justify-start my-10">
                 <span className="text-14 font-[600]">LIT Token Assigned:</span>
                 <span className="text-14 font-[600]">15.6</span>
@@ -296,10 +302,10 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
             <div className="flex items-center justify-start gap-20">
               <div className="text-15 font-[600]">Risk Type:</div>
               <div className="border border-[#00ECBC] bg-[#00ECBC0D] rounded-8 px-24 py-4">
-                Low
+                {getPoolRiskTypeName(poolData?.riskType)}
               </div>
             </div>
-            <div className="flex w-full">
+            <div className="flex w-full my-40">
               <div className="flex flex-col gap-[13px] w-full">
                 {/* <div className="flex items-center mt-40 justify-between">
                   <div className="flex gap-[10px]">
@@ -359,7 +365,7 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                       Vesting
                     </div>
                   </div>
-                  <div className="flex flex-col h-full items-center justify-between gap-5">
+                  <div className="flex flex-col h-full items-center justify-between gap-20">
                     <span className="text-15 font-[600]">Per week</span>
                     <span className="text-15 font-[600] py-5">xx %</span>
                   </div>

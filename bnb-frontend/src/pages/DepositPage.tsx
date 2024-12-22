@@ -4,6 +4,8 @@ import VaultList from "views/Deposit/Vaults/VaultList";
 import { DepositType } from "types/common";
 import DepositPools from "views/Deposit/Pools/DepositPools";
 import VaultDetail from "views/Deposit/Vaults/VaultDetail";
+import { useVaultByAddress } from "hooks/contracts/useVaultByAddress";
+import { useAccount } from "wagmi";
 
 const DepositPage: React.FC = () => {
   const types = [
@@ -16,7 +18,12 @@ const DepositPage: React.FC = () => {
       depositType: "Strategies",
     },
   ];
+  const {address} = useAccount();
   const [currentDepositType, setCurrentDepositType] = useState<number>(0);
+  const {vaults: userVaults} = useVaultByAddress(address as string);
+  const userVaultIds = useMemo(() => {
+    return userVaults.map((vault) => Number(vault.vaultId));
+  }, [userVaults]);
 
   const [currentVaultId, setCurrentVaultId] = useState<number | undefined>();
 
@@ -79,7 +86,10 @@ const DepositPage: React.FC = () => {
         <>
           {currentVaultId ? (
             <div className="mt-57">
-              <VaultDetail id={currentVaultId} />
+              <VaultDetail 
+                id={currentVaultId}
+                isDeposited={userVaultIds.includes(currentVaultId)}
+              />
             </div>
           ) : (
             <></>

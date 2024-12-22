@@ -4,16 +4,14 @@ import { IVaultDeposit } from "types/common";
 import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
 import useCallContract from "hooks/contracts/useCallContract";
-import { VaultContract } from "constants/contracts";
+import { InsurancePoolContract, VaultContract } from "constants/contracts";
 import { ChainType } from "lib/wagmi";
 
 type VaultCardProps = {
-  vaultId: number;
   vaultData: IVaultDeposit;
 };
 
 const VaultCard: React.FC<VaultCardProps> = ({
-  vaultId,
   vaultData
 }) => {
   const { address, chain } = useAccount();
@@ -21,6 +19,8 @@ const VaultCard: React.FC<VaultCardProps> = ({
   const [isClaimingLoading, setIsClaimingLoading] = useState<boolean>(false);
   const [isWithdrawLoading, setIsWithdrawLoading] = useState<boolean>(false);
   const { callContractFunction } = useCallContract();
+
+  console.log('vaultData:', vaultData)
   
   const handleClaimYeild = async () => {
 
@@ -28,8 +28,8 @@ const VaultCard: React.FC<VaultCardProps> = ({
 
   const handleWithdrawStake = async () => {
     setIsWithdrawLoading(true);
-    setLoadingMessage("Withdrawing...");
-    const params = [vaultId];
+    setLoadingMessage("Initiating");
+    const params = [vaultData.vaultId];
 
     try {
       await callContractFunction(
@@ -52,24 +52,24 @@ const VaultCard: React.FC<VaultCardProps> = ({
         }
       );
 
-
+      setLoadingMessage("Withdrawing")
       await callContractFunction(
-        VaultContract.abi,
-        VaultContract.addresses[
+        InsurancePoolContract.abi,
+        InsurancePoolContract.addresses[
           (chain as ChainType)?.chainNickName
         ] as `0x${string}`,
-        "initialVaultWithdraw",
+        "vaultWithdraw",
         params,
         0n,
         () => {
-          toast.success("Withdraw Initiated")
+          toast.success("Withdraw Succeed")
           setLoadingMessage("")
           setIsWithdrawLoading(false);
         },
         () => {
           setLoadingMessage("")
           setIsWithdrawLoading(false);
-          toast.success("Failed to withdraw initiate")
+          toast.success("Failed to withdraw")
         }
       );
     } catch (error) {
