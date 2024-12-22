@@ -27,7 +27,9 @@ interface IVault {
     struct Vault {
         uint256 id;
         string vaultName;
+        CoverLib.RiskType risk;
         CoverLib.Pool[] pools;
+        uint256 apy;
         uint256 minInv;
         uint256 maxInv;
         uint256 minPeriod;
@@ -40,16 +42,19 @@ interface IVault {
         uint256 amount;
         uint256 vaultId;
         uint256 dailyPayout;
+        uint256 vaultApy;
         CoverLib.Status status;
         uint256 daysLeft;
         uint256 startDate;
         uint256 expiryDate;
+        uint256 withdrawalInitiated;
         uint256 accruedPayout;
         CoverLib.AssetDepositType assetType;
         address asset;
     }
 
     function getVault(uint256 vaultId) external view returns (Vault memory);
+    function getVaultCount() external view returns (uint256);
     function getUserVaultDeposit(
         uint256 vaultId,
         address user
@@ -359,6 +364,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         uint256 priceInUSD;
         userDeposit.status = CoverLib.Status.Withdrawn;
         selectedPool.totalUnit -= userDeposit.amount;
+        uint256 amount = userDeposit.amount;
         uint256 baseValue = selectedPool.totalUnit -
             ((selectedPool.investmentArmPercent * selectedPool.totalUnit) / 100);
 
@@ -383,18 +389,19 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         selectedPool.tvl = (priceInUSD * scaledTotalUnit) / 1e18;
 
+        userDeposit.amount = 0;
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
             bool success = IERC20(selectedPool.asset).transfer(
                 msg.sender,
-                userDeposit.amount
+                amount
             );
             require(success, "ERC20 transfer failed");
         } else {
-            (bool success, ) = msg.sender.call{value: userDeposit.amount}("");
+            (bool success, ) = msg.sender.call{value: amount}("");
             require(success, "Native asset transfer failed");
         }
 
-        emit Withdraw(msg.sender, userDeposit.amount, selectedPool.poolName);
+        emit Withdraw(msg.sender, amount, selectedPool.poolName);
     }
 
     function initialVaultWithdrawUpdate(
@@ -665,6 +672,55 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         return userDeposit;
     }
 
+    function getTotalUserDepositAmountinUSD(address user) public view returns (uint256) {
+        uint256 totalPrice;
+        for (uint256 i = 1; i <= poolCount; i++) {
+            CoverLib.Deposits memory userDeposit = getUserPoolDeposit(i, user);
+            if (userDeposit.amount > 0) {
+                CoverLib.Pool memory pool = pools[i];
+                uint256 amount = userDeposit.amount;
+                uint256 decimals;
+                uint256 priceInUSD;
+                if (pool.isActive && pool.asset == nullAsset) {
+                    priceInUSD = getPriceInUSD(nullAsset);
+                    decimals = 18;
+                } else {
+                    priceInUSD = getPriceInUSD(pool.asset);
+                    IERC20Extended token = IERC20Extended(pool.asset);
+                    decimals = token.decimals();
+                }
+                uint256 scaledTotalUnit = amount * (10 ** (18 - decimals));
+                uint256 userDepositPrice = (priceInUSD * scaledTotalUnit) / 1e18;
+
+                totalPrice += userDepositPrice;
+            }  
+        }
+
+        uint256 vaultCount = IVaultContract.getVaultCount();
+        for (uint256 i = 1; i <= vaultCount; i++) {
+            IVault.VaultDeposit memory uservaultdeposit = IVaultContract.getUserVaultDeposit(i, user);
+            if (uservaultdeposit.amount > 0) {
+                uint256 amount = uservaultdeposit.amount;
+                uint256 decimals;
+                uint256 priceInUSD;
+                if (uservaultdeposit.asset == nullAsset) {
+                    priceInUSD = getPriceInUSD(nullAsset);
+                    decimals = 18;
+                } else {
+                    priceInUSD = getPriceInUSD(uservaultdeposit.asset);
+                    IERC20Extended token = IERC20Extended(uservaultdeposit.asset);
+                    decimals = token.decimals();
+                }
+                uint256 scaledTotalUnit = amount * (10 ** (18 - decimals));
+                uint256 uservaultDepositPrice = (priceInUSD * scaledTotalUnit) / 1e18;
+
+                totalPrice += uservaultDepositPrice;
+            }
+        }
+
+        return totalPrice;
+    }
+
     function getUserGenericDeposit(
         uint256 _poolId,
         address _user, 
@@ -738,6 +794,17 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         uint256 tvl = (priceInUSD * scaledTotalUnit) / 1e18;
         return tvl;
+    }
+
+    function getTotalTVL() public view returns(uint256) {
+        uint256 totalTVl;
+
+        for (uint256 i = 1; i <= poolCount; i++) {
+            uint256 poolTvl = getPoolTVL(i);
+            totalTVl += poolTvl;
+        }
+
+        return totalTVl;    
     }
 
     function poolActive(uint256 poolId) public view returns (bool) {
