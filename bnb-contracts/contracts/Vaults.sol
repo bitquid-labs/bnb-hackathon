@@ -145,10 +145,10 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 accruedPayout;
     }
 
-    mapping(uint256 => mapping(uint256 => uint256)) vaultPercentageSplits; //vault id to pool id to the pool percentage split;
-    mapping(uint256 => Vault) vaults;
-    mapping(address => mapping(uint256 => mapping(CoverLib.DepositType => CoverLib.Deposits))) deposits;
-    mapping(address => mapping(uint256 => VaultDeposit)) userVaultDeposits;
+    mapping(uint256 => mapping(uint256 => uint256)) public vaultPercentageSplits; //vault id to pool id to the pool percentage split;
+    mapping(uint256 => Vault) public vaults;
+    mapping(address => mapping(uint256 => mapping(CoverLib.DepositType => CoverLib.Deposits))) public deposits;
+    mapping(address => mapping(uint256 => VaultDeposit)) public userVaultDeposits;
     uint256 public vaultCount;
     address public governance;
     ICover public ICoverContract;
@@ -244,39 +244,8 @@ contract Vaults is ReentrancyGuard, Ownable {
             );
         }
 
-        userVaultDeposit.status = CoverLib.Status.Due;
-        userVaultDeposit.withdrawalInitiated = block.timestamp;
-
-        emit VaultWithdrawalInitiated(msg.sender, userVaultDeposit.amount, vault.vaultName);
-    }
-
-    function finalVaultWithdraw(uint256 _vaultId) public nonReentrant {
-        VaultDeposit storage userVaultDeposit = userVaultDeposits[msg.sender][
-            _vaultId
-        ];
-        require(
-            userVaultDeposit.amount > 0,
-            "No deposit found for this address"
-        );
-        require(
-            userVaultDeposit.status == CoverLib.Status.Due,
-            "Deposit is not Due"
-        );
-        require(
-            block.timestamp >= userVaultDeposit.expiryDate,
-            "Deposit period has not ended"
-        );
-        Vault memory vault = vaults[_vaultId];
-        for (uint256 i = 0; i < vault.pools.length; i++) {
-            uint256 poolId = vault.pools[i].id;
-            IPoolContract.finalVaultWithdrawUpdate(
-                msg.sender,
-                poolId,
-                CoverLib.DepositType.Vault
-            );
-        }
-
         userVaultDeposit.status = CoverLib.Status.Withdrawn;
+        userVaultDeposit.withdrawalInitiated = block.timestamp;
 
         emit VaultWithdrawalInitiated(msg.sender, userVaultDeposit.amount, vault.vaultName);
     }
@@ -286,6 +255,7 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 _amount
     ) public payable nonReentrant {
         Vault memory vault = vaults[_vaultId];
+        require(vault.pools.length > 0, "Vault is not active");
         uint256 totalDailyPayout = 0;
         uint256 totalAmount = 0;
         for (uint256 i = 0; i < vault.pools.length; i++) {
@@ -307,6 +277,22 @@ contract Vaults is ReentrancyGuard, Ownable {
             }(depositParam);
             totalDailyPayout += dailyPayout;
             totalAmount += amount;
+            
+
+            CoverLib.Deposits memory pool_deposit = CoverLib.Deposits({
+                lp: msg.sender,
+                amount: amount,
+                poolId: poolId,
+                dailyPayout: dailyPayout,
+                status: CoverLib.Status.Active,
+                daysLeft: vault.pools[i].minPeriod,
+                startDate: block.timestamp,
+                withdrawalInitiated: 0, 
+                accruedPayout: 0,
+                pdt: CoverLib.DepositType.Vault
+            });
+
+            deposits[msg.sender][poolId][CoverLib.DepositType.Vault] = pool_deposit;
         }
 
         VaultDeposit memory userDeposit = VaultDeposit({

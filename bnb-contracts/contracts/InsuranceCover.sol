@@ -468,9 +468,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             _poolId,
             msg.sender
         );
-        if (depositInfo.status != CoverLib.Status.Active) {
-            revert LpNotActive();
-        }
 
         uint256 lastClaimTime;
         if (NextLpClaimTime[msg.sender][_poolId] == 0) {
@@ -483,16 +480,16 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         if (depositInfo.status != CoverLib.Status.Active) {
             currentTime = depositInfo.withdrawalInitiated;
         }
-        // if (currentTime > depositInfo.expiryDate) {
-        //     currentTime = depositInfo.expiryDate;
-        // }
 
-        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
+        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
-        if (claimableDays <= 0) {
-            revert NoClaimableReward();
-        }
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
+
+        require (claimableDays > 0, "No claimable rewards");
+        
         uint256 claimableAmount = depositInfo.dailyPayout * claimableDays;
+
+        require(claimableAmount > 0, "No claimable rewards for user");
 
         uint256 assetCoverFeeBalance;
         CoverLib.Pool memory selectedPool = lpContract.getPool(_poolId);
@@ -522,11 +519,12 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         emit PayoutClaimed(msg.sender, _poolId, claimableAmount);
     }
 
-    function clamPayoutForVault(uint256 vaultId) external nonReentrant {
+    function claimPayoutForVault(uint256 vaultId) external nonReentrant {
         CoverLib.Deposits[] memory deposits = vaultContract.getUserVaultPoolDeposits(
             vaultId,
             msg.sender
         );
+
         uint256 totalClaim;
         uint256 lastClaimTime;
         if (LastVaultClaimTime[msg.sender][vaultId] == 0) {
@@ -539,17 +537,18 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         if (deposits[0].status != CoverLib.Status.Active) {
             currentTime = deposits[0].withdrawalInitiated;
         }
-        // if (currentTime > deposits[0].expiryDate) {
-        //     currentTime = deposits[0].expiryDate;
-        // }
 
-        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
+        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
+
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
 
         for (uint256 i = 0; i < deposits.length; i++) {
             CoverLib.Deposits memory deposit = deposits[i];
             uint256 claimableAmount = deposit.dailyPayout * claimableDays;
             totalClaim += claimableAmount;
         }
+
+        require(totalClaim > 0, "No claim yet for user");
 
         uint256 assetCoverFeeBalance;
         IVault.Vault memory selectedVault = vaultContract.getVault(vaultId);
@@ -598,7 +597,9 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         if (depositInfo.status != CoverLib.Status.Active) {
             currentTime = depositInfo.withdrawalInitiated;
         }
-        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
+        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
+
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
 
         return claimableDays;
     }
