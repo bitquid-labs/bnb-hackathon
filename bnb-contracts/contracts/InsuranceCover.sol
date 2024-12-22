@@ -21,7 +21,9 @@ interface IVault {
     struct Vault {
         uint256 id;
         string vaultName;
+        CoverLib.RiskType risk;
         CoverLib.Pool[] pools;
+        uint256 apy;
         uint256 minInv;
         uint256 maxInv;
         uint256 minPeriod;
