@@ -1,7 +1,10 @@
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Button from "components/common/Button";
 import React from "react";
 
 const IntroText: React.FC = () => {
+  const { openConnectModal } = useConnectModal();
+  
   return (
     <div className="w-full flex flex-col items-center justify-center">
       <h2 className="text-50 font-[700]">
@@ -14,6 +17,7 @@ const IntroText: React.FC = () => {
         <Button
           size="lg"
           className="min-w-[216px] rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC] w-full"
+          onClick={openConnectModal}
         >
           Connect Wallet
         </Button>

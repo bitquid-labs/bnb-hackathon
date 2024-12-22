@@ -8,12 +8,12 @@ import VaultDetail from "views/Deposit/Vaults/VaultDetail";
 const DepositPage: React.FC = () => {
   const types = [
     {
-      index: DepositType.Vault,
-      depositType: "Strategies",
-    },
-    {
       index: DepositType.Normal,
       depositType: "Pools",
+    },
+    {
+      index: DepositType.Vault,
+      depositType: "Strategies",
     },
   ];
   const [currentDepositType, setCurrentDepositType] = useState<number>(0);

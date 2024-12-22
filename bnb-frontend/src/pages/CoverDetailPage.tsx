@@ -1,4 +1,4 @@
-import { MIN_COVER_PERIOD } from "constants/config";
+import { BQBTC, MIN_COVER_PERIOD } from "constants/config";
 import { bnToNumber, numberToBN } from "lib/number";
 import React, { ChangeEvent, useMemo, useState } from "react";
 import { TiInfoLarge } from "react-icons/ti";
@@ -17,6 +17,10 @@ import MoreCovers from "views/CoverDetail/MoreCovers";
 import SocialLinks from "components/SocialLInks";
 import { ChainType } from "lib/wagmi";
 import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
+import { toast } from "react-toastify";
+import { feeDecimals } from "constants/config";
+import { useTokenName } from "hooks/contracts/useTokenName";
+import useCallContract from "hooks/contracts/useCallContract";
 
 const CoverDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -26,14 +30,14 @@ const CoverDetailPage: React.FC = () => {
   const [coverDueTo, setCoverDueTo] = useState<CoverDueTo>(
     CoverDueTo.NoneSelected
   );
-  const [loadingMessage, setLoadingMessage] = useState<string>("")
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const availableCovers = useAllAvailableCovers();
   const { writeContract } = useWriteContract();
   const maxCoverAmount = 0;
-  const error = "";
   const navigate = useNavigate();
   const { writeContractAsync } = useWriteContract();
+  const { callContractFunction } = useCallContract();
 
   const coverDetail = useMemo(() => {
     if (availableCovers.length === 0) return undefined;
@@ -43,8 +47,6 @@ const CoverDetailPage: React.FC = () => {
     });
   }, [availableCovers, id]);
 
-  console.log('coverDetail:', coverDetail)
-
   const coverADT = useMemo(() => {
     if (!coverDetail) return undefined;
     return coverDetail.adt;
@@ -52,49 +54,109 @@ const CoverDetailPage: React.FC = () => {
 
   const coverAssetAddress = useMemo(() => {
     if (coverDetail) return coverDetail.asset;
-  }, [coverDetail])
+  }, [coverDetail]);
 
-  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(coverAssetAddress, ICoverContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'], 18);
+  const assetTokenName = useTokenName(coverAssetAddress);
+
+  const assetName = useMemo(() => {
+    if (coverADT === ADT.Native) return "BNB";
+    else return assetTokenName || "";
+  }, [coverADT, assetTokenName]);
+
+  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(
+    coverAssetAddress,
+    ICoverContract.addresses[(chain as ChainType)?.chainNickName || "bscTest"],
+    18
+  );
 
   const approveTokenTransfer = async (amount: number) => {
     try {
-      await writeContractAsync({
-        abi: erc20Abi,
-        address: coverAssetAddress as Address,
-        functionName: "approve",
-        args: [ICoverContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
-      }) 
-    } catch (error) {
-      console.log('error:', error)
-    }
-  }
+      await callContractFunction(
+        erc20Abi,
+        coverAssetAddress as Address,
+        "approve",
+        [
+          ICoverContract.addresses[
+            (chain as ChainType)?.chainNickName
+          ] as `0x${string}`,
+          numberToBN(amount),
+        ],
+        0n,
+        () => {
+          toast.success("Token Approved")
+          setIsLoading(false);
+          setLoadingMessage("");
+        },
+        () => {
+          setIsLoading(false);
+          toast.success("Failed to approved token")
+          setLoadingMessage("");
+        }
+      );
 
-  const purchaseCover = async (coverId: number, amount: string, period: number, value: string, fee: number) => {
+      // await writeContractAsync({
+      //   abi: erc20Abi,
+      //   address: coverAssetAddress as Address,
+      //   functionName: "approve",
+      //   args: [ICoverContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+      // })
+    } catch (error) {
+      console.log("error:", error);
+    }
+  };
+
+  const purchaseCover = async (
+    coverId: number,
+    amount: string,
+    period: number,
+    value: string,
+    fee: number
+  ) => {
     if (!coverDetail) return;
     const params = [
       coverId, // coverId
       numberToBN(amount), // coverAmount
       period, // coverPeriod
-      parseUnits(fee.toString(), 18),  //  coverFee
+      parseUnits(fee.toString(), feeDecimals), //  coverFee
     ];
 
-    console.log('params:', params)
+    console.log("params:", params);
 
     try {
-      await writeContractAsync({
-        abi: ICoverContract.abi,
-        address:
+      await callContractFunction(
+        ICoverContract.abi,
         ICoverContract.addresses[
-            (chain as ChainType)?.chainNickName || "bscTest"
-          ],
-        functionName: "purchaseCover",
-        args: params,
-        value: parseUnits(value, 14),
-      });
+          (chain as ChainType)?.chainNickName || "bscTest"
+        ],
+        "purchaseCover",
+        params,
+        parseUnits(value, 18),
+        () => {
+          setIsLoading(false);
+          setLoadingMessage("");
+          toast.success("Cover Purchased");
+        },
+        () => {
+          setIsLoading(false);
+          setLoadingMessage("");
+          toast.success("Failed to purchase cover");
+        }
+      );
+
+      // await writeContractAsync({
+      //   abi: ICoverContract.abi,
+      //   address:
+      //   ICoverContract.addresses[
+      //       (chain as ChainType)?.chainNickName || "bscTest"
+      //     ],
+      //   functionName: "purchaseCover",
+      //   args: params,
+      //   value: parseUnits(value, feeDecimals),
+      // });
     } catch (error) {
-      console.log('error:', error)
+      console.log("error:", error);
     }
-  }
+  };
 
   const coverFee = useMemo(() => {
     return calculateCoverFee(
@@ -112,13 +174,29 @@ const CoverDetailPage: React.FC = () => {
     setCoverPeriod(val);
   };
 
+  const error = useMemo(() => {
+    if (coverAmount === "") return "Please enter an amount";
+    if (coverDetail) {
+      if (bnToNumber(coverDetail.maxAmount) < parseFloat(coverAmount)) {
+        return "Over Max Amount";
+      }
+    }
+    return "";
+  }, [coverAmount]);
+
   const handleBuyCover = async () => {
     if (!coverDetail) return;
-    
+
     setIsLoading(true);
     if (coverADT === ADT.Native) {
-      setLoadingMessage("Submitting ...")
-      await purchaseCover(Number(id), coverAmount,  coverPeriod, coverFee.toString(), coverFee);
+      setLoadingMessage("Submitting");
+      await purchaseCover(
+        Number(id),
+        coverAmount,
+        coverPeriod,
+        coverFee.toString(),
+        coverFee
+      );
       // const params = [
       //   Number(id), // coverId
       //   numberToBN(coverAmount), // coverAmount
@@ -138,18 +216,23 @@ const CoverDetailPage: React.FC = () => {
       //   console.log(err);
       // }
     } else {
-      if (approvedTokenAmount < parseFloat(coverAmount)) {
-        setLoadingMessage("Approve Tokens ...")
+      if (approvedTokenAmount < (coverFee / 10000)) {
+        setLoadingMessage("Approve Tokens");
         await approveTokenTransfer(parseFloat(coverAmount));
         setIsLoading(false);
         return;
       }
 
-      await purchaseCover(Number(id), coverAmount,  coverPeriod, coverFee.toString(), coverFee);
-    }
+      setLoadingMessage("Buying");
 
-    setIsLoading(true);
-    setLoadingMessage("");
+      await purchaseCover(
+        Number(id),
+        coverAmount,
+        coverPeriod,
+        '0',
+        coverFee
+      );
+    }
   };
 
   return (
@@ -189,6 +272,7 @@ const CoverDetailPage: React.FC = () => {
               <Buy
                 id={Number(id)}
                 coverAmount={coverAmount}
+                assetName={assetName}
                 coverPeriod={coverPeriod}
                 handleCoverAmountChange={handleCoverAmountChange}
                 handleCoverPeriodChange={handleCoverPeriodChange}
@@ -202,13 +286,16 @@ const CoverDetailPage: React.FC = () => {
               <Preview
                 productName={coverDetail?.coverName || ""}
                 coverAmount={coverAmount}
+                maxAmount={bnToNumber(coverDetail?.maxAmount)}
+                assetName={assetName}
                 annualCost={Number(coverDetail?.cost)}
                 coverFee={coverFee}
                 handleBuyCover={handleBuyCover}
                 error={error}
                 coverPeriod={coverPeriod}
                 logo={coverDetail?.CID || ""}
-                isLoading={false}
+                isLoading={isLoading}
+                loadingMessage={loadingMessage}
               />
             </div>
           </div>

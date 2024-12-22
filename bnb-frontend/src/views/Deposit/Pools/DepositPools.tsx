@@ -37,7 +37,6 @@ const DepositPools: React.FC = () => {
   }, [pools]);
 
   const handleDeposit = async (poolId: number) => {
-    console.log("deposit:", poolId);
     setCurrentPoolId(poolId);
     return;
     const params = [

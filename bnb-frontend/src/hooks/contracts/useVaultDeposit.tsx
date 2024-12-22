@@ -6,24 +6,26 @@ import { useAccount, useBlockNumber, useReadContract } from 'wagmi';
 import { ICover, IVault } from 'types/common';
 import { ChainType } from 'lib/wagmi';
 
-export const useVault = (vaultId: number) => {
-  const { chain } = useAccount();
+export const useVaultDeposit = (vaultId: number) => {
+  const { address, chain } = useAccount();
   const { data: blockNumber } = useBlockNumber({ watch: true });
-  const { data: vaultData, refetch } = useReadContract({
+  const { data: vaultDepositData, refetch } = useReadContract({
     abi: VaultContract.abi,
     address: VaultContract.addresses[(chain as ChainType)?.chainNickName || 'bscTest'],
-    functionName: 'getVault',
-    args: [vaultId],
+    functionName: 'getUserVaultDeposit',
+    args: [vaultId, address],
   });
 
-  // useEffect(() => {
-  //   refetch();
-  // }, [blockNumber]);
+  useEffect(() => {
+    refetch();
+  }, [blockNumber]);
 
-  if (!vaultData) return undefined;
+  console.log('vaultDepositData:', vaultId, vaultDepositData)
+
+  if (!vaultDepositData) return undefined;
 
   try {
-    const result = vaultData as IVault;
+    const result = vaultDepositData as IVault;
     if (!result) return undefined;
 
     return result;

@@ -26,7 +26,7 @@ export const GovContract: ContractType = {
     rsk: '0x483842959b2457179561820E9e676da53B63bCD0',
     core: '0x95bEa6bdd0f0adaC1714910069128a4B7F75e135',
     bitlayer: '0x238E8Be85D7C58E85AFAd4eaB80C69333957359A',
-    bscTest: '0x75ed27c8b3b02f00FE234419E14FF4a28B121A80',
+    bscTest: '0x0876cD78B559346f474a79043fc97263810a515B',
   },
 };
 
@@ -40,7 +40,7 @@ export const ICoverContract: ContractType = {
     rsk: '0xfAB08717d5779DBe49Aa6b547b553593f52744c0',
     core: '0xEbC11e13375DEc4c43118b8f530b0dc31fF9e4a7',
     bitlayer: '0x325fEb760bBD9117a0be901FCA79F10D87FDF709',
-    bscTest: '0x8a8aC15baB215c45AF764c72BEF31a3E5Bb824C7',
+    bscTest: '0x2Ad59b14Eb02768731c79D91e5Fd12e0f67448EF',
   },
 };
 
@@ -54,7 +54,7 @@ export const InsurancePoolContract: ContractType = {
     rsk: '0x68543e919B6cd5D884E22Ed85f912daE5De2371b',
     core: '0xFe0330bCAafb69BFB5B6038Be0eBfDB65E2EE10f',
     bitlayer: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
-    bscTest: '0x5Cc625F218C12BC3467Fc4b2B8d63a60b154cD95',
+    bscTest: '0xf109726E7d5B0d993548Cd077943C9aC6adEa39E',
   },
 };
 
@@ -82,7 +82,7 @@ export const BQBTCTokenContract: ContractType = {
     rsk: '0x1EfE902d6aFf44d3C8d245f2d4144db84964a9b4',
     core: '0xd4d6D32774267870CB38dd00af8B7edB96eBEfC7',
     bitlayer: '0x260E26e2Cdcdf05C4C93d7a2bd380AaE9D13d0BF',
-    bscTest: '0x6866d7b829225Dc63Ac64bC51F49CB69b7822989',
+    bscTest: '0xF26BcD7d0139b9f4DeF6e70d72f2A60e6C909ecf',
   },
 };
 
@@ -97,6 +97,6 @@ export const VaultContract: ContractType = {
     rsk: '0x68543e919B6cd5D884E22Ed85f912daE5De2371b',
     core: '0xFe0330bCAafb69BFB5B6038Be0eBfDB65E2EE10f',
     bitlayer: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
-    bscTest: '0xDE9619691fED73CF343DCB54cb2e1eAc8255F7dA',
+    bscTest: '0x35e8e9A777b9F089bF97d7046721cBb23690E437',
   },
 };

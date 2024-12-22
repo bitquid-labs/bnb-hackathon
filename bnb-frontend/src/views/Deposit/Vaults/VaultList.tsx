@@ -31,14 +31,13 @@ type Props = {
 const VaultList: React.FC<Props> = ({currentVaultId, setCurrentVaultId}) => {
   const vaults = useAllVaults();
 
-  console.log('vaults:', vaults)
-
   return (
     <div className="w-full">
       <Carousel responsive={responsive}>
         {vaults.map((vault, index) => {
           return (
             <VaultCard
+              key={index}
               id={Number(vault.id)}
               name={vault.vaultName || ''}
               minInvestment={Number(vault.minInv) || 0}

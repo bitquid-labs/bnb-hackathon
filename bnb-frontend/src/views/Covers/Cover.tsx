@@ -3,10 +3,11 @@ import React, { useCallback, useContext, useMemo } from 'react';
 
 import Button from 'components/common/Button';
 
-import { ICover } from 'types/common';
+import { ADT, ICover } from 'types/common';
 // import { CoverContext } from '@/contexts/CoverContext';
 import { bnToNumber, getRiskTypeName } from 'lib/number';
 import { useNavigate } from 'react-router';
+import { useTokenName } from 'hooks/contracts/useTokenName';
 
 export type CoverProps = {
   cover: ICover,
@@ -14,20 +15,24 @@ export type CoverProps = {
 };
 
 export const Cover: React.FC<CoverProps> = (props) => {
-  const { coverName, chains, cost, capacity, id, riskType, maxAmount, CID } =
-    props.cover;
+  const { coverName, chains, cost, capacity, id, riskType, maxAmount, CID, adt, asset } = props.cover;
   const riskTypeName = getRiskTypeName(riskType);
   const annualCost = useMemo(() => {
     return Number(cost);
   }, [cost]);
   const navigate = useNavigate();
+  const assetTokenName = useTokenName(asset);
+
+  const assetName = useMemo(() => {
+    if (adt === ADT.Native) return "BNB";
+    else return assetTokenName || "";
+  }, [adt, assetTokenName]);
 
   // const { setSelectedCover } = useContext(CoverContext)!;
   // const router = useRouter();
 
   const handleCoverDetail = useCallback(
     (cover: ICover) => {
-      console.log('cover: ', cover)
       navigate(`/coverdetail/${id}`);
       // setSelectedCover(cover);
       // router.push(`/cover/${id}`);
@@ -73,7 +78,7 @@ export const Cover: React.FC<CoverProps> = (props) => {
           </div>
           <div className='flex items-center justify-between text-base capitalize leading-[20px]'>
             <div>Max Capacity</div>
-            <div className='font-semibold'>{bnToNumber(maxAmount || 0n)}{' '}BTC</div>
+            <div className='font-semibold'>{bnToNumber(maxAmount || 0n)}{' '}{assetName}</div>
           </div>
         </div>
       </div>

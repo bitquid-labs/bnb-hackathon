@@ -15,6 +15,7 @@ type BuyProps = {
   dueTo: CoverDueTo;
   maxCoverAmount: number;
   riskType: RiskType | undefined;
+  assetName: string;
 };
 
 const Buy: React.FC<BuyProps> = (props) => {
@@ -27,6 +28,7 @@ const Buy: React.FC<BuyProps> = (props) => {
     riskType,
     handleCoverAmountChange,
     handleCoverPeriodChange,
+    assetName
   } = props;
 
   return (
@@ -43,7 +45,7 @@ const Buy: React.FC<BuyProps> = (props) => {
             onChange={(e) => handleCoverAmountChange(e)}
           />
           <div className="h-[36px] min-w-[86px] rounded-[10px] bg-[#131313] px-[13px] py-[6px] text-center text-[15px] leading-[24px] text-white">
-            {BQBTC.symbol}
+            {assetName}
           </div>
         </div>
       </div>

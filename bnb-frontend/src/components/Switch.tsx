@@ -7,7 +7,6 @@ type Props = {
 };
 
 const SwitchComponent = ({ options, value = 0, handleSwitch }: Props) => {
-  console.log("options:", options, "value:", value);
   const [left, setLeft] = useState<number>(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const handleArrowClick = (direct: number): void => {

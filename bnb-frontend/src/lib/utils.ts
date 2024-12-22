@@ -8,7 +8,6 @@ export function cn(...inputs: ClassValue[]) {
 
 
 export const calculateCoverFee = (coverAmount: number, annualRate: number, coverPeriod: number) => {
-  console.log(coverAmount, annualRate, coverPeriod)
   return coverAmount * annualRate * coverPeriod * 10000 / (365 * 100);
 }
 

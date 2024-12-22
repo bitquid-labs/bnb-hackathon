@@ -1,5 +1,10 @@
 import IconBitcoin from "assets/icons/IconBitcoin";
-import { BQBTCTokenContract, InsurancePoolContract, VaultContract } from "constants/contracts";
+import {
+  BQBTCTokenContract,
+  InsurancePoolContract,
+  VaultContract,
+} from "constants/contracts";
+import useCallContract from "hooks/contracts/useCallContract";
 import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
 import { useVault } from "hooks/contracts/useVault";
 import { bnToNumber, numberToBN } from "lib/number";
@@ -7,8 +12,11 @@ import { ChainType } from "lib/wagmi";
 import React, { useMemo, useState } from "react";
 import { useParams } from "react-router";
 import { ADT } from "types/common";
-import { Address, erc20Abi, parseUnits } from "viem";
-import { useAccount, useWriteContract } from "wagmi";
+import { Address, erc20Abi, formatEther, formatUnits, parseUnits } from "viem";
+import { useAccount, useWriteContract, useBalance } from "wagmi";
+import { toast } from "react-toastify";
+import { useTokenName } from "hooks/contracts/useTokenName";
+import { useVaultDeposit } from "hooks/contracts/useVaultDeposit";
 
 type Props = {
   id: number;
@@ -16,85 +24,167 @@ type Props = {
 
 const VaultDetail: React.FC<Props> = ({ id }) => {
   const [stakeAmount, setStakeAmount] = useState("");
-  const [stakePeriod, setStakePeriod] = useState("");
   const { address, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
-  const [loadingMessage, setLoadingMessage] = useState<string>("")
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { callContractFunction } = useCallContract();
 
   const vaultData = useVault(id);
+
+  console.log("vault detail:", vaultData);
+  const userDeposit = useVaultDeposit(id);
 
 
   const assetType = useMemo(() => {
     if (vaultData) {
-      return vaultData?.assetType
+      return vaultData?.assetType;
     }
-  }, [vaultData])
+  }, [vaultData]);
 
   const assetAddress = useMemo(() => {
     if (vaultData) return vaultData?.asset;
-  }, [vaultData])
+  }, [vaultData]);
 
-  const depositIntoVault = async (amount: string, period: string, value: string) => {
+  const assetTokenName = useTokenName(assetAddress);
+
+  const assetName = useMemo(() => {
+    if (assetType === ADT.Native) return "BNB";
+    else return assetTokenName || "";
+  }, [assetType, assetTokenName]);
+
+  const { data: balanceData } = useBalance({
+    address: address,
+    token: assetType === ADT.ERC20 ? assetAddress : undefined,
+    unit: "ether",
+  });
+
+  const balance = useMemo(() => {
+    if (!balanceData) return 0;
+    return parseFloat(balanceData.formatted);
+  }, [balanceData]);
+
+  console.log("balance:", balance);
+
+  const depositIntoVault = async (amount: string, value: string) => {
     const params = [
       Number(id), // vaultId
       parseUnits(amount, 18), // amount
-      Number(period), // period
     ];
 
+    console.log("params:", params);
+
     try {
-      await writeContractAsync({
-        abi: VaultContract.abi,
-        address:
+      await callContractFunction(
+        VaultContract.abi,
         VaultContract.addresses[
           (chain as ChainType)?.chainNickName || "bscTest"
         ],
-        functionName: 'vaultDeposit',
-        args: params,
-        value: parseUnits(value, 18),
-      })
+        "vaultDeposit",
+        params,
+        parseUnits(value, 18),
+        () => {
+          toast.success("Deposit succeeded");
+          setLoadingMessage("");
+          setIsLoading(false);
+        },
+        () => {
+          setIsLoading(false);
+          setLoadingMessage("");
+          toast.success("Failed to deposit");
+        }
+      );
+
+      // await writeContractAsync({
+      //   abi: VaultContract.abi,
+      //   address:
+      //   VaultContract.addresses[
+      //     (chain as ChainType)?.chainNickName || "bscTest"
+      //   ],
+      //   functionName: 'vaultDeposit',
+      //   args: params,
+      //   value: parseUnits(value, 18),
+      // })
     } catch (error) {
-      console.log('error:', error)
+      console.log("error:", error);
     }
-  }
+  };
 
   const approveTokenTransfer = async (amount: number) => {
     try {
-      await writeContractAsync({
-        abi: erc20Abi,
-        address: assetAddress as Address,
-        functionName: "approve",
-        args: [InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
-      })  
-    } catch (error) {
-      console.log('error: ', error)
-    }
-  } 
+      await callContractFunction(
+        erc20Abi,
+        assetAddress as Address,
+        "approve",
+        [
+          InsurancePoolContract.addresses[
+            (chain as ChainType)?.chainNickName
+          ] as `0x${string}`,
+          numberToBN(amount),
+        ],
+        0n,
+        () => {
+          toast.success("Approved Tokens");
+          setLoadingMessage("");
+          setIsLoading(false);
+        },
+        () => {
+          setIsLoading(false);
+          setLoadingMessage("");
+          toast.success("Failed to approve");
+        }
+      );
 
-  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(assetAddress, InsurancePoolContract.addresses[
-    (chain as ChainType)?.chainNickName || "bscTest"
-  ], 18);
-  console.log('vault detail', vaultData, 'token approved:', approvedTokenAmount)
+      // await writeContractAsync({
+      //   abi: erc20Abi,
+      //   address: assetAddress as Address,
+      //   functionName: "approve",
+      //   args: [InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+      // })
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
+  const approvedTokenAmount = useERC20TokenApprovedTokenAmount(
+    assetAddress,
+    InsurancePoolContract.addresses[
+      (chain as ChainType)?.chainNickName || "bscTest"
+    ],
+    18
+  );
 
   const handleStake = async () => {
-    if (!vaultData || !stakeAmount || !stakePeriod) return;
+    if (!vaultData || !stakeAmount) return;
+
+    if (balance < parseFloat(stakeAmount)) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    if (
+      parseFloat(stakeAmount) >=
+        parseFloat(formatEther(vaultData.maxInv || 0n)) ||
+      parseFloat(stakeAmount) <= parseFloat(formatEther(vaultData.minInv || 0n))
+    ) {
+      toast.error("Amount out of range");
+      return;
+    }
 
     setIsLoading(true);
 
     if (assetType === ADT.Native) {
-      await depositIntoVault("0", stakePeriod, stakeAmount)
+      setLoadingMessage("Submitting");
+      await depositIntoVault("0", stakeAmount);
     } else {
       if (approvedTokenAmount < parseFloat(stakeAmount)) {
-        setLoadingMessage("Approving Tokens...")
-        await approveTokenTransfer(parseFloat(stakeAmount))
-        setLoadingMessage("")
-        setIsLoading(false);
-        return
+        setLoadingMessage("Approving Tokens");
+        await approveTokenTransfer(parseFloat(stakeAmount));
+        return;
       }
 
-      setLoadingMessage("Submitting...")
-      await depositIntoVault(stakeAmount, stakePeriod, "0");
-      setIsLoading(false);
+      setLoadingMessage("Submitting");
+      await depositIntoVault(stakeAmount, "0");
     }
     // const params = [
     //   Number(id), // vaultId
@@ -185,19 +275,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               onClick={() => handleStake()}
               className="h-45 flex items-center justify-center  px-35 rounded-9 border border-[#6B728099] bg-gradient-to-r from-[rgba(0,236,188,0.8)] to-[rgba(32,81,102,0.096)] cursor-pointer"
             >
-              {isLoading ? loadingMessage : 'Stake Now'}
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-15 font-[600]">Enter Period:</span>
-            <div className="flex items-center gap-4 bg-[#07040D] py-8 px-12 rounded-8 overflow-hidden h-45">
-              <input
-                className="max-w-200 outline-none bg-transparent text-20 font-[700]"
-                value={stakePeriod}
-                onChange={(e) => {
-                  setStakePeriod(e.target.value);
-                }}
-              />
+              {isLoading ? loadingMessage : "Stake Now"}
             </div>
           </div>
         </div>
@@ -209,9 +287,20 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  {Number(vaultData?.minInv)}
+                  {formatEther(vaultData?.minInv || 0n)}
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">USD</span>
+                <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-7">
+              <div className="text-[#9DA3BA] text-13 font-[500]">
+                Max Investment
+              </div>
+              <div className="flex items-end">
+                <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
+                  {formatEther(vaultData?.maxInv || 0n)}
+                </span>
+                <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
               </div>
             </div>
             <div className="flex flex-col items-start gap-7">
@@ -220,7 +309,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                {Number(vaultData?.minPeriod)}
+                  {Number(vaultData?.minPeriod)}
                 </span>
                 <span className="text-[#FFF] text-12 ml-4">Days</span>
               </div>

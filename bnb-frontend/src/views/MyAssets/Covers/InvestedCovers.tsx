@@ -26,7 +26,7 @@ const InvestedCovers: React.FC = () => {
         <tbody>
           {userCovers.map((cover, index) => (
             <>
-              <tr className="text-center px-8">
+              <tr className="text-center px-8" key={index}>
                 <td className="font-[400] bg-[#1F1F1F] py-18 rounded-l-8 pl-20">
                   <div className="flex items-center">
                     <div className="w-30 h-30 flex items-center justify-center rounded-full text-[#858584] bg-[#2B2B2B]">{index}</div>

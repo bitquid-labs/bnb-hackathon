@@ -6,13 +6,17 @@ import networkBSCIcon from "assets/images/network_bsc.png";
 import IconArrow from "assets/icons/IconArrow";
 import { usePoolInfo } from "hooks/contracts/usePoolInfo";
 import { ADT, DepositType } from "types/common";
-import { useAccount, useWriteContract } from "wagmi";
+import { useAccount, useBalance, useWriteContract } from "wagmi";
 import { Address, erc20Abi, parseUnits } from "viem";
 import { InsurancePoolContract } from "constants/contracts";
 import { ChainType } from "lib/wagmi";
 import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
 import { numberToBN } from "lib/number";
 import { zeroAddress } from "viem";
+import { toast } from "react-toastify";
+import useCallContract from "hooks/contracts/useCallContract";
+import { useTokenName } from "hooks/contracts/useTokenName";
+import { usePoolDeposit } from "hooks/contracts/usePoolDeposit";
 
 type Props = {
   poolId: number;
@@ -28,6 +32,12 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
   const { writeContractAsync } = useWriteContract();
   const [loadingMessage, setLoadingMessage] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { callContractFunction } = useCallContract();
+
+  const depositADT = useMemo(() => {
+    if (!poolData) return undefined;
+    return poolData.assetType;
+  }, [poolData]);
 
   const assetType = useMemo(() => {
     if (poolData) {
@@ -41,6 +51,19 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
     }
   }, [poolData]);
 
+  const assetTokenName = useTokenName(assetAddress);
+
+  const {data: balanceData} = useBalance({
+    address: address,
+    token: depositADT === ADT.ERC20 ? assetAddress : undefined,
+    unit: 'ether'
+  });
+
+  const assetName = useMemo(() => {
+    if (depositADT === ADT.Native) return "BNB";
+    else return assetTokenName || "";
+  }, [depositADT, assetTokenName]);
+
   const handleDepositPeriodChange = (newVal: number) => {
     setDepositPeriod(newVal);
   };
@@ -50,18 +73,36 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
 
   const approveTokenTransfer = async (amount: number) => {
     try {
-      await writeContractAsync({
-        abi: erc20Abi,
-        address: assetAddress as Address,
-        functionName: "approve",
-        args: [InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
-      })  
+      await callContractFunction(
+        erc20Abi,
+        assetAddress as Address,
+        "approve",
+        [InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+        0n,
+        () => {
+          toast.success("Token Approved")
+          setIsLoading(false);
+          setLoadingMessage("")
+        },
+        () => {
+          setIsLoading(false);
+          setLoadingMessage("")
+          toast.success("Failed to approve")
+        }
+      )
+      // await writeContractAsync({
+      //   abi: erc20Abi,
+      //   address: assetAddress as Address,
+      //   functionName: "approve",
+      //   args: [InsurancePoolContract.addresses[(chain as ChainType)?.chainNickName] as `0x${string}`, numberToBN(amount)],
+      // })  
     } catch (error) {
       console.log('error: ', error)
     }
   }
 
   console.log('pool detail:', poolData, approvedTokenAmount)
+  const userPoolDeposit = usePoolDeposit(poolId);
 
   const depositIntoPool = async (assetType: ADT, __assetAddress: string, value: string) => {
     const params = [
@@ -76,16 +117,36 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
     console.log('params:', params)
 
     try {
-      await writeContractAsync({
-        abi: InsurancePoolContract.abi,
-        address:
-          InsurancePoolContract.addresses[
-            (chain as ChainType)?.chainNickName || "bscTest"
-          ],
-        functionName: "deposit",
-        args: [params],
-        value: parseUnits(value, 18),
-      });
+      await callContractFunction(
+        InsurancePoolContract.abi,
+        InsurancePoolContract.addresses[
+          (chain as ChainType)?.chainNickName || "bscTest"
+        ],
+        "deposit",
+        [params],
+        parseUnits(value, 18),
+        () => {
+          toast.success("Deposit Succeed")
+          setIsLoading(false);
+          setLoadingMessage("")
+        },
+        () => {
+          setIsLoading(false);
+          setLoadingMessage("")
+          toast.success("Failed to deposit")
+        }
+      )
+
+      // await writeContractAsync({
+      //   abi: InsurancePoolContract.abi,
+      //   address:
+      //     InsurancePoolContract.addresses[
+      //       (chain as ChainType)?.chainNickName || "bscTest"
+      //     ],
+      //   functionName: "deposit",
+      //   args: [params],
+      //   value: parseUnits(value, 18),
+      // });
     } catch (e) {
       console.log("error:", e);
     }
@@ -104,18 +165,20 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
         setLoadingMessage("Approve Tokens ...")
         await approveTokenTransfer(parseFloat(depositAmount))
         setLoadingMessage("")
-        setIsLoading(false);
         return;
       }
       setLoadingMessage("Submitting ...")
       await depositIntoPool(ADT.ERC20, assetAddress, "0");
     }
 
-    setIsLoading(false);
-    setLoadingMessage("")
+    // setIsLoading(false);
+    // setLoadingMessage("")
   };
 
-  useEffect(() => {});
+  useEffect(() => {
+    if (poolData)
+    setDepositPeriod(Number(poolData.minPeriod));
+  }, [poolData]);
 
   return (
     <div className="w-full">
@@ -176,7 +239,7 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
               <div className="w-full flex items-center justify-between mt-50">
                 <div className="">
                   <span className="text-15 text-white">Balance: </span>
-                  <span className="text-15 text-white">22.52</span>
+                  <span className="text-15 text-white">{balanceData?.formatted}</span>
                 </div>
                 <div className="flex items-center gap-12">
                   <div className="px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
@@ -201,10 +264,10 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                   />
                 </div>
                 <div className="flex justify-center items-center">
-                  <span className="text-15 font-[300]">BNB</span>
-                  <div className="flex">
+                  <span className="text-15 font-[500]">{assetName}</span>
+                  {/* <div className="flex">
                     <img src={networkBSCIcon} alt="bsc" className="w-20 h-20" />
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div className="w-full flex items-center justify-between">

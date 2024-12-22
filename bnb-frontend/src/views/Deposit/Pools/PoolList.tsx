@@ -35,7 +35,7 @@ const PoolList: React.FC<Props> = ({ poolData, handleDeposit, sectionTitle, setP
           <tbody>
             {poolData.map((pool, index) => (
               <>
-                <tr className="text-center px-8">
+                <tr className="text-center px-8" key={index}>
                   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-l-8">
                     {pool.poolName}
                   </td>

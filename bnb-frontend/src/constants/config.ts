@@ -8,3 +8,5 @@ export const BQBTC = {
   symbol: 'BqBTC',
   decimals: 18
 }
+
+export const feeDecimals = 14;
