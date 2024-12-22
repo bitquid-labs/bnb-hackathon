@@ -1,6 +1,7 @@
 import React from "react";
 import InvestedCovers from "views/MyAssets/Covers/InvestedCovers";
 import InvestedPools from "views/MyAssets/Pools/InvestedPools";
+import VaultsOverview from "views/MyAssets/Vaults/VaultsOverview";
 
 const MyAssetsPage = () => {
   return (
@@ -17,7 +18,8 @@ const MyAssetsPage = () => {
         <PoolsOverview />
       </div> */}
       {/* <InvestedCovers /> */}
-      <InvestedPools />
+      {/* <InvestedPools /> */}
+      <VaultsOverview />
     </div>
   )
 }

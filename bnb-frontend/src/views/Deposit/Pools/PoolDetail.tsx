@@ -278,10 +278,10 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                   Transaction Fee
                 </span>
               </div>
-              <div className="w-full flex items-center justify-start my-10">
+              {/* <div className="w-full flex items-center justify-start my-10">
                 <span className="text-14 font-[600]">LIT Token Assigned:</span>
                 <span className="text-14 font-[600]">15.6</span>
-              </div>
+              </div> */}
               <div className="w-full">
                 <button
                   onClick={handleDeposit}
@@ -301,7 +301,7 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
             </div>
             <div className="flex w-full">
               <div className="flex flex-col gap-[13px] w-full">
-                <div className="flex items-center mt-40 justify-between">
+                {/* <div className="flex items-center mt-40 justify-between">
                   <div className="flex gap-[10px]">
                     <div className="text-15 font-[600]">Tenure Period</div>
                   </div>
@@ -348,10 +348,10 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                       <div>365 Days</div>
                     </div>
                   </div>
-                </div>
-                <div className="">
+                </div> */}
+                {/* <div className="">
                   <span className="text-15 font-[600]">Rewards (by $0)</span>
-                </div>
+                </div> */}
                 <div className="flex w-full items-start justify-between">
                   <div className="flex flex-col h-full items-center justify-between gap-5">
                     <div className="text-15 font-[600]">Selected Strategy</div>

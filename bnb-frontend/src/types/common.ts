@@ -22,6 +22,12 @@ export const enum ADT {
   ERC20
 }
 
+export const enum Status {
+  Active,
+  Due,
+  Withdrawn
+}
+
 export interface ICover {
   id?: bigint | undefined;
   coverName?: string | undefined;
@@ -95,6 +101,22 @@ export interface IUserCover {
   coverPeriod?: bigint | undefined;
   endDay?: bigint | undefined;
   isActive?: boolean | undefined;
+}
+
+
+export interface IVaultDeposit {
+  lp: string | undefined;
+  amount: bigint | undefined;
+  vaultId: bigint | undefined;
+  dailyPayout: bigint | undefined;
+  status: Status | undefined;
+  daysLeft: bigint | undefined;
+  startDate: bigint | undefined;
+  expiryDate: bigint | undefined;
+  withdrawalInitiated: bigint | undefined;
+  accruedPayout: bigint | undefined;
+  assetType: ADT | undefined;
+  asset: string | undefined;
 }
 
 export const riskTypeNames = [
