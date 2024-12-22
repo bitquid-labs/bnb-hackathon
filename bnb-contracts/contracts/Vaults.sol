@@ -97,7 +97,9 @@ contract Vaults is ReentrancyGuard, Ownable {
     struct Vault {
         uint256 id;
         string vaultName;
+        CoverLib.RiskType risk;
         CoverLib.Pool[] pools;
+        uint256 apy;
         uint256 minInv;
         uint256 maxInv;
         uint256 minPeriod;
@@ -122,6 +124,7 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 amount;
         uint256 vaultId;
         uint256 dailyPayout;
+        uint256 vaultApy;
         CoverLib.Status status;
         uint256 daysLeft;
         uint256 startDate;
@@ -176,6 +179,7 @@ contract Vaults is ReentrancyGuard, Ownable {
 
     function createVault(
         string memory _vaultName,
+        CoverLib.RiskType risk,
         uint256[] memory _poolIds,
         uint256[] memory poolPercentageSplit,
         uint256 _minInv,
@@ -201,8 +205,9 @@ contract Vaults is ReentrancyGuard, Ownable {
         vault.maxInv = _maxInv;
         vault.assetType = adt;
         vault.asset = asset;
+        vault.risk = risk;
 
-        (uint256 percentageSplit, uint256 minPeriod) = validateAndSetPools(
+        (uint256 percentageSplit, uint256 minPeriod, uint256 apy) = validateAndSetPools(
             vault,
             _poolIds,
             poolPercentageSplit,
@@ -214,6 +219,7 @@ contract Vaults is ReentrancyGuard, Ownable {
             "Minimun period must be greater than or equal to the minimum period of all pools within the vault"
         );
         vault.minPeriod = _minPeriod;
+        vault.apy = apy;
 
         require(percentageSplit == 100, "Total split must equal 100%");
     }
@@ -300,6 +306,7 @@ contract Vaults is ReentrancyGuard, Ownable {
             amount: totalAmount,
             vaultId: _vaultId,
             dailyPayout: totalDailyPayout,
+            vaultApy: vault.apy,
             status: CoverLib.Status.Active,
             daysLeft: vault.minPeriod,
             startDate: block.timestamp,
@@ -318,8 +325,10 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256[] memory _poolIds,
         uint256[] memory poolPercentageSplit,
         CoverLib.AssetDepositType adt
-    ) internal returns (uint256 percentageSplit, uint256 minPeriod) {
-        minPeriod = 365;
+    ) internal returns (uint256 percentageSplit, uint256 minPeriod, uint256 apy) {
+        minPeriod = 0;
+        uint256 weightedTotalAPY = 0;
+        uint256 totalPercentage = 0;
         for (uint256 i = 0; i < _poolIds.length; i++) {
             CoverLib.Pool memory pool = IPoolContract.getPool(_poolIds[i]);
             require(pool.assetType == adt, "Incompatible asset type in pool");
@@ -328,10 +337,15 @@ contract Vaults is ReentrancyGuard, Ownable {
                 i
             ];
             vault.pools.push(pool);
-            if (pool.minPeriod < minPeriod) {
+            if (pool.minPeriod > minPeriod) {
                 minPeriod = pool.minPeriod;
             }
+
+            weightedTotalAPY += pool.apy * poolPercentageSplit[i];
+            totalPercentage += poolPercentageSplit[i];
         }
+
+        apy = totalPercentage > 0 ? weightedTotalAPY / totalPercentage : 0;
     }
 
     function getVault(uint256 vaultId) public view returns (Vault memory) {
@@ -342,6 +356,10 @@ contract Vaults is ReentrancyGuard, Ownable {
         uint256 vaultId
     ) public view returns (CoverLib.Pool[] memory) {
         return vaults[vaultId].pools;
+    }
+
+    function getVaultCount() public view returns (uint256) {
+        return vaultCount;
     }
 
     function getUserVaultPoolDeposits(
@@ -365,6 +383,44 @@ contract Vaults is ReentrancyGuard, Ownable {
         address user
     ) public view returns (VaultDeposit memory) {
         return userVaultDeposits[user][vaultId];
+    }
+
+    function getUserVaultDeposits(
+        address user
+    ) public view returns (VaultDeposit[] memory, string[][] memory) {
+        uint256 resultCount = 0;
+        for (uint256 i = 1; i <= vaultCount; i++) {
+            if (
+                userVaultDeposits[user][i].amount >
+                0
+            ) {
+                resultCount++;
+            }
+        }
+
+        VaultDeposit[] memory result = new VaultDeposit[](resultCount);
+        string[][] memory pooldetails = new string[][](resultCount);
+        uint256 resultIndex = 0;
+        for (uint256 i = 1; i <= vaultCount; i++) {
+            VaultDeposit memory uservaultdeposit = userVaultDeposits[user][i];
+
+            if (uservaultdeposit.amount > 0) {
+                Vault memory vault =  vaults[i];
+                string[] memory poolnames = new string[](vault.pools.length);
+
+                for (uint256 j = 0; j < vault.pools.length; j++) {
+                    string memory poolname = vault.pools[j].poolName;
+                    poolnames[j] = poolname;
+                }
+
+                result[resultIndex] = uservaultdeposit;
+                pooldetails[resultIndex] = poolnames;
+
+                resultIndex++;
+            }    
+        }
+
+        return(result, pooldetails);
     }
 
     function setUserVaultDepositToZero(
