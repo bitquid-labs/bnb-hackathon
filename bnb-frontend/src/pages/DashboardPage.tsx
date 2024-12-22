@@ -3,6 +3,7 @@ import SocialLinks from "components/SocialLInks";
 import IntroText from "views/Dashboard/IntroText";
 import Features from "views/Dashboard/Features";
 import Faucet from "views/Dashboard/Faucet";
+import ConnectWalletButton from "components/ConnectWalletButton";
 
 const DashboardPage: React.FC = () => {
   return (
@@ -14,8 +15,7 @@ const DashboardPage: React.FC = () => {
       <div className="mt-77">
         <Faucet />
       </div>
-      <div className="my-95 w-full bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2">
-      </div>
+      <div className="my-95 w-full bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2"></div>
       <SocialLinks />
     </div>
   );

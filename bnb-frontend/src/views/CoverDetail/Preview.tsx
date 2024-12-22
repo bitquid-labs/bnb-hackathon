@@ -1,5 +1,6 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Button from "components/common/Button";
+import ConnectWalletButton from "components/ConnectWalletButton";
 import { BQBTC } from "constants/config";
 import { formatDate } from "lib/number";
 import React from "react";
@@ -33,7 +34,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
     isLoading,
     loadingMessage,
     maxAmount,
-    assetName
+    assetName,
   } = props;
 
   const { openConnectModal } = useConnectModal();
@@ -107,14 +108,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
           <div className="flex items-center gap-2">
             {!!coverFee && (
               <div>
-                {(coverFee / 10000).toFixed(
-                  coverFee
-                    ? Math.max(
-                        Math.round(Math.log10(1 / Math.abs(coverFee))),
-                        5
-                      )
-                    : 5
-                )}
+                {(coverFee / 10000).toFixed(coverFee ? Math.max(Math.round(Math.log10(1 / Math.abs(coverFee))), 5) : 5)}
               </div>
             )}
             {/* <Dropdown
@@ -122,9 +116,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
               setValue={setSelectedToken}
               options={['WBTC', 'WETH', 'USDC']}
             /> */}
-            <div className="ml-10 rounded-6 bg-[#D9D9D933] px-[25px] py-[5px]">
-              {BQBTC.symbol}
-            </div>
+            <div className="ml-10 rounded-6 bg-[#D9D9D933] px-[25px] py-[5px]">{BQBTC.symbol}</div>
           </div>
         </div>
       </div>
@@ -139,14 +131,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
             {error ? error : isLoading ? loadingMessage : "Buy Cover"}
           </Button>
         )}
-        {!address && (
-          <Button
-            className="w-fit min-w-302 rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] py-16 text-center border border-[#00ECBC]"
-            onClick={openConnectModal}
-          >
-            {"Connect Wallet"}
-          </Button>
-        )}
+        {!address && <ConnectWalletButton />}
       </div>
     </div>
   );

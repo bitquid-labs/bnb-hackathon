@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
 import { parseUnits } from "viem";
 import useCallContract from "hooks/contracts/useCallContract";
+import ConnectWalletButton from "components/ConnectWalletButton";
 
 const Faucet: React.FC = () => {
   const { address, chain } = useAccount();
@@ -16,10 +17,10 @@ const Faucet: React.FC = () => {
   const { callContractFunction } = useCallContract();
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
+
   const requestMintBQBTC = async (amount: number) => {
     if (!address) {
-      toast.error('Please connect your wallet first!');
+      toast.error("Please connect your wallet first!");
       return;
     }
     const params = [address, parseUnits(amount.toString(), 18)];
@@ -32,12 +33,12 @@ const Faucet: React.FC = () => {
         params,
         0n,
         () => {
-          toast.success("Faucet Sent!")
+          toast.success("Faucet Sent!");
           setIsLoading(false);
         },
         () => {
           setIsLoading(false);
-          toast.success("Failed purchase")
+          toast.success("Failed purchase");
         }
       );
 
@@ -50,7 +51,7 @@ const Faucet: React.FC = () => {
       // });
       // toast.success('Faucet Sent!');
     } catch (err) {
-      console.log('error:', err)
+      console.log("error:", err);
       // let errorMsg = '';
       // if (err instanceof Error) {
       //   if (err.message.includes('User denied transaction signature')) {
@@ -63,7 +64,7 @@ const Faucet: React.FC = () => {
 
   const handleClaimToken = async () => {
     setIsLoading(true);
-    setLoadingMessage("Minting Tokens")
+    setLoadingMessage("Minting Tokens");
     try {
       // await checkAndAddToken(
       //   BQBTCTokenContract.addresses[
@@ -87,21 +88,19 @@ const Faucet: React.FC = () => {
   return (
     <div className="w-full flex items-start justify-between border border-[#6B7280] bg-[#6B72801A] px-40 py-62 rounded-32">
       <div className="w-[30%] flex flex-col justify-between items-start">
-        <h2 className="text-24 font-[800] text-[#FFFFFF]">
-          BqBtc Testnet Faucet
-        </h2>
+        <h2 className="text-24 font-[800] text-[#FFFFFF]">BqBtc Testnet Faucet</h2>
         <p className="text-14 text-[#FFFFFFA3] my-25">
-          We support Bitlayer, BoB, Holesky, and lorenzo testnets.Soon we will
-          onboard other chains as well.Connect your wallet, to get Testnet BqBtc
-          and start Testing !
+          We support Bitlayer, BoB, Holesky, and lorenzo testnets.Soon we will onboard other chains as well.Connect your
+          wallet, to get Testnet BqBtc and start Testing !
         </p>
         {!address && (
-          <Button
-            className="w-fit min-w-302 rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] py-16 text-center border border-[#00ECBC]"
-            onClick={openConnectModal}
-          >
-            {"Connect Wallet"}
-          </Button>
+          // <Button
+          //   className="w-fit min-w-302 rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] py-16 text-center border border-[#00ECBC]"
+          //   onClick={openConnectModal}
+          // >
+          //   {"Connect Wallet"}
+          // </Button>
+          <ConnectWalletButton className="w-fit min-w-302 rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] py-16 text-center border border-[#00ECBC]" />
         )}
         {address && (
           <Button
