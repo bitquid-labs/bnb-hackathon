@@ -33,7 +33,7 @@ const VaultList: React.FC<Props> = ({currentVaultId, setCurrentVaultId}) => {
 
   return (
     <div className="w-full">
-      <Carousel responsive={responsive}>
+      <Carousel responsive={responsive} containerClass="justify-center">
         {vaults.map((vault, index) => {
           return (
             <VaultCard

@@ -32,6 +32,8 @@ const DepositPools: React.FC = () => {
     undefined
   );
 
+  console.log('all pools:', pools)
+
   useEffect(() => {
     if (!pools) return;
     setPoolsData(

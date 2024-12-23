@@ -89,7 +89,9 @@ export interface IPool {
 export interface IVault {
   id?: bigint | undefined,
   vaultName?: string | undefined,
+  risk?: PoolRiskType | undefined,
   pools?: IPool[] | [],
+  apy?: bigint | undefined,
   minInv?: bigint | undefined,
   maxInv?: bigint | undefined,
   minPeriod?: bigint | undefined,

@@ -7,7 +7,7 @@ import IconArrow from "assets/icons/IconArrow";
 import { usePoolInfo } from "hooks/contracts/usePoolInfo";
 import { ADT, DepositType } from "types/common";
 import { useAccount, useBalance, useWriteContract } from "wagmi";
-import { Address, erc20Abi, parseUnits } from "viem";
+import { Address, erc20Abi, formatEther, parseEther, parseUnits } from "viem";
 import { InsurancePoolContract } from "constants/contracts";
 import { ChainType } from "lib/wagmi";
 import { useERC20TokenApprovedTokenAmount } from "hooks/contracts/useTokenApprovedAmount";
@@ -27,6 +27,7 @@ type Props = {
 const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
   const { address, chain } = useAccount();
   const poolData = usePoolInfo(poolId);
+  console.log('poolData:', poolData)
   const [depositAmount, setDepositAmount] = useState("");
   const [depositPeriod, setDepositPeriod] = useState<number>(
     Number(poolData?.minPeriod) || 0
@@ -53,6 +54,32 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
     }
   }, [poolData]);
 
+  // const apy = useMemo(() => {
+  //   if (!poolData || !depositAmount) return {
+  //     perWeek: '0',
+  //     perMonth: '0',
+  //   }
+  //   const monthly = Number(poolData?.apy) * parseFloat(depositAmount) * 10000 / (12 * 1000000);
+  //   const weekly = Number(poolData?.apy) * parseFloat(depositAmount) * 10000 / (52 * 1000000);
+  //   return {
+  //     perWeek: weekly.toFixed(4),
+  //     perMonth: monthly.toFixed(4),
+  //   }
+  // }, [poolData?.apy, depositAmount])
+
+  const apy = useMemo(() => {
+    if (!poolData || !depositAmount) return {
+      perWeek: '0',
+      perMonth: '0',
+    }
+    const monthly = Number(poolData?.apy) * 100 / (12 * 100);
+    const weekly = Number(poolData?.apy) * 100 / (52 * 100);
+    return {
+      perWeek: weekly.toFixed(4),
+      perMonth: monthly.toFixed(4),
+    }
+  }, [poolData?.apy, depositAmount])
+
   const assetTokenName = useTokenName(assetAddress);
 
   const {data: balanceData} = useBalance({
@@ -60,6 +87,12 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
     token: depositADT === ADT.ERC20 ? assetAddress : undefined,
     unit: 'ether'
   });
+
+  const balance = useMemo(() => {
+    if (!balanceData) return 0;
+    return parseFloat(balanceData.formatted)
+  }, [balanceData])
+
 
   const assetName = useMemo(() => {
     if (depositADT === ADT.Native) return "BNB";
@@ -170,7 +203,6 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
       if (approvedTokenAmount < parseFloat(depositAmount)) {
         setLoadingMessage("Approve Tokens ...")
         await approveTokenTransfer(parseFloat(depositAmount))
-        setLoadingMessage("")
         return;
       }
       setLoadingMessage("Submitting ...")
@@ -225,17 +257,17 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
               />
             </div>
           </div>
-          <div className="flex items-center text-white">
+          <div className="flex items-center text-white gap-8">
             <div className="border border-[#6B7280] rounded-10 bg-[#FFFFFF0D] py-12 px-20">
               APY: {Number(poolData?.apy)}%
             </div>
             <div className="flex items-center justify-center border border-[#6B7280] rounded-10 bg-[#FFFFFF0D] py-12 px-20">
               <img
-                src={networkBOBIcon}
+                src={networkBSCIcon}
                 className="w-25 h-24"
                 alt="network_bob"
               />
-              <span className="pl-4">BOB Chain</span>
+              <span className="ml-4">Binance Smart Chain</span>
             </div>
           </div>
         </div>
@@ -248,13 +280,25 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
                   <span className="text-15 text-white">{balanceData?.formatted}</span>
                 </div>
                 <div className="flex items-center gap-12">
-                  <div className="px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
+                  <div 
+                  onClick={() => {
+                    setDepositAmount((balance * 25 / 100).toString())
+                  }}
+                  className="cursor-pointer px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
                     25%
                   </div>
-                  <div className="px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
+                  <div 
+                    onClick={() => {
+                      setDepositAmount((balance * 50 / 100).toString())
+                    }}
+                  className="cursor-pointer px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
                     50%
                   </div>
-                  <div className="px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
+                  <div 
+                    onClick={() => {
+                      setDepositAmount((balance).toString())
+                    }}
+                  className="cursor-pointer px-10 rounded-5 border border-[#FFFFFF33] bg-[#FFFFFF0D] text-[#858585]">
                     MAX
                   </div>
                 </div>
@@ -362,16 +406,16 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
                   <div className="flex flex-col h-full items-center justify-between gap-5">
                     <div className="text-15 font-[600]">Selected Strategy</div>
                     <div className="bg-[#00ECBC1A] px-40 py-5 rounded-10">
-                      Vesting
+                      Investment Ongoing
                     </div>
                   </div>
                   <div className="flex flex-col h-full items-center justify-between gap-20">
                     <span className="text-15 font-[600]">Per week</span>
-                    <span className="text-15 font-[600] py-5">xx %</span>
+                    <span className="text-15 font-[600] py-5">{apy.perWeek} %</span>
                   </div>
                   <div className="flex flex-col h-full items-center justify-between gap-5">
                     <span className="text-15 font-[600]">Per month</span>
-                    <span className="text-15 font-[600] py-5">xx %</span>
+                    <span className="text-15 font-[600] py-5">{apy.perMonth} %</span>
                   </div>
                 </div>
               </div>

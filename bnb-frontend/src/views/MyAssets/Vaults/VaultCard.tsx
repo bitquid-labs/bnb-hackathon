@@ -4,7 +4,7 @@ import { IVaultDeposit } from "types/common";
 import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
 import useCallContract from "hooks/contracts/useCallContract";
-import { InsurancePoolContract, VaultContract } from "constants/contracts";
+import { ICoverContract, InsurancePoolContract, VaultContract } from "constants/contracts";
 import { ChainType } from "lib/wagmi";
 
 type VaultCardProps = {
@@ -23,8 +23,50 @@ const VaultCard: React.FC<VaultCardProps> = ({
   console.log('vaultData:', vaultData)
   
   const handleClaimYeild = async () => {
+    if (!vaultData) return;
 
-  }
+    const vaultId = Number(vaultData.vaultId);
+    console.log('poolDetail:', vaultData, vaultId)
+
+    setIsClaimingLoading(true);
+    setLoadingMessage("Claiming")
+    const params = [
+      vaultId
+    ];
+
+    try {
+      await callContractFunction(
+        ICoverContract.abi,
+        ICoverContract.addresses[
+          (chain as ChainType)?.chainNickName
+        ] as `0x${string}`,
+        "claimPayoutForVault",
+        params,
+        0n,
+        () => {
+          toast.success("Claim succeed!")
+          setLoadingMessage("")
+          setIsClaimingLoading(false);
+        },
+        () => {
+          setLoadingMessage("")
+          setIsClaimingLoading(false);
+          toast.success("Failed to claim")
+        }
+      );
+
+      // await writeContractAsync({
+      //   abi: ICoverContract.abi,
+      //   address: ICoverContract.addresses[
+      //     (chain as ChainType)?.chainNickName
+      //   ] as `0x${string}`,
+      //   functionName: "claimPayoutForLP",
+      //   args: params,
+      // });
+    } catch (error) {
+      console.log("error:", error);
+    }
+  };
 
   const handleWithdrawStake = async () => {
     setIsWithdrawLoading(true);

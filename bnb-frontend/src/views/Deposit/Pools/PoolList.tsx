@@ -3,6 +3,8 @@ import { getRiskTypeName } from "lib/number";
 import React from "react";
 import { IPool } from "types/common";
 import IconDownIcon from "assets/icons/IconDown";
+import networkBSCIcon from "assets/images/network_bsc.png";
+import { formatEther } from "viem";
 
 type IPoolWithDetails = IPool & {
   displayDetails: boolean;
@@ -15,7 +17,12 @@ type Props = {
   setPoolsData: (prev: any) => void;
 };
 
-const PoolList: React.FC<Props> = ({ poolData, handleDeposit, sectionTitle, setPoolsData }) => {
+const PoolList: React.FC<Props> = ({
+  poolData,
+  handleDeposit,
+  sectionTitle,
+  setPoolsData,
+}) => {
   return (
     <div className="w-full">
       <div className="mt-80 mb-57">
@@ -39,10 +46,10 @@ const PoolList: React.FC<Props> = ({ poolData, handleDeposit, sectionTitle, setP
                   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-l-8">
                     {pool.poolName}
                   </td>
-                  <td className="font-[500] bg-[#1F1F1F] py-24">{"AAA"}</td>
-                  <td className="font-[500] bg-[#1F1F1F] py-24">{pool.apy}</td>
+                  <td className="font-[500] bg-[#1F1F1F] py-24">{pool.rating}</td>
+                  <td className="font-[500] bg-[#1F1F1F] py-24">{Number(pool.apy)}%</td>
                   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-r-8">
-                    {pool.minPeriod}
+                    {Number(pool.minPeriod)}Days
                   </td>
                   <td className="bg-transparent">
                     <button
@@ -61,12 +68,16 @@ const PoolList: React.FC<Props> = ({ poolData, handleDeposit, sectionTitle, setP
                         <></>
                       ) : (
                         <div className="flex w-full px-45 py-25">
-                          <div className="flex w-[50%] flex-col items-center justify-center px-54">
+                          <div className="flex w-[50%] flex-col items-center justify-center px-54 gap-12">
                             <div className="flex items-center justify-between w-full">
                               <span className="text-22 font-[600]">
                                 Network
                               </span>
-                              <span>{"Bitcoin"}</span>
+                              <img
+                                src={networkBSCIcon}
+                                className="w-25 h-24"
+                                alt="network_bsc"
+                              />
                               {/* <span>{pool.details.network}</span> */}
                             </div>
                             <div className="flex items-center justify-between w-full">
@@ -78,21 +89,21 @@ const PoolList: React.FC<Props> = ({ poolData, handleDeposit, sectionTitle, setP
                               </span>
                             </div>
                           </div>
-                          <div className="flex w-[50%] flex-col items-center justify-center px-54">
+                          <div className="flex w-[50%] flex-col items-center justify-center px-54 gap-12">
                             <div className="flex items-center justify-between w-full">
                               <span className="text-14 font-[400]">TVL</span>
                               <span className="text-14 font-[800]">
-                                {pool.tvl}
+                                {formatEther(pool.tvl || 0n)}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between w-full">
+                            {/* <div className="flex items-center justify-between w-full">
                               <span className="text-14 font-[400]">
                                 Investment Arm %
                               </span>
                               <span className="text-14 font-[800]">
                                 {Number(pool.investmentArmPercent)} %
                               </span>
-                            </div>
+                            </div> */}
                             <div className="flex items-center justify-between w-full">
                               <span className="text-14 font-[400]">
                                 Cover Purchase %

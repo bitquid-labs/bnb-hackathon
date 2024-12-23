@@ -168,14 +168,14 @@ const VaultDetail: React.FC<Props> = ({ id, isDeposited }) => {
       return;
     }
 
-    if (
-      parseFloat(stakeAmount) >=
-        parseFloat(formatEther(vaultData.maxInv || 0n)) ||
-      parseFloat(stakeAmount) <= parseFloat(formatEther(vaultData.minInv || 0n))
-    ) {
-      toast.error("Amount out of range");
-      return;
-    }
+    // if (
+    //   parseFloat(stakeAmount) >=
+    //     parseFloat(formatEther(vaultData.maxInv || 0n)) ||
+    //   parseFloat(stakeAmount) <= parseFloat(formatEther(vaultData.minInv || 0n))
+    // ) {
+    //   toast.error("Amount out of range");
+    //   return;
+    // }
 
     setIsLoading(true);
 
@@ -259,7 +259,7 @@ const VaultDetail: React.FC<Props> = ({ id, isDeposited }) => {
               {vaultData?.vaultName}
             </div>
             <div className="relative z-[10]">
-              <span className="font-[700] text-48">5-7%</span>
+              <span className="font-[700] text-48">{Number(vaultData?.apy || 0n)} %</span>
               <span className="text-19 ml-8">APY</span>
             </div>
           </div>
@@ -336,9 +336,10 @@ const VaultDetail: React.FC<Props> = ({ id, isDeposited }) => {
                 Pools Invested:
               </div>
               <div className="flex items-end">
-                <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  AAA, BB, C
-                </span>
+                <div className="flex flex-col justify-center items-center gap-4 text-[#00ECBC] text-17 font-[700] leading-[25px]">
+                  {vaultData?.pools?.map((vault, index) => (
+                    <span key={index}>{vault.poolName}</span>))}
+                </div>
                 <span className="text-[#FFF] text-12 ml-4">{""}</span>
               </div>
             </div>

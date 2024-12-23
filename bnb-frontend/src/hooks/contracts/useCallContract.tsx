@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import * as React from "react";
 import { useTransactionConfirmations } from "wagmi";
-// import { getTransactionConfirmations } from '@wagmi/core'
+import { getTransactionConfirmations } from '@wagmi/core'
 
 const useCallContract = () => {
   const { status, data, error, writeContractAsync } = useWriteContract({ config });
@@ -45,16 +45,16 @@ const useCallContract = () => {
       value,
     });
 
-    // const intervalId = setInterval(async () => {
-    //   const blocks = await getTransactionConfirmations(config, {
-    //     hash: res,
-    //   })
+    const intervalId = setInterval(async () => {
+      const blocks = await getTransactionConfirmations(config, {
+        hash: res,
+      })
 
-    //   if (blocks > 0) {
-    //     waitingForConfirm();
-    //     clearInterval(intervalId);
-    //   }
-    // }, 1000)
+      if (blocks > 0) {
+        waitingForConfirm();
+        clearInterval(intervalId);
+      }
+    }, 1000)
 
     setTxHash(res);
     return res;

@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
 import { IPoolInfo } from "types/common";
 import { usePoolDeposit } from "hooks/contracts/usePoolDeposit";
+import { bnToNumber, numberToBN } from "lib/number";
 
 type Props = {
   poolDetail: IPoolInfo;
@@ -105,27 +106,27 @@ const PoolCard: React.FC<Props> = ({
         <div className="grid grid-cols-3 gap-y-40">
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Pool Name</div>
-            <div className="">Pool1</div>
+            <div className="">{poolDetail.poolName}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Staked Amount</div>
-            <div className="">Pool1</div>
+            <div className="">{bnToNumber(poolDetail.depositAmount)}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Staked Amount</div>
-            <div className="">Pool1</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">APY</div>
+            <div className="">{Number(poolDetail.apy)}%</div>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Rating</div>
+            <div className="">{'BB+'}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Risk</div>
-            <div className="">Pool1</div>
+            <div className="">{'Slashing Risk'}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Tenure Period</div>
-            <div className="">Pool1</div>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Yield Returns</div>
-            <div className="">Pool1</div>
+            <div className="">{Number(poolDetail.minPeriod)}Days</div>
           </div>
         </div>
       </div>
