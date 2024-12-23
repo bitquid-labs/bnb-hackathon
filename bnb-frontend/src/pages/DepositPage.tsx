@@ -21,9 +21,9 @@ const DepositPage: React.FC = () => {
   const {address} = useAccount();
   const [currentDepositType, setCurrentDepositType] = useState<number>(0);
   const {vaults: userVaults} = useVaultByAddress(address as string);
-  const userVaultIds = useMemo(() => {
-    return userVaults.map((vault) => Number(vault.vaultId));
-  }, [userVaults]);
+  // const userVaultIds = useMemo(() => {
+  //   return userVaults.map((vault) => Number(vault.vaultId));
+  // }, [userVaults]);
 
   const [currentVaultId, setCurrentVaultId] = useState<number | undefined>();
 
@@ -88,7 +88,7 @@ const DepositPage: React.FC = () => {
             <div className="mt-57">
               <VaultDetail 
                 id={currentVaultId}
-                isDeposited={userVaultIds.includes(currentVaultId)}
+                // isDeposited={userVaultIds.includes(currentVaultId)}
               />
             </div>
           ) : (

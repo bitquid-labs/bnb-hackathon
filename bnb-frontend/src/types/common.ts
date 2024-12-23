@@ -55,6 +55,8 @@ export interface ICover {
 
 export interface IPoolInfo {
   poolName?: string | undefined,
+  rating?: string | undefined,
+  risk?: PoolRiskType | undefined,
   poolId?: bigint | undefined,
   dailyPayout?: bigint | undefined,
   depositAmount?: bigint | undefined,

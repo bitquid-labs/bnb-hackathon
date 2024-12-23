@@ -21,10 +21,10 @@ import { getPoolRiskTypeName } from "lib/utils";
 
 type Props = {
   poolId: number;
-  isDeposited: boolean;
+  // isDeposited: boolean;
 };
 
-const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
+const PoolDetail: React.FC<Props> = ({ poolId }) => {
   const { address, chain } = useAccount();
   const poolData = usePoolInfo(poolId);
   console.log('poolData:', poolData)
@@ -189,10 +189,10 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
 
   const handleDeposit = async () => {
     if (!poolData || !assetAddress) return;
-    if (isDeposited) {
-      toast.info("You have already deposited into this pool");
-      return;
-    }
+    // if (isDeposited) {
+    //   toast.info("You have already deposited into this pool");
+    //   return;
+    // }
 
     setIsLoading(true);
 

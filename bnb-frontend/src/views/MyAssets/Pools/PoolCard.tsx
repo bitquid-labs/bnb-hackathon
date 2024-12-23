@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { IPoolInfo } from "types/common";
 import { usePoolDeposit } from "hooks/contracts/usePoolDeposit";
 import { bnToNumber, numberToBN } from "lib/number";
+import { getPoolRiskTypeName } from "lib/utils";
 
 type Props = {
   poolDetail: IPoolInfo;
@@ -118,11 +119,11 @@ const PoolCard: React.FC<Props> = ({
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Rating</div>
-            <div className="">{'BB+'}</div>
+            <div className="">{poolDetail.rating}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Risk</div>
-            <div className="">{'Slashing Risk'}</div>
+            <div className="">{getPoolRiskTypeName(poolDetail.risk)}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Tenure Period</div>

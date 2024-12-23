@@ -40,7 +40,7 @@ export const ICoverContract: ContractType = {
     rsk: '0xfAB08717d5779DBe49Aa6b547b553593f52744c0',
     core: '0xEbC11e13375DEc4c43118b8f530b0dc31fF9e4a7',
     bitlayer: '0x325fEb760bBD9117a0be901FCA79F10D87FDF709',
-    bscTest: '0x30B16cbA105e5298dc2c27B9d7727b80e7754e4D',
+    bscTest: '0xBC01562960A40B170FaADeaF72869F8814CA8c59',
   },
 };
 
@@ -54,21 +54,7 @@ export const InsurancePoolContract: ContractType = {
     rsk: '0x68543e919B6cd5D884E22Ed85f912daE5De2371b',
     core: '0xFe0330bCAafb69BFB5B6038Be0eBfDB65E2EE10f',
     bitlayer: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
-    bscTest: '0x512Fe3dA42E0B95a5ADd16a22fF2Bda4F7c9F603',
-  },
-};
-
-export const BQTokenContract: ContractType = {
-  abi: BQToken,
-  addresses: {
-    pwr: '0x73795572FB8c1c737513156ecb8b1Cc9a3f9cA46',
-    merlin: '0xC05F41e638A82c6eB6854624957227aAB992892C',
-    bob: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
-    bevm: '0x69Ca60C40d9E688a69f513e392fB4f07aC3a2a7b',
-    rsk: '0x7cBDCa7f78B3A43Da33892bdF7D10c80351b799c',
-    core: '0xeC523e0e1f4039Fc5210d8f849Aa96363647586e',
-    bitlayer: '0x3B4990516950C355Da590ec8E034c02802d4daF2',
-    bscTest: '0x62F7B0030bb0827a2B685eDC028a021168e9eEF7',
+    bscTest: '0x050b2A3073eE2A2aCE043D4FA00aF9c5d8932daD',
   },
 };
 
@@ -82,7 +68,7 @@ export const BQBTCTokenContract: ContractType = {
     rsk: '0x1EfE902d6aFf44d3C8d245f2d4144db84964a9b4',
     core: '0xd4d6D32774267870CB38dd00af8B7edB96eBEfC7',
     bitlayer: '0x260E26e2Cdcdf05C4C93d7a2bd380AaE9D13d0BF',
-    bscTest: '0x21c56242e151Dbe3B2b7C149aEd05E40d2bE2f45',
+    bscTest: '0xC66bB4CCc4Ba1F7479a03B0e30e75c2094b69b11',
   },
 };
 
@@ -97,6 +83,6 @@ export const VaultContract: ContractType = {
     rsk: '0x68543e919B6cd5D884E22Ed85f912daE5De2371b',
     core: '0xFe0330bCAafb69BFB5B6038Be0eBfDB65E2EE10f',
     bitlayer: '0xD19F579fA1d4E53e951fE62cD7acDD9966e62855',
-    bscTest: '0xb437e00877d769a9C6803d2c6d031B0d75CE15c3',
+    bscTest: '0x713BC6fE7daF0fafE0AD52E8b816d02442EdC73B',
   },
 };
