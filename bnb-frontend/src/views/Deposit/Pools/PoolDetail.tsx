@@ -68,7 +68,7 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
   // }, [poolData?.apy, depositAmount])
 
   const apy = useMemo(() => {
-    if (!poolData || !depositAmount) return {
+    if (!poolData) return {
       perWeek: '0',
       perMonth: '0',
     }
@@ -78,7 +78,7 @@ const PoolDetail: React.FC<Props> = ({ poolId, isDeposited }) => {
       perWeek: weekly.toFixed(4),
       perMonth: monthly.toFixed(4),
     }
-  }, [poolData?.apy, depositAmount])
+  }, [poolData?.apy])
 
   const assetTokenName = useTokenName(assetAddress);
 

@@ -46,8 +46,12 @@ const PoolList: React.FC<Props> = ({
                   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-l-8">
                     {pool.poolName}
                   </td>
-                  <td className="font-[500] bg-[#1F1F1F] py-24">{pool.rating}</td>
-                  <td className="font-[500] bg-[#1F1F1F] py-24">{Number(pool.apy)}%</td>
+                  <td className="font-[500] bg-[#1F1F1F] py-24">
+                    {pool.rating}
+                  </td>
+                  <td className="font-[500] bg-[#1F1F1F] py-24">
+                    {Number(pool.apy)}%
+                  </td>
                   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-r-8">
                     {Number(pool.minPeriod)}Days
                   </td>
@@ -80,6 +84,8 @@ const PoolList: React.FC<Props> = ({
                               />
                               {/* <span>{pool.details.network}</span> */}
                             </div>
+                          </div>
+                          <div className="flex w-[50%] flex-col items-center justify-center px-54 gap-12">
                             <div className="flex items-center justify-between w-full">
                               <span className="text-14 font-[400]">
                                 Risk Covered
@@ -88,8 +94,6 @@ const PoolList: React.FC<Props> = ({
                                 {getRiskTypeName(pool.riskType)}
                               </span>
                             </div>
-                          </div>
-                          <div className="flex w-[50%] flex-col items-center justify-center px-54 gap-12">
                             <div className="flex items-center justify-between w-full">
                               <span className="text-14 font-[400]">TVL</span>
                               <span className="text-14 font-[800]">
@@ -104,14 +108,14 @@ const PoolList: React.FC<Props> = ({
                                 {Number(pool.investmentArmPercent)} %
                               </span>
                             </div> */}
-                            <div className="flex items-center justify-between w-full">
+                            {/* <div className="flex items-center justify-between w-full">
                               <span className="text-14 font-[400]">
                                 Cover Purchase %
                               </span>
                               <span className="text-14 font-[800]">
                                 {100 - Number(pool.investmentArmPercent)} %
                               </span>
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                       )}
@@ -130,7 +134,9 @@ const PoolList: React.FC<Props> = ({
                           );
                         }}
                       >
-                        <span>More Details</span> <IconDownIcon />
+                        <span>More Details</span> {
+                          pool.displayDetails ? <IconDownIcon className="rotate-180" /> : <IconDownIcon />
+                        }
                       </div>
                     </div>
                   </td>
