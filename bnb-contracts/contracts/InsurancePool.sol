@@ -320,6 +320,8 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             ) {
                 result[resultIndex++] = CoverLib.PoolInfo({
                     poolName: pool.poolName,
+                    rating: pool.rating,
+                    risk: pool.riskType,
                     poolId: i,
                     dailyPayout: deposits[_userAddress][i][
                         CoverLib.DepositType.Normal
@@ -495,12 +497,6 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             selectedPool.asset == depositParam.asset,
             "Pool does not accept this asset"
         );
-        require(
-            deposits[depositParam.depositor][depositParam.poolId][
-                depositParam.pdt
-            ].amount == 0,
-            "User has already deposited into this pool"
-        );
 
         uint256 price;
         uint256 decimals;
@@ -534,30 +530,61 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         selectedPool.coverUnits = coverUnits;
         selectedPool.baseValue = baseValue;
         selectedPool.tvl = tvl;
+        uint256 dailyPayout;
 
+        if (deposits[depositParam.depositor][depositParam.poolId][
+                depositParam.pdt
+            ].amount > 0) {
+            uint256 newPrice = deposits[depositParam.depositor][depositParam.poolId][depositParam.pdt].amount + price;
+            price = newPrice;
+            dailyPayout = (newPrice * selectedPool.apy) / 100 / 365;
+            CoverLib.Deposits memory userDeposit = CoverLib.Deposits({
+                lp: depositParam.depositor,
+                amount: newPrice,
+                poolId: depositParam.poolId,
+                dailyPayout: dailyPayout,
+                status: CoverLib.Status.Active,
+                daysLeft: selectedPool.minPeriod,
+                startDate: block.timestamp,
+                withdrawalInitiated: 0,
+                accruedPayout: 0,
+                pdt: depositParam.pdt
+            });
 
-        uint256 dailyPayout = (price * selectedPool.apy) / 100 / 365;
-        CoverLib.Deposits memory userDeposit = CoverLib.Deposits({
-            lp: depositParam.depositor,
-            amount: price,
-            poolId: depositParam.poolId,
-            dailyPayout: dailyPayout,
-            status: CoverLib.Status.Active,
-            daysLeft: selectedPool.minPeriod,
-            startDate: block.timestamp,
-            withdrawalInitiated: 0,
-            accruedPayout: 0,
-            pdt: depositParam.pdt
-        });
+            if (depositParam.pdt == CoverLib.DepositType.Normal) {
+                deposits[depositParam.depositor][depositParam.poolId][
+                    CoverLib.DepositType.Normal
+                ] = userDeposit;
+            } else {
+                deposits[depositParam.depositor][depositParam.poolId][
+                    CoverLib.DepositType.Vault
+                ] = userDeposit;
+            }
 
-        if (depositParam.pdt == CoverLib.DepositType.Normal) {
-            deposits[depositParam.depositor][depositParam.poolId][
-                CoverLib.DepositType.Normal
-            ] = userDeposit;
-        } else {
-            deposits[depositParam.depositor][depositParam.poolId][
-                CoverLib.DepositType.Vault
-            ] = userDeposit;
+        } else{
+            dailyPayout = (price * selectedPool.apy) / 100 / 365;
+            CoverLib.Deposits memory userDeposit = CoverLib.Deposits({
+                lp: depositParam.depositor,
+                amount: price,
+                poolId: depositParam.poolId,
+                dailyPayout: dailyPayout,
+                status: CoverLib.Status.Active,
+                daysLeft: selectedPool.minPeriod,
+                startDate: block.timestamp,
+                withdrawalInitiated: 0,
+                accruedPayout: 0,
+                pdt: depositParam.pdt
+            });
+
+            if (depositParam.pdt == CoverLib.DepositType.Normal) {
+                deposits[depositParam.depositor][depositParam.poolId][
+                    CoverLib.DepositType.Normal
+                ] = userDeposit;
+            } else {
+                deposits[depositParam.depositor][depositParam.poolId][
+                    CoverLib.DepositType.Vault
+                ] = userDeposit;
+            }
         }
 
         CoverLib.Cover[] memory poolCovers = getPoolCovers(depositParam.poolId);

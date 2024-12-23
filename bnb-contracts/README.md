@@ -229,13 +229,13 @@ struct VaultDeposit {
 
 # Contract Address
 
-**BQ BTC Address**: 0x21c56242e151Dbe3B2b7C149aEd05E40d2bE2f45
+**BQ BTC Address**: 0xC66bB4CCc4Ba1F7479a03B0e30e75c2094b69b11
 
-**Pool Address**: 0x512Fe3dA42E0B95a5ADd16a22fF2Bda4F7c9F603
+**Pool Address**: 0x050b2A3073eE2A2aCE043D4FA00aF9c5d8932daD
 
-**Cover Address**: 0x30B16cbA105e5298dc2c27B9d7727b80e7754e4D
+**Cover Address**: 0xBC01562960A40B170FaADeaF72869F8814CA8c59
 
-**Vault Address**: 0xb437e00877d769a9C6803d2c6d031B0d75CE15c3
+**Vault Address**: 0x713BC6fE7daF0fafE0AD52E8b816d02442EdC73B
 
 **Gov Address**: 0x0e1538DF7327E9e3E5F21783e5bA9818920d1E59
 
@@ -243,12 +243,10 @@ struct VaultDeposit {
 
 ## Pool Contract
 
-- Added `getTotalUserDepositAmountinUSD` for getting total user deposit balance in dollar
+- (WIP) Allow users to deposit into pools and vaults multiple times.
 
-- Set User Deposit to 0 after deposit so `getPoolsByAddress` reduces after withdrawal
+- Adding of `rating` and `risk` to `getPoolsByAddress`
 
-## Vaults
+## Cover Contract
 
-- Added `getUserVaultDeposits` to get all the vaults deposits of the user, returns the pool names as well.
-
-- Added vauly apy to the vault struct
+- Function to easily add funds to the cover contract without purchasing

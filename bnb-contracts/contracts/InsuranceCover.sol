@@ -320,7 +320,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             require(success, "ERC20 transfer failed");
         } else {
             require(msg.value > 0, "Cover value cannot be zero");
-            coverFeeBalance += _coverFee;
+            coverFeeBalance += msg.value;
         }
 
         cover.coverValues = newCoverValues;
@@ -604,6 +604,16 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
 
         return claimableDays;
+    }
+
+    function addFundsToCoverContract(uint256 amount, CoverLib.AssetDepositType adt, address asset) public payable {
+        if (adt == CoverLib.AssetDepositType.ERC20) {
+            bool success = IERC20(asset).transferFrom(msg.sender, address(this), amount);
+            require(success, "ERC20 transfer failed");
+        } else {
+            require(msg.value > 0, "Cover value cannot be zero");
+            coverFeeBalance += msg.value;
+        }
     }
 
     function getLastClaimTime(
