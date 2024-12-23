@@ -284,7 +284,6 @@ contract Vaults is ReentrancyGuard, Ownable {
             totalDailyPayout += dailyPayout;
             totalAmount += amount;
             
-
             CoverLib.Deposits memory pool_deposit = CoverLib.Deposits({
                 lp: msg.sender,
                 amount: amount,

@@ -123,6 +123,8 @@ library CoverLib {
 
     struct PoolInfo {
         string poolName;
+        string rating;
+        CoverLib.RiskType risk;
         uint256 poolId;
         uint256 dailyPayout;
         uint256 depositAmount;
