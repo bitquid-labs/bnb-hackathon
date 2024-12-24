@@ -77,14 +77,14 @@ const StrategyManagerPage: React.FC = () => {
                 </div>
               </div>
               <hr className="w-1/4" />
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <p>$639.58</p>
                 <p>Transaction Fee</p>
-              </div>
-              <div className="flex gap-5">
+              </div> */}
+              {/* <div className="flex gap-5">
                 <p>LIT Token Assigned: 15.6</p>
                 <img src={"/binomo.svg"} alt="binomo" />
-              </div>
+              </div> */}
               <button className="green-btn py-4 rounded-md">Deposit</button>
             </div>
 

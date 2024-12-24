@@ -10,12 +10,12 @@ const CoversPage: React.FC = () => {
   const { address } = useAccount();
   const availableCovers = useAllAvailableCovers();
 
+  console.log("avaialbe:", availableCovers);
+
   const userCovers = useAllUserCovers(address as string);
   const userCoverIds = useMemo(() => userCovers.map((cover) => cover.coverId), [userCovers]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const [filterCategory, setFilterCategory] = useState<RiskType | undefined>(
-    undefined
-  );
+  const [filterCategory, setFilterCategory] = useState<RiskType | undefined>(undefined);
 
   const filteredCovers = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -23,11 +23,9 @@ const CoversPage: React.FC = () => {
     if (filterCategory === undefined && !keyword) return availableCovers;
 
     return availableCovers.filter((cover) => {
-      const matchesCategory =
-        filterCategory === undefined || cover.riskType === filterCategory;
+      const matchesCategory = filterCategory === undefined || cover.riskType === filterCategory;
 
-      const matchesSearch =
-        keyword === "" || cover.coverName?.toLowerCase().includes(keyword);
+      const matchesSearch = keyword === "" || cover.coverName?.toLowerCase().includes(keyword);
 
       return matchesCategory && matchesSearch;
     });

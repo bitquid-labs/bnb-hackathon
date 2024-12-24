@@ -2,7 +2,8 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import WalletButton from "./WalletButton";
 import { headerLinks } from "../../../constants/routes";
-import LogoImage from "assets/images/logo.png"
+import LogoImage from "assets/images/logo.png";
+import ConnectWalletButton from "components/ConnectWalletButton";
 
 const Header: React.FC = () => {
   const links = headerLinks;
@@ -12,7 +13,7 @@ const Header: React.FC = () => {
     <div className="w-full bg-dark-200 text-white border-b-[1px] border-b-white/10 px-20 py-20 flex items-center gap-16 relative">
       <div className="w-full mx-auto flex justify-between items-center max-w-1220">
         <Link
-          to="/trade"
+          to="/dashboard"
           className="flex items-center justify-center gap-4 mr-20"
         >
           {/* <img src={logo} alt="logo" className="w-20" /> */}
@@ -39,7 +40,12 @@ const Header: React.FC = () => {
                     : ""
                 }`}
               >
-                <link.icon className="w-18 h-18" />
+                <div className="relative w-18 h-18">
+                  <link.icon className="w-18 h-18" />
+                  {pathname.includes(link.url) && (
+                    <div className="absolute w-0 h-0 top-1/2 left-1/2 text-white rounded-lg before:content-[''] before:absolute before:inset-0 before:rounded-lg shadow-[0_0_50px_20px_rgba(255,255,255,0.8)]"></div>
+                  )}
+                </div>
                 {link.name}
               </div>
             </Link>
@@ -48,7 +54,7 @@ const Header: React.FC = () => {
 
         {/* <nav className="flex items-center gap-32">
       </nav> */}
-        <WalletButton />
+        <ConnectWalletButton />
       </div>
     </div>
   );

@@ -55,7 +55,7 @@ const Pools: React.FC = () => {
         <tbody>
           {pools.map((pool, index) => (
             <>
-              <tr className="text-center">
+              <tr className="text-center" key={index}>
                 <td className="font-[400] bg-[#1F1F1F]">{pool.poolName}</td>
                 <td className="font-[500] bg-[#1F1F1F]">{pool.rating}</td>
                 <td className="font-[500] bg-[#1F1F1F]">{pool.APY}</td>

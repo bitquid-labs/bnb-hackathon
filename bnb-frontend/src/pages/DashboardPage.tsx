@@ -1,16 +1,24 @@
 import React from "react";
-import UserStatus from "views/Dashboard/UserStatus";
-import RiskCards from "views/Dashboard/RiskCards";
-import SocialLinks from "views/Dashboard/SocialLInks";
+import SocialLinks from "components/SocialLInks";
+import IntroText from "views/Dashboard/IntroText";
+import Features from "views/Dashboard/Features";
+import Faucet from "views/Dashboard/Faucet";
+import ConnectWalletButton from "components/ConnectWalletButton";
 
-const DashboardPage : React.FC = () => {
+const DashboardPage: React.FC = () => {
   return (
     <div className="w-full max-w-1220 mx-auto pt-70">
-      <UserStatus />
-      <RiskCards />
+      <IntroText />
+      <div className="mt-98">
+        <Features />
+      </div>
+      <div className="mt-77">
+        <Faucet />
+      </div>
+      <div className="my-95 w-full bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2"></div>
       <SocialLinks />
     </div>
-  )
-}
+  );
+};
 
 export default DashboardPage;
