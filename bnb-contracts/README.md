@@ -245,8 +245,6 @@ struct VaultDeposit {
 
 - (WIP) Allow users to deposit into pools and vaults multiple times.
 
-- Adding of `rating` and `risk` to `getPoolsByAddress`
+## Vault Contract
 
-## Cover Contract
-
-- Function to easily add funds to the cover contract without purchasing
+- (WIP) Function to get the TVL of vaults: `getVaultTVL`
