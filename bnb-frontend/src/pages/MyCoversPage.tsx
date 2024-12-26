@@ -1,5 +1,5 @@
 import SectionTitle from "components/common/SectionTitle";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import IntroText from "views/Dashboard/IntroText";
 import UserCovers from "views/MyCovers/UserCovers";
 import { filters } from "views/Covers/constants";
@@ -16,6 +16,11 @@ const MyCoversPage: React.FC = () => {
     undefined
   );
   const userCovers = useAllUserCovers(address as string);
+  const filteredCovers = useMemo(() => {
+    if (filterCategory === undefined) return userCovers;
+
+    return userCovers.filter((cover) => cover.riskType === filterCategory);
+  }, [filterCategory, userCovers])
 
   return (
     <div className="w-full max-w-1220 mx-auto pt-70">
@@ -26,7 +31,7 @@ const MyCoversPage: React.FC = () => {
           setFilterCategory={setFilterCategory}
         />
         <div className="mt-42">
-          <CoversList coversData={userCovers} />
+          <CoversList coversData={filteredCovers} />
         </div>
       </div>
     </div>

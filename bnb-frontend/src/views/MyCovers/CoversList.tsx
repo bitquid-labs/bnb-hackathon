@@ -16,10 +16,14 @@ type Props = {
 
 const CoversList: React.FC<Props> = ({ coversData }) => {
   console.log("coverdata:", coversData);
+  const handleClaim = async (coverId: number) => {
+
+  }
+
   return (
     <div className="w-full">
       <div className="w-full">
-        <table className="w-full text-white border-spacing-y-1">
+        <table className="w-full text-white border-separate border-spacing-y-25">
           <thead className="">
             <tr className="[&>th]:text-16 [&th]:font-500 h-45">
               <th className="border-b border-[#FFFFFF33]"></th>
@@ -31,7 +35,7 @@ const CoversList: React.FC<Props> = ({ coversData }) => {
           <tbody>
             {coversData.map((cover, index) => (
               <tr className="text-center px-8" key={index}>
-                <td className="font-[400] bg-[#1F1F1F] py-24 pl-20 rounded-l-8">
+                <td className="font-[400] bg-[#1F1F1F] py-18 pl-20 rounded-l-8">
                   <div className="flex items-center gap-32">
                     <div className="w-30 h-30 rounded-fulll overflow-hidden bg-[#2B2B2B] rounded-full text-16 text-[#858584]">
                       {index}
@@ -40,10 +44,10 @@ const CoversList: React.FC<Props> = ({ coversData }) => {
                     <span>{cover.coverName}</span>
                   </div>
                 </td>
-                <td className="font-[500] bg-[#1F1F1F] py-24">
+                <td className="font-[500] bg-[#1F1F1F] py-18">
                   {bnToNumber(cover.coverValue)}
                 </td>
-                <td className="font-[500] bg-[#1F1F1F] py-24">
+                <td className="font-[500] bg-[#1F1F1F] py-18 rounded-r-8">
                   {Math.ceil(
                     (new Date(Number(cover.endDay) * 1000).getTime() -
                       new Date().getTime()) /
@@ -53,7 +57,7 @@ const CoversList: React.FC<Props> = ({ coversData }) => {
                 </td>
                 <td className="bg-transparent">
                   <button
-                    onClick={() => {}}
+                    onClick={() => {handleClaim(Number(cover.coverId))}}
                     className="bg-[#00ECBC66] border border-[#00ECBC] px-45 py-7 rounded-8"
                   >
                     Claim
