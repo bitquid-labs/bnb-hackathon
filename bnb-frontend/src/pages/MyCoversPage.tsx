@@ -25,9 +25,9 @@ const MyCoversPage: React.FC = () => {
           filterCategory={filterCategory}
           setFilterCategory={setFilterCategory}
         />
-        {/* <CoversList
-          poolData={userCovers}
-        /> */}
+        <div className="mt-42">
+          <CoversList coversData={userCovers} />
+        </div>
       </div>
     </div>
   );

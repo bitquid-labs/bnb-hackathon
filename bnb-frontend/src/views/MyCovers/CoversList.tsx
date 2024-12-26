@@ -1,5 +1,5 @@
 import SectionTitle from "components/common/SectionTitle";
-import { getRiskTypeName } from "lib/number";
+import { bnToNumber, getRiskTypeName } from "lib/number";
 import React from "react";
 import { IPool, IUserCover } from "types/common";
 import IconDownIcon from "assets/icons/IconDown";
@@ -15,42 +15,51 @@ type Props = {
 };
 
 const CoversList: React.FC<Props> = ({ coversData }) => {
+  console.log("coverdata:", coversData);
   return (
     <div className="w-full">
       <div className="w-full">
-        <table className="w-full text-white">
+        <table className="w-full text-white border-spacing-y-1">
           <thead className="">
-            <tr className="[&>th]:text-20 [&th]:font-500 h-45">
-              <th className=""></th>
-              <th className="">Rating</th>
-              <th className="">APY</th>
-              <th className="">Min Tenure</th>
+            <tr className="[&>th]:text-16 [&th]:font-500 h-45">
+              <th className="border-b border-[#FFFFFF33]"></th>
+              <th className="border-b border-[#FFFFFF33]">Cover Amount</th>
+              <th className="border-b border-[#FFFFFF33]">Cover Expiry</th>
               <th className=""></th>
             </tr>
           </thead>
           <tbody>
             {coversData.map((cover, index) => (
-              // <tr className="text-center px-8" key={index}>
-              //   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-l-8">
-              //     {cover.coverName}
-              //   </td>
-              //   <td className="font-[500] bg-[#1F1F1F] py-24">{cover.rating}</td>
-              //   <td className="font-[500] bg-[#1F1F1F] py-24">
-              //     {Number(cover.apy)}%
-              //   </td>
-              //   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-r-8">
-              //     {Number(cover.minPeriod)}Days
-              //   </td>
-              //   <td className="bg-transparent">
-              //     <button
-              //       onClick={() => handleDeposit(Number(cover.id))}
-              //       className="bg-[#00ECBC66] border border-[#00ECBC] px-45 py-7 rounded-8"
-              //     >
-              //       Invest
-              //     </button>
-              //   </td>
-              // </tr>
-              <></>
+              <tr className="text-center px-8" key={index}>
+                <td className="font-[400] bg-[#1F1F1F] py-24 pl-20 rounded-l-8">
+                  <div className="flex items-center gap-32">
+                    <div className="w-30 h-30 rounded-fulll overflow-hidden bg-[#2B2B2B] rounded-full text-16 text-[#858584]">
+                      {index}
+                    </div>
+                    <div className="w-47 h-47 flex items-center rounded-full overflow-hidden bg-[#FFFFFF]"></div>
+                    <span>{cover.coverName}</span>
+                  </div>
+                </td>
+                <td className="font-[500] bg-[#1F1F1F] py-24">
+                  {bnToNumber(cover.coverValue)}
+                </td>
+                <td className="font-[500] bg-[#1F1F1F] py-24">
+                  {Math.ceil(
+                    (new Date(Number(cover.endDay) * 1000).getTime() -
+                      new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )}{" "}
+                  Days
+                </td>
+                <td className="bg-transparent">
+                  <button
+                    onClick={() => {}}
+                    className="bg-[#00ECBC66] border border-[#00ECBC] px-45 py-7 rounded-8"
+                  >
+                    Claim
+                  </button>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
