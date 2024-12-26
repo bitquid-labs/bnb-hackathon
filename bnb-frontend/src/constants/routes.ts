@@ -5,7 +5,9 @@ import IconStrategyManager from '../assets/icons/IconStrategyManager';
 import IconMyAssets from '../assets/icons/IconMyAssets';
 import IconCovers from 'assets/icons/IconCovers';
 import CoverDetailPage from 'pages/CoverDetailPage';
+import RiskEnginePage from 'pages/RiskEnginePage';
 import IconDeposits from 'assets/icons/IconDeposits';
+import IconRiskEngine from 'assets/icons/IconRiskEngine';
 
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const StrategyManagerPage = lazy(() => import ('../pages/StrategyManagerPage'));
@@ -22,6 +24,7 @@ enum AppRoutes {
   MyCoversPage = '/mycovers',
   DepositPage = '/deposit',
   DepositDetailPage = '/deposit/:id',
+  RiskEnginePage = '/riskengine',
 }
 
 export const appRoutes = [
@@ -32,6 +35,7 @@ export const appRoutes = [
   {key: 'mycovers', path: AppRoutes.MyCoversPage, element: MyCoversPage},
   {key: 'deposit', path: AppRoutes.DepositPage, element: DepositPage},
   {key: 'depositdetail', path: AppRoutes.DepositDetailPage, element: DepositPage},
+  {key: 'riskengine', path: AppRoutes.RiskEnginePage, element: RiskEnginePage},
 ];
 
 export const headerLinks = [
@@ -40,4 +44,5 @@ export const headerLinks = [
   // {name: 'strategymanager', url: AppRoutes.StrategyManger, icon: IconStrategyManager},
   {name: 'Deposits', url: AppRoutes.DepositPage, icon: IconDeposits},
   {name: 'My Assets', url: AppRoutes.MyAssetsPage, icon: IconMyAssets},
+  {name: 'Risk Engine', url: AppRoutes.RiskEnginePage, icon: IconRiskEngine},
 ];
