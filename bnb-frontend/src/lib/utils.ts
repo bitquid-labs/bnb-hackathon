@@ -22,3 +22,10 @@ export function getPoolRiskTypeName(value: number | undefined): string | undefin
   if (value === undefined) return '';
   return poolRiskTypeNames[value] as string | undefined;
 }
+
+export const scrollToTop = () => {
+  window.scrollTo({
+    top: 0, // Scroll to the top
+    behavior: "smooth", // Smooth scroll animation
+  });
+}; 

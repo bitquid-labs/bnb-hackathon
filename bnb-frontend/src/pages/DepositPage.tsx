@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { cn } from "lib/utils";
 import VaultList from "views/Deposit/Vaults/VaultList";
 import { DepositType } from "types/common";
@@ -6,6 +6,10 @@ import DepositPools from "views/Deposit/Pools/DepositPools";
 import VaultDetail from "views/Deposit/Vaults/VaultDetail";
 import { useVaultByAddress } from "hooks/contracts/useVaultByAddress";
 import { useAccount } from "wagmi";
+import { useParams } from "react-router";
+import { useSearchParams } from "react-router-dom";
+import SectionTitle from "components/common/SectionTitle";
+import Button from "components/common/Button";
 
 const DepositPage: React.FC = () => {
   const types = [
@@ -18,25 +22,51 @@ const DepositPage: React.FC = () => {
       depositType: "Strategies",
     },
   ];
-  const {address} = useAccount();
+  const [searchParams] = useSearchParams();
+  const { address } = useAccount();
   const [currentDepositType, setCurrentDepositType] = useState<number>(0);
-  const {vaults: userVaults} = useVaultByAddress(address as string);
+  const { vaults: userVaults } = useVaultByAddress(address as string);
   // const userVaultIds = useMemo(() => {
   //   return userVaults.map((vault) => Number(vault.vaultId));
   // }, [userVaults]);
 
   const [currentVaultId, setCurrentVaultId] = useState<number | undefined>();
+  useEffect(() => {
+    if (searchParams.get("type") === undefined) return;
+    setCurrentDepositType(Number(searchParams.get("type")));
+  }, [searchParams]);
 
   return (
     <div className="w-full mx-auto pt-70">
-      <div className="mx-auto w-320">
-        <div className="flex w-full cursor-pointer items-center rounded border border-white/10 bg-white/5 p-[3px]">
+      <div className="w-full flex flex-col items-center justify-center">
+        <h2 className="text-50 font-[700]">
+          Introducing <span className="text-[#00ECBC]">BQ Deposits</span>
+        </h2>
+        <div className="mt-24 max-w-700 text-18 font-[500] text-[#FFFFFFA3]">
+          Grow and protect your assets through carefully curated pools and
+          strategies tailored for the Web3 ecosystem. Introducing <span className="text-[#00ECBC]">BQ
+          Deposits</span>—your gateway to innovative and secure investment solutions.
+        </div>
+        <div className="flex items-center justify-center gap-20 mt-45">
+          {/* <ConnectWalletButton className="min-w-[216px] rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC] w-full py-12" />
+          <Button variant="outline" size="lg" className="rounded-8">
+            Read BQ Labs Docs
+          </Button> */}
+          <Button variant="outline" size="lg" className="rounded-8">
+            Read BQ Labs Docs
+          </Button>
+        </div>
+      </div>
+      <div className="my-98 max-w-1220 mx-auto h-1 bg-gradient-to-r from-[#FFFFFF] to-[#161618]">
+      </div>
+      <div className="max-w-1220 mx-auto">
+        <div className="w-320 flex cursor-pointer items-center rounded border border-white/10 bg-white/5 p-[3px]">
           <div className="relative flex w-full cursor-pointer flex-col items-center rounded md:flex-row md:gap-0">
             {types.map((opt, index) => (
               <div
                 key={index}
                 className={cn(
-                  "z-10 w-full py-12 text-center text-sm font-medium capitalize transition-all",
+                  "z-10 w-full py-8 text-center text-sm font-medium capitalize transition-all",
                   currentDepositType === opt.index
                     ? "text-white"
                     : "text-white/50 "
@@ -86,7 +116,7 @@ const DepositPage: React.FC = () => {
         <>
           {currentVaultId ? (
             <div className="mt-57">
-              <VaultDetail 
+              <VaultDetail
                 id={currentVaultId}
                 // isDeposited={userVaultIds.includes(currentVaultId)}
               />

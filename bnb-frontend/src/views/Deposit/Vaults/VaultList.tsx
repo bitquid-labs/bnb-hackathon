@@ -3,6 +3,7 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import VaultCard from "./VaultCard";
 import { useAllVaults } from "hooks/contracts/useAllVaults";
+import { scrollToTop } from "lib/utils";
 const responsive = {
   superLargeDesktop: {
     // the naming can be any, depends on you.
@@ -43,7 +44,10 @@ const VaultList: React.FC<Props> = ({currentVaultId, setCurrentVaultId}) => {
               minInvestment={Number(vault.minInv) || 0}
               tenurePeriod={Number(vault.minPeriod) || 0}
               tvl={1500}
-              handleStake={() => {setCurrentVaultId(Number(vault.id))}}
+              handleStake={() => {
+                scrollToTop();
+                setCurrentVaultId(Number(vault.id))
+              }}
             />
           )
         })}

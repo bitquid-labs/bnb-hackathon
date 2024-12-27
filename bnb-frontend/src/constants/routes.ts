@@ -56,6 +56,16 @@ export const headerLinks = [
     name: "Deposits",
     url: AppRoutes.DepositPage,
     icon: IconDeposits,
+    subMenus: [
+      {
+        name: "Pools",
+        url: AppRoutes.DepositPage + "?type=0",
+      },
+      {
+        name: "Strategies",
+        url: AppRoutes.DepositPage + "?type=1",
+      },
+    ],
   },
   {
     name: "My Assets",

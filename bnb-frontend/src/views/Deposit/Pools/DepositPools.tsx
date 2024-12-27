@@ -11,6 +11,7 @@ import useWallet from "hooks/useWallet";
 import { ChainType } from "lib/wagmi";
 import PoolList from "./PoolList";
 import PoolDetail from "./PoolDetail";
+import { scrollToTop } from "lib/utils";
 // import { usePoolByAddress } from "hooks/contracts/usePoolByAddress";
 
 type IPoolWithDetails = IPool & {
@@ -45,6 +46,7 @@ const DepositPools: React.FC = () => {
   }, [pools]);
 
   const handleDeposit = async (poolId: number) => {
+    scrollToTop();
     setCurrentPoolId(poolId);
     return;
     const params = [

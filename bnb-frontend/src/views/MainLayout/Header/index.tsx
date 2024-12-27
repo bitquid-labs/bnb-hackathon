@@ -53,17 +53,20 @@ const Header: React.FC = () => {
                 </div>
               </Link>
               {link.subMenus && link.subMenus.length > 0 && (
-                <div className="border border-[#FFFFFF1A] text-light bg-[#1E1E1EB2] py-10 px-24 rounded-[10px] absolute left-1/2 top-full hidden w-max min-w-[200px] -translate-x-1/2 flex-col p-2 [box-shadow:0px_0px_24px_0px_rgba(0,_0,_0,_0.08)] group-hover:flex">
+                <div className="border border-[#FFFFFF1A] text-light bg-[#1E1E1EB2] py-10 px-24 rounded-[10px] absolute left-1/2 top-full hidden w-max min-w-[150px] -translate-x-1/2 flex-col p-2 [box-shadow:0px_0px_24px_0px_rgba(0,_0,_0,_0.08)] group-hover:flex">
                   {link.subMenus?.map((menu: any, index: any) => (
+                    <>
                     <div
                       key={index}
-                      className="relative flex cursor-pointer items-center"
+                      className={cn("relative flex cursor-pointer items-center")}
                       onClick={() => navigate(menu.url)}
                     >
-                      <p className="text-[#8D8D8D] text-12 py-8 hover:bg-gradient-to-t hover:text-[#FFF]">
+                      <p className="w-full text-[#8D8D8D] text-12 py-8 hover:bg-gradient-to-t hover:text-[#FFF]">
                         {menu.name}
                       </p>
                     </div>
+                    {(index < link.subMenus.length - 1) && (<div className="w-full h-1 bg-gradient-to-r from-[#888888] via-[#7E7E7E00] to-[#888888]"></div>)}
+                    </>
                   ))}
                 </div>
               )}

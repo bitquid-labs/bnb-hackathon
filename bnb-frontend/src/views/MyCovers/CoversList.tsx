@@ -5,6 +5,7 @@ import { IPool, IUserCover } from "types/common";
 import IconDownIcon from "assets/icons/IconDown";
 import networkBSCIcon from "assets/images/network_bsc.png";
 import { formatEther } from "viem";
+import { toast } from "react-toastify";
 
 type IPoolWithDetails = IPool & {
   displayDetails: boolean;
@@ -17,7 +18,7 @@ type Props = {
 const CoversList: React.FC<Props> = ({ coversData }) => {
   console.log("coverdata:", coversData);
   const handleClaim = async (coverId: number) => {
-
+    toast.info("Comming soon..")
   }
 
   return (
