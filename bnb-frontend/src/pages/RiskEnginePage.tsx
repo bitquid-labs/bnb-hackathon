@@ -8,15 +8,15 @@ import { Link } from "react-router-dom";
 const RiskEngine: React.FC = () => {
   return (
     <div className="bg-black min-h-screen text-white">
-      <header className="text-center py-20">
-        <h1 className="text-4xl font-semibold pb-5">
+      <header className="text-center py-20 mt-20">
+        <h1 className="text-6xl font-semibold pb-5">
           Welcome to <span className="text-[#00ecbc]">Risk Engine</span>
         </h1>
-        <p className="text-gray-400 mt-6 max-w-2xl mx-auto mb-16">
+        <p className="text-gray-400 mt-20 max-w-2xl mx-auto mb-28 text-m">
           Analyze the risks of covers, strategies, and pools with curated protocols, empowering you to choose between high, moderate, and low-risk investments confidently!
         </p>
         <Link to='/riskengine/analyserisks'>
-        <button className="mt-8 text-sm font-semibold px-48 py-10 border-2 border-white bg-transparent text-white rounded-lg shadow-lg hover:text-[#00ecbc] hover:border-[#00ecbc] transition-all duration-300 ease-in-out">
+        <button className="mt-8 mb-5 text-sm font-semibold px-48 py-10 border-2 border-white bg-transparent text-white rounded-lg shadow-lg hover:text-[#00ecbc] hover:border-[#00ecbc] transition-all duration-300 ease-in-out">
           Analyse Risks
         </button>
         </Link>
@@ -26,7 +26,7 @@ const RiskEngine: React.FC = () => {
         <img
           src={REMainImg} 
           alt="Risk Engine Diagram"
-          className="w-3/4 max-w-xl"
+          className="w-[60rem] max-w-xl"
         />
       </div>
       
