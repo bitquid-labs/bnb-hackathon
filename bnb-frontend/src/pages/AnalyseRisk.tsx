@@ -1,13 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import lowImg from "../assets/icons/lines-re.svg";
 import moderateImg from "../assets/icons/lines-y.svg";
 import highImg from "../assets/icons/lines-red.svg";
 import tick from "../assets/icons/tick-re.svg";
 import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
+import { MoonLoader } from "react-spinners";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaDiscord } from "react-icons/fa";
 
-const DepeggingProtocols = () => {
+type CoinData = {
+    [key: string]: {
+        premium: string;
+        riskScore: string;
+    };
+};
+
+const coinData: CoinData = {
+    Satoshi: { premium: "10%", riskScore: "0.57" },
+    BIMA: { premium: "11%", riskScore: "0.64" },
+    Lorenzo: { premium: "5%", riskScore: "0.19" },
+    Bedrock: { premium: "16%", riskScore: "0.72" },
+    FDUSD: { premium: "8%", riskScore: "0.38" },
+    LstBTC: { premium: "5%", riskScore: "0.21" },
+    LBTC: { premium: "4%", riskScore: "0.15" },
+    BounceBit_BTC: { premium: "6%", riskScore: "0.26" },
+    USDe: { premium: "14%", riskScore: "0.69" },
+    TUSD: { premium: "20%", riskScore: "0.97" },
+};
+
+const DepeggingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) => {
     const stableCoins = [
         { name: "Satoshi", risk: "Moderate" },
         { name: "BIMA", risk: "Moderate" },
@@ -24,13 +45,13 @@ const DepeggingProtocols = () => {
     return (
         <div className="flex-1 grid grid-cols-4 gap-16">
             {stableCoins.map((stableCoin, index) => {
-                const riskColors = {
+                const riskColors: { [key: string]: string } = {
                     Low: "s-low",
                     Moderate: "s-moderate",
                     High: "s-high",
                 };
 
-                const riskColorClass = riskColors[stableCoin.risk as keyof typeof riskColors] || "bg-gray-500";
+                const riskColorClass = riskColors[stableCoin.risk] || "bg-gray-500";
 
                 const riskImages = {
                     Low: lowImg,
@@ -52,6 +73,7 @@ const DepeggingProtocols = () => {
                     <div
                         key={index}
                         className={`flex flex-col items-center justify-center p-6 ${riskColorClass} aspect-square rounded-full gap-4 m-3`}
+                        onClick={() => onSelect(stableCoin.name)}
                     >
                         <div>
                             <img src={imgSrc} alt={stableCoin.risk} />
@@ -65,7 +87,7 @@ const DepeggingProtocols = () => {
     );
 };
 
-const SlashingProtocols = () => {
+const SlashingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) => {
     const protocols = [
         { name: "Protocol X", risk: "High" },
         { name: "Protocol Y", risk: "Moderate" },
@@ -103,6 +125,7 @@ const SlashingProtocols = () => {
                     <div
                         key={index}
                         className={`flex flex-col items-center justify-center p-6 ${riskColorClass} aspect-square rounded-full gap-4 m-3`}
+                        onClick={() => onSelect(protocol.name)}
                     >
                         <div>
                             <img src={imgSrc} alt={protocol.risk} />
@@ -117,14 +140,30 @@ const SlashingProtocols = () => {
 };
 
 const AnalyseRisk = () => {
-    const [activeTab, setActiveTab] = useState<"de-pegging" | "slashing">("de-pegging");
+    const [activeTab, setActiveTab] = useState("de-pegging");
+    const [selectedCoin, setSelectedCoin] = useState<{ premium: string; riskScore: string } | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleSelectCoin = (coinName: string) => {
+        setLoading(true);
+        setSelectedCoin(coinData[coinName as keyof typeof coinData] || null);
+    };
+
+    useEffect(() => {
+        if (selectedCoin) {
+            const timer = setTimeout(() => {
+                setLoading(false);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [selectedCoin]);
 
     const options = ["De-pegging", "Slashing"];
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col w-[80%] mx-auto">
             <div className="flex justify-start p-4">
-                <div className="flex w-[18rem] h-40 max-w-sm cursor-pointer items-center rounded border border-white/10 bg-white/5 p-[3px] my-20 scale-125" >
+                <div className="flex w-[18rem] h-40 max-w-sm cursor-pointer items-center rounded border border-white/10 bg-white/5 p-[3px] my-20 scale-125">
                     <div className="relative flex w-full cursor-pointer flex-col items-center rounded md:flex-row md:gap-0">
                         {options.map((option, index) => (
                             <div
@@ -133,9 +172,7 @@ const AnalyseRisk = () => {
                                     ? "text-white"
                                     : "text-white/50"
                                     }`}
-                                onClick={() =>
-                                    setActiveTab(option.toLowerCase().replace(" ", "-") as "de-pegging" | "slashing")
-                                }
+                                onClick={() => setActiveTab(option.toLowerCase().replace(" ", "-"))}
                             >
                                 <div
                                     className={`flex justify-center border-r ${activeTab === option.toLowerCase().replace(" ", "-")
@@ -168,17 +205,23 @@ const AnalyseRisk = () => {
             </div>
 
             <div className="flex-1 flex p-6 gap-28">
-                {activeTab === "de-pegging" && <DepeggingProtocols />}
-                {activeTab === "slashing" && <SlashingProtocols />}
+                {activeTab === "de-pegging" && <DepeggingProtocols onSelect={handleSelectCoin} />}
+                {activeTab === "slashing" && <SlashingProtocols onSelect={handleSelectCoin} />}
 
                 <div className="w-[16rem] p-10 glass-2 shadow-md flex flex-col items-center">
-                    <div className="pt-16"><img src={tick} alt="" /></div>
-                    <h2 className="text-xl font-bold mt-20 mb-4">Cover Premium</h2>
-                    <div className="text-xl mb-32">--</div>
-                    <div className="h-[12rem] w-[12rem] glass-3 my-16 flex flex-row justify-center items-start py-12 px-8">
-                        <h3 className="text-lg font-medium">Risk Score:</h3>
+                    <div className="pt-16">
+                        <img src={tick} alt="" />
                     </div>
-                    <button className="px-[30px] s-low py-3 rounded-lg ">
+                    <h2 className="text-xl font-bold mt-20 mb-4">Cover Premium</h2>
+                    <div className="text-3xl mb-32 text-emerald-500 font-bold">
+                        {loading ? "--" : selectedCoin?.premium || "--"}
+                    </div>
+                    <div className="h-[12rem] w-[12rem] glass-3 my-8 flex flex-row justify-center items-start py-12 px-8">
+                        <div className="text-lg font-medium flex flex-col justify-center items-center">
+                            <div className="mb-32">Risk Score:</div> <div className="text-6xl font-bold text-emerald-600">{loading ? <MoonLoader color={"#05EBBC"} size={40}/> : selectedCoin?.riskScore || ""}</div>
+                        </div>
+                    </div>
+                    <button className="px-[30px] s-low py-3 rounded-lg">
                         Purchase Cover →
                     </button>
                 </div>
@@ -194,8 +237,8 @@ const AnalyseRisk = () => {
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
                     >
-                        <div className='flex justify-between items-center'>
-                            <div className='flex items-center gap-12 justify-center'>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-12 justify-center">
                                 <HiOutlineClipboardDocumentCheck />
                                 <span>Explore BQ Labs Docs.</span>
                             </div>
@@ -208,10 +251,13 @@ const AnalyseRisk = () => {
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
                     >
-                        <div className='flex justify-between items-center'>
-                            <div className='flex items-center gap-12 justify-center'>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-12 justify-center">
                                 <FaXTwitter />
-                                <span>Stay updated with our latest news and join the conversation.</span>
+                                <span>
+                                    Stay updated with our latest news and join the
+                                    conversation.
+                                </span>
                             </div>
                             <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
                         </div>
