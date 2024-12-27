@@ -20,6 +20,8 @@ import { useVaultDeposit } from "hooks/contracts/useVaultDeposit";
 import { useVaultTVL } from "hooks/contracts/useVaultTVL";
 import Button from "components/common/Button";
 import { getPoolRiskTypeName } from "lib/utils";
+import bqBTCImg from 'assets/images/bqbtc.svg'
+import bitcoinImg from 'assets/images/bitcoin.svg'
 
 type Props = {
   id: number;
@@ -271,7 +273,9 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
             <div className="flex flex-col">
               <span className="text-15 font-[600]">Enter Amount:</span>
               <div className="flex items-center gap-4 bg-[#07040D] py-8 px-12 rounded-8 overflow-hidden h-45">
-                <IconBitcoin />
+                <div className="w-27 h-27 overflow-hidden rounded-full flex items-center justify-center">
+                  <img className="w-full" src={assetType === ADT.Native ? bitcoinImg : bqBTCImg} alt="" />
+                </div>
                 <input
                   className="max-w-200 outline-none bg-transparent text-20 font-[700]"
                   value={stakeAmount}
