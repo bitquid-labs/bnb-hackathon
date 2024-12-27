@@ -1,4 +1,4 @@
-import {lazy} from 'react';
+import { lazy } from "react";
 
 import IconDashboard from '../assets/icons/IconDashboard';
 import IconStrategyManager from '../assets/icons/IconStrategyManager';
@@ -9,22 +9,24 @@ import RiskEnginePage from 'pages/RiskEnginePage';
 import AnalyseRisk from 'pages/AnalyseRisk';
 import IconDeposits from 'assets/icons/IconDeposits';
 import IconRiskEngine from 'assets/icons/IconRiskEngine';
+import IconHome from "assets/icons/IconHome";
 
-const DashboardPage = lazy(() => import('../pages/DashboardPage'));
-const StrategyManagerPage = lazy(() => import ('../pages/StrategyManagerPage'));
-const MyAssetsPage = lazy(() => import ('../pages/MyAssetsPage'));
-const CoversPage = lazy(() => import ('../pages/CoversPage'));
-const MyCoversPage = lazy(() => import ('../pages/MyCoversPage'));
-const DepositPage = lazy(() => import ('../pages/DepositPage'))
+const DashboardPage = lazy(() => import("../pages/DashboardPage"));
+const StrategyManagerPage = lazy(() => import("../pages/StrategyManagerPage"));
+const MyAssetsPage = lazy(() => import("../pages/MyAssetsPage"));
+const CoversPage = lazy(() => import("../pages/CoversPage"));
+const MyCoversPage = lazy(() => import("../pages/MyCoversPage"));
+const DepositPage = lazy(() => import("../pages/DepositPage"));
 
 enum AppRoutes {
   Dashboard = '/dashboard',
   MyAssetsPage = '/myassets',
   CoversPage = '/covers',
   CoverDetailPage = '/coverdetail/:id',
-  MyCoversPage = '/mycovers',
-  DepositPage = '/deposit',
+  SubMyCovers = "/myassets/mycovers",
+  DepositPage = '/deposits',
   DepositDetailPage = '/deposit/:id',
+  SubDeposits = "/myassets/deposit",
   RiskEnginePage = '/riskengine',
   AnalyseRisk = '/riskengine/analyserisks',
 }
@@ -34,7 +36,8 @@ export const appRoutes = [
   {key: 'MyAssetsPage', path: AppRoutes.MyAssetsPage, element: MyAssetsPage},
   {key: 'covers', path: AppRoutes.CoversPage, element: CoversPage},
   {key: 'coverdetail', path: AppRoutes.CoverDetailPage, element: CoverDetailPage},
-  {key: 'mycovers', path: AppRoutes.MyCoversPage, element: MyCoversPage},
+  {key: 'mycovers', path: AppRoutes.SubMyCovers, element: MyCoversPage},
+  { key: "mydeposits", path: AppRoutes.SubDeposits, element: MyAssetsPage },
   {key: 'deposit', path: AppRoutes.DepositPage, element: DepositPage},
   {key: 'depositdetail', path: AppRoutes.DepositDetailPage, element: DepositPage},
   {key: 'riskengine', path: AppRoutes.RiskEnginePage, element: RiskEnginePage},
@@ -42,10 +45,38 @@ export const appRoutes = [
 ];
 
 export const headerLinks = [
-  {name: 'Home', url: AppRoutes.Dashboard, icon: IconDashboard},
-  {name: 'Covers', url: AppRoutes.CoversPage, icon: IconCovers},
+  { name: "Home", url: AppRoutes.Dashboard, icon: IconHome },
+  { name: "Covers", url: AppRoutes.CoversPage, icon: IconCovers },
   // {name: 'strategymanager', url: AppRoutes.StrategyManger, icon: IconStrategyManager},
-  {name: 'Deposits', url: AppRoutes.DepositPage, icon: IconDeposits},
-  {name: 'My Assets', url: AppRoutes.MyAssetsPage, icon: IconMyAssets},
+  {
+    name: "Deposits",
+    url: AppRoutes.DepositPage,
+    icon: IconDeposits,
+    subMenus: [
+      {
+        name: "Pools",
+        url: AppRoutes.DepositPage + "?type=0",
+      },
+      {
+        name: "Strategies",
+        url: AppRoutes.DepositPage + "?type=1",
+      },
+    ],
+  },
+  {
+    name: "My Assets",
+    url: AppRoutes.MyAssetsPage,
+    icon: IconMyAssets,
+    subMenus: [
+      {
+        name: "My Covers",
+        url: AppRoutes.SubMyCovers,
+      },
+      {
+        name: "Deposits",
+        url: AppRoutes.SubDeposits,
+      },
+    ],
+  },
   {name: 'Risk Engine', url: AppRoutes.RiskEnginePage, icon: IconRiskEngine},
 ];

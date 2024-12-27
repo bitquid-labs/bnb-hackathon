@@ -12,11 +12,9 @@ import { getPoolRiskTypeName } from "lib/utils";
 
 type Props = {
   poolDetail: IPoolInfo;
-}
+};
 
-const PoolCard: React.FC<Props> = ({
-  poolDetail
-}) => {
+const PoolCard: React.FC<Props> = ({ poolDetail }) => {
   const { address, chain } = useAccount();
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -38,34 +36,33 @@ const PoolCard: React.FC<Props> = ({
         params,
         0n,
         () => {
-          toast.success("Withdraw succeed")
-          setLoadingMessage("")
+          toast.success("Withdraw succeed");
+          setLoadingMessage("");
           setIsWithdrawLoading(false);
         },
         () => {
-          setLoadingMessage("")
+          setLoadingMessage("");
           setIsWithdrawLoading(false);
-          toast.success("Failed to withdraw")
+          toast.success("Failed to withdraw");
         }
       );
     } catch (error) {
+      setIsWithdrawLoading(false);
       console.log("error:", error);
     }
-  }
+  };
 
-  const userPoolDeposit = usePoolDeposit(Number(poolDetail?.poolId))
+  const userPoolDeposit = usePoolDeposit(Number(poolDetail?.poolId));
 
   const handleClaimYeild = async () => {
     if (!poolDetail) return;
 
     const poolId = Number(poolDetail.poolId);
-    console.log('poolDetail:', poolDetail, poolId)
+    console.log("poolDetail:", poolDetail, poolId);
 
     setIsLoading(true);
-    setLoadingMessage("Claiming")
-    const params = [
-      poolId
-    ];
+    setLoadingMessage("Claiming");
+    const params = [poolId];
 
     try {
       await callContractFunction(
@@ -77,14 +74,14 @@ const PoolCard: React.FC<Props> = ({
         params,
         0n,
         () => {
-          toast.success("Cover purchased!")
-          setLoadingMessage("")
+          toast.success("Cover purchased!");
+          setLoadingMessage("");
           setIsLoading(false);
         },
         () => {
-          setLoadingMessage("")
+          setLoadingMessage("");
           setIsLoading(false);
-          toast.success("Failed purchase")
+          toast.success("Failed purchase");
         }
       );
 
@@ -97,6 +94,7 @@ const PoolCard: React.FC<Props> = ({
       //   args: params,
       // });
     } catch (error) {
+      setIsLoading(false);
       console.log("error:", error);
     }
   };
@@ -106,27 +104,39 @@ const PoolCard: React.FC<Props> = ({
       <div className="bg-[#FFFFFF0D] border border-[#FFFFFF33] rounded-10 px-27 py-48 w-[70%]">
         <div className="grid grid-cols-3 gap-y-40">
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Pool Name</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Pool Name
+            </div>
             <div className="">{poolDetail.poolName}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Staked Amount</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Staked Amount
+            </div>
             <div className="">{bnToNumber(poolDetail.depositAmount)}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">APY</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              APY
+            </div>
             <div className="">{Number(poolDetail.apy)}%</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Rating</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Rating
+            </div>
             <div className="">{poolDetail.rating}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Risk</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Risk
+            </div>
             <div className="">{getPoolRiskTypeName(poolDetail.risk)}</div>
           </div>
           <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Tenure Period</div>
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Tenure Period
+            </div>
             <div className="">{Number(poolDetail.minPeriod)}Days</div>
           </div>
         </div>
@@ -136,17 +146,21 @@ const PoolCard: React.FC<Props> = ({
           isLoading={isWithdrawLoading}
           onClick={handleWithdrawStake}
           wrapperClassName="w-full"
-          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC]">Withdraw Stake</Button>
-        <Button 
+          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC]"
+        >
+          Withdraw Stake
+        </Button>
+        <Button
           isLoading={isLoading}
           onClick={handleClaimYeild}
           wrapperClassName="w-full"
-          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#007ADF66] to-[#007ADF80] border border-[#007ADF]">
+          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#007ADF66] to-[#007ADF80] border border-[#007ADF]"
+        >
           {isLoading ? loadingMessage : "Claim Yield"}
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default PoolCard;

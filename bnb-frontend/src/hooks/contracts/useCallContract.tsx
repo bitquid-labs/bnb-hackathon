@@ -16,6 +16,8 @@ const useCallContract = () => {
     hash: txHash as `0x${string}`,
   });
 
+  console.log('error:', error)
+
   useEffect(() => {
     if (status === "error") {
       if (onErrorDo) {

@@ -17,6 +17,11 @@ import { useAccount, useWriteContract, useBalance } from "wagmi";
 import { toast } from "react-toastify";
 import { useTokenName } from "hooks/contracts/useTokenName";
 import { useVaultDeposit } from "hooks/contracts/useVaultDeposit";
+import { useVaultTVL } from "hooks/contracts/useVaultTVL";
+import Button from "components/common/Button";
+import { getPoolRiskTypeName } from "lib/utils";
+import bqBTCImg from "assets/images/bqbtc.svg";
+import bitcoinImg from "assets/images/bitcoin.svg";
 
 type Props = {
   id: number;
@@ -32,10 +37,10 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
   const { callContractFunction } = useCallContract();
 
   const vaultData = useVault(id);
+  const tvl = useVaultTVL(id);
 
   console.log("vault detail:", vaultData);
   const userDeposit = useVaultDeposit(id);
-
 
   const assetType = useMemo(() => {
     if (vaultData) {
@@ -240,7 +245,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
 
   // }
   return (
-    <div className="w-full max-w-1220 mx-auto">
+    <div className="w-full mx-auto max-w-1220">
       {/* <button onClick={handleMintBQBTC}>Mint BQBTC</button> */}
       <div
         className="w-full rounded-40 overflow-hidden bg-gradient bg-gradient-to-b from-[#00ECBC33] to-[#83ACF000]"
@@ -253,21 +258,29 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
           }
         }
       >
-        <div className="flex px-95 py-52 items-center justify-between">
+        <div className="flex items-center justify-between px-95 py-52">
           <div className="flex flex-col items-start justify-center">
             <div className="text-16 font-[700] text-[#00ECBC]">
               {vaultData?.vaultName}
             </div>
             <div className="relative z-[10]">
-              <span className="font-[700] text-48">{Number(vaultData?.apy || 0n)} %</span>
-              <span className="text-19 ml-8">APY</span>
+              <span className="font-[700] text-48">
+                {Number(vaultData?.apy || 0n)} %
+              </span>
+              <span className="ml-8 text-19">APY</span>
             </div>
           </div>
           <div className="flex items-end gap-22">
             <div className="flex flex-col">
               <span className="text-15 font-[600]">Enter Amount:</span>
               <div className="flex items-center gap-4 bg-[#07040D] py-8 px-12 rounded-8 overflow-hidden h-45">
-                <IconBitcoin />
+                <div className="flex items-center justify-center overflow-hidden rounded-full w-27 h-27">
+                  <img
+                    className="w-full"
+                    src={assetType === ADT.Native ? bitcoinImg : bqBTCImg}
+                    alt=""
+                  />
+                </div>
                 <input
                   className="max-w-200 outline-none bg-transparent text-20 font-[700]"
                   value={stakeAmount}
@@ -277,17 +290,18 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
                 />
               </div>
             </div>
-            <div
+            <Button
+              isLoading={isLoading}
               onClick={() => handleStake()}
               className="h-45 flex items-center justify-center  px-35 rounded-9 border border-[#6B728099] bg-gradient-to-r from-[rgba(0,236,188,0.8)] to-[rgba(32,81,102,0.096)] cursor-pointer"
             >
               {isLoading ? loadingMessage : "Stake Now"}
-            </div>
+            </Button>
           </div>
         </div>
         <div className="px-95 py-34 bg-[#1A1D22]">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-start gap-7">
+            {/* <div className="flex flex-col items-start gap-7">
               <div className="text-[#9DA3BA] text-13 font-[500]">
                 Min Investment
               </div>
@@ -297,16 +311,13 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
                 </span>
                 <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
               </div>
-            </div>
+            </div> */}
             <div className="flex flex-col items-start gap-7">
-              <div className="text-[#9DA3BA] text-13 font-[500]">
-                Max Investment
-              </div>
+              <div className="text-[#9DA3BA] text-13 font-[500]">Risk Type</div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  {formatEther(vaultData?.maxInv || 0n)}
+                  {getPoolRiskTypeName(vaultData?.risk)}
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
               </div>
             </div>
             <div className="flex flex-col items-start gap-7">
@@ -326,9 +337,9 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  15,000
+                  {tvl}
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">USD</span>
+                <span className="text-[#FFF] text-12 ml-4"> {"USD"}</span>
               </div>
             </div>
             <div className="flex flex-col items-start gap-7">
@@ -338,7 +349,8 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               <div className="flex items-end">
                 <div className="flex flex-col justify-center items-center gap-4 text-[#00ECBC] text-17 font-[700] leading-[25px]">
                   {vaultData?.pools?.map((vault, index) => (
-                    <span key={index}>{vault.poolName}</span>))}
+                    <span key={index}>{vault.poolName}</span>
+                  ))}
                 </div>
                 <span className="text-[#FFF] text-12 ml-4">{""}</span>
               </div>
