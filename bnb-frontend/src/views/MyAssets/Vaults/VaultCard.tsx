@@ -13,6 +13,7 @@ import { ChainType } from "lib/wagmi";
 import { useVault } from "hooks/contracts/useVault";
 import { bnToNumber } from "lib/number";
 import { useTokenName } from "hooks/contracts/useTokenName";
+import { useVaultTVL } from "hooks/contracts/useVaultTVL";
 
 type VaultCardProps = {
   vaultDepositData: IVaultDeposit;
@@ -27,6 +28,7 @@ const VaultCard: React.FC<VaultCardProps> = ({ vaultDepositData, pools }) => {
   const { callContractFunction } = useCallContract();
   const vaultDetail = useVault(Number(vaultDepositData.vaultId));
   const assetTokenName = useTokenName(vaultDepositData.asset);
+  const tvl = useVaultTVL(Number(vaultDepositData.vaultId));
 
   console.log("vaultDetail:", vaultDetail);
 
@@ -165,7 +167,9 @@ const VaultCard: React.FC<VaultCardProps> = ({ vaultDepositData, pools }) => {
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
               TVL
             </div>
-            <div className="">Pool1</div>
+            <div className="">
+              {tvl.toFixed(2)} {"USD"}
+            </div>
           </div>
           <div className="flex flex-col items-center justify-start gap-20">
             <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
