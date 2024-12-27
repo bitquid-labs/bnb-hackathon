@@ -28,6 +28,15 @@ const coinData: CoinData = {
     TUSD: { premium: "20%", riskScore: "0.97" },
 };
 
+const protocolData: CoinData = {
+    "Infstone": { premium: "11%", riskScore: "0.49" },
+    "DAIC": { premium: "18%", riskScore: "0.82" },
+    "Stakecito": { premium: "5%", riskScore: "0.11" },
+    "Pier2": { premium: "6%", riskScore: "0.15" },
+    "Babylon Validator": { premium: "8%", riskScore: "0.22" },
+    "Core Validator": { premium: "10%", riskScore: "0.40" },
+};
+
 const DepeggingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) => {
     const stableCoins = [
         { name: "Satoshi", risk: "Moderate" },
@@ -89,10 +98,13 @@ const DepeggingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) 
 
 const SlashingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) => {
     const protocols = [
-        { name: "Protocol X", risk: "High" },
-        { name: "Protocol Y", risk: "Moderate" },
-        { name: "Protocol Z", risk: "Low" },
-    ];
+        { name: "Infstone", risk: "Moderate" },
+        { name: "DAIC", risk: "High" },
+        { name: "Stakecito", risk: "Low" },
+        { name: "Pier2", risk: "Low" },
+        { name: "Babylon Validator", risk: "Low" },
+        { name: "Core Validator", risk: "Moderate" },
+    ];    
 
     return (
         <div className="flex-1 grid grid-cols-4 gap-16">
@@ -144,9 +156,10 @@ const AnalyseRisk = () => {
     const [selectedCoin, setSelectedCoin] = useState<{ premium: string; riskScore: string } | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleSelectCoin = (coinName: string) => {
+    const handleSelectCoin = (name: string) => {
         setLoading(true);
-        setSelectedCoin(coinData[coinName as keyof typeof coinData] || null);
+        const data = activeTab === "de-pegging" ? coinData : protocolData;
+        setSelectedCoin(data[name as keyof typeof data] || null);
     };
 
     useEffect(() => {
