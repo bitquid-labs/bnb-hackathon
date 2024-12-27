@@ -1,0 +1,42 @@
+{
+    "Satoshi": {
+        "Risk Score": 0.57,
+        "Premium (%)": 10
+    },
+    "BIMA": {
+        "Risk Score": 0.64,
+        "Premium (%)": 11
+    },
+    "Lorenzo": {
+        "Risk Score": 0.19,
+        "Premium (%)": 5
+    },
+    "Bedrock": {
+        "Risk Score": 0.72,
+        "Premium (%)": 16
+    },
+    "FDUSD": {
+        "Risk Score": 0.38,
+        "Premium (%)": 8
+    },
+    "LstBTC": {
+        "Risk Score": 0.21,
+        "Premium (%)": 5
+    },
+    "LBTC": {
+        "Risk Score": 0.15,
+        "Premium (%)": 4
+    },
+    "BounceBit_BTC": {
+        "Risk Score": 0.26,
+        "Premium (%)": 6
+    },
+    "USDe": {
+        "Risk Score": 0.69,
+        "Premium (%)": 14
+    },
+    "TUSD": {
+        "Risk Score": 0.97,
+        "Premium (%)": 20
+    }
+}
