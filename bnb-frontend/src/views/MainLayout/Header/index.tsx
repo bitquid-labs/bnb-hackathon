@@ -5,6 +5,7 @@ import { headerLinks } from "../../../constants/routes";
 import LogoImage from "assets/images/logo.png";
 import ConnectWalletButton from "components/ConnectWalletButton";
 import { cn } from "lib/utils";
+import IconLogo from "assets/icons/IconLogo";
 
 const Header: React.FC = () => {
   const links = headerLinks;
@@ -13,17 +14,18 @@ const Header: React.FC = () => {
 
   return (
     <div className="w-full bg-dark-200 text-white border-b-[1px] border-b-white/10 px-20 py-20 flex items-center gap-16 relative">
-      <div className="w-full mx-auto flex justify-between items-center max-w-1220">
+      <div className="flex items-center justify-between w-full mx-auto max-w-1220">
         <Link
           to="/dashboard"
           className="flex items-center justify-center gap-4 mr-20"
         >
           {/* <img src={logo} alt="logo" className="w-20" /> */}
-          <span className="text-22 font-bold text-white hidden md:block">
+          <IconLogo />
+          {/* <span className="hidden font-bold text-white text-22 md:block">
             BQ Labs
-          </span>
+          </span> */}
         </Link>
-        <div className="flex justify-center items-center gap-">
+        <div className="flex items-center justify-center gap-">
           {links.map((link: any, index: any) => (
             <div className={cn("group relative flex flex-auto")}>
               <Link
@@ -56,16 +58,20 @@ const Header: React.FC = () => {
                 <div className="border border-[#FFFFFF1A] text-light bg-[#1E1E1EB2] py-10 px-24 rounded-[10px] absolute left-1/2 top-full hidden w-max min-w-[150px] -translate-x-1/2 flex-col p-2 [box-shadow:0px_0px_24px_0px_rgba(0,_0,_0,_0.08)] group-hover:flex">
                   {link.subMenus?.map((menu: any, index: any) => (
                     <>
-                    <div
-                      key={index}
-                      className={cn("relative flex cursor-pointer items-center")}
-                      onClick={() => navigate(menu.url)}
-                    >
-                      <p className="w-full text-[#8D8D8D] text-12 py-8 hover:bg-gradient-to-t hover:text-[#FFF]">
-                        {menu.name}
-                      </p>
-                    </div>
-                    {(index < link.subMenus.length - 1) && (<div className="w-full h-1 bg-gradient-to-r from-[#888888] via-[#7E7E7E00] to-[#888888]"></div>)}
+                      <div
+                        key={index}
+                        className={cn(
+                          "relative flex cursor-pointer items-center"
+                        )}
+                        onClick={() => navigate(menu.url)}
+                      >
+                        <p className="w-full text-[#8D8D8D] text-12 py-8 hover:bg-gradient-to-t hover:text-[#FFF]">
+                          {menu.name}
+                        </p>
+                      </div>
+                      {index < link.subMenus.length - 1 && (
+                        <div className="w-full h-1 bg-gradient-to-r from-[#888888] via-[#7E7E7E00] to-[#888888]"></div>
+                      )}
                     </>
                   ))}
                 </div>

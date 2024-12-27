@@ -42,9 +42,16 @@ const PoolList: React.FC<Props> = ({
           <tbody>
             {poolData.map((pool, index) => (
               <>
-                <tr className="text-center px-8" key={index}>
+                <tr className="px-8 text-center" key={index}>
                   <td className="font-[400] bg-[#1F1F1F] py-24 rounded-l-8">
-                    {pool.poolName}
+                    <div className="flex items-center justify-start w-full gap-12 pl-15">
+                      {pool.displayDetails ? (
+                        <IconDownIcon />
+                      ) : (
+                        <IconDownIcon className="-rotate-90" />
+                      )}
+                      {pool.poolName}
+                    </div>
                   </td>
                   <td className="font-[500] bg-[#1F1F1F] py-24">
                     {pool.rating}
@@ -79,7 +86,7 @@ const PoolList: React.FC<Props> = ({
                               </span>
                               <img
                                 src={networkBSCIcon}
-                                className="w-25 h-24"
+                                className="h-24 w-25"
                                 alt="network_bsc"
                               />
                               {/* <span>{pool.details.network}</span> */}
@@ -120,7 +127,7 @@ const PoolList: React.FC<Props> = ({
                         </div>
                       )}
                       <div
-                        className="w-full flex items-center justify-center gap-5 cursor-pointer py-8"
+                        className="flex items-center justify-center w-full gap-5 py-8 cursor-pointer"
                         onClick={() => {
                           setPoolsData((prev: any) =>
                             prev.map((pool: any, i: number) =>
@@ -134,9 +141,12 @@ const PoolList: React.FC<Props> = ({
                           );
                         }}
                       >
-                        <span>More Details</span> {
-                          pool.displayDetails ? <IconDownIcon className="rotate-180" /> : <IconDownIcon />
-                        }
+                        <span>More Details</span>{" "}
+                        {pool.displayDetails ? (
+                          <IconDownIcon className="rotate-180" />
+                        ) : (
+                          <IconDownIcon />
+                        )}
                       </div>
                     </div>
                   </td>

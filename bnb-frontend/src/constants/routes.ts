@@ -6,6 +6,7 @@ import IconMyAssets from "../assets/icons/IconMyAssets";
 import IconCovers from "assets/icons/IconCovers";
 import CoverDetailPage from "pages/CoverDetailPage";
 import IconDeposits from "assets/icons/IconDeposits";
+import IconHome from "assets/icons/IconHome";
 
 const DashboardPage = lazy(() => import("../pages/DashboardPage"));
 const StrategyManagerPage = lazy(() => import("../pages/StrategyManagerPage"));
@@ -49,7 +50,7 @@ export const appRoutes = [
 ];
 
 export const headerLinks = [
-  { name: "Home", url: AppRoutes.Dashboard, icon: IconDashboard },
+  { name: "Home", url: AppRoutes.Dashboard, icon: IconHome },
   { name: "Covers", url: AppRoutes.CoversPage, icon: IconCovers },
   // {name: 'strategymanager', url: AppRoutes.StrategyManger, icon: IconStrategyManager},
   {

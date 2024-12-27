@@ -4,35 +4,43 @@ import { IVaultDeposit } from "types/common";
 import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
 import useCallContract from "hooks/contracts/useCallContract";
-import { ICoverContract, InsurancePoolContract, VaultContract } from "constants/contracts";
+import {
+  ICoverContract,
+  InsurancePoolContract,
+  VaultContract,
+} from "constants/contracts";
 import { ChainType } from "lib/wagmi";
+import { useVault } from "hooks/contracts/useVault";
+import { bnToNumber } from "lib/number";
+import { useTokenName } from "hooks/contracts/useTokenName";
 
 type VaultCardProps = {
-  vaultData: IVaultDeposit;
+  vaultDepositData: IVaultDeposit;
+  pools: string[];
 };
 
-const VaultCard: React.FC<VaultCardProps> = ({
-  vaultData
-}) => {
+const VaultCard: React.FC<VaultCardProps> = ({ vaultDepositData, pools }) => {
   const { address, chain } = useAccount();
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [isClaimingLoading, setIsClaimingLoading] = useState<boolean>(false);
   const [isWithdrawLoading, setIsWithdrawLoading] = useState<boolean>(false);
   const { callContractFunction } = useCallContract();
+  const vaultDetail = useVault(Number(vaultDepositData.vaultId));
+  const assetTokenName = useTokenName(vaultDepositData.asset);
 
-  console.log('vaultData:', vaultData)
-  
+  console.log("vaultDetail:", vaultDetail);
+
+  console.log("vaultDepositData:", vaultDepositData);
+
   const handleClaimYeild = async () => {
-    if (!vaultData) return;
+    if (!vaultDepositData) return;
 
-    const vaultId = Number(vaultData.vaultId);
-    console.log('poolDetail:', vaultData, vaultId)
+    const vaultId = Number(vaultDepositData.vaultId);
+    console.log("poolDetail:", vaultDepositData, vaultId);
 
     setIsClaimingLoading(true);
-    setLoadingMessage("Claiming")
-    const params = [
-      vaultId
-    ];
+    setLoadingMessage("Claiming");
+    const params = [vaultId];
 
     try {
       await callContractFunction(
@@ -44,14 +52,14 @@ const VaultCard: React.FC<VaultCardProps> = ({
         params,
         0n,
         () => {
-          toast.success("Claim succeed!")
-          setLoadingMessage("")
+          toast.success("Claim succeed!");
+          setLoadingMessage("");
           setIsClaimingLoading(false);
         },
         () => {
-          setLoadingMessage("")
+          setLoadingMessage("");
           setIsClaimingLoading(false);
-          toast.success("Failed to claim")
+          toast.success("Failed to claim");
         }
       );
 
@@ -71,7 +79,7 @@ const VaultCard: React.FC<VaultCardProps> = ({
   const handleWithdrawStake = async () => {
     setIsWithdrawLoading(true);
     setLoadingMessage("Initiating");
-    const params = [vaultData.vaultId];
+    const params = [vaultDepositData.vaultId];
 
     try {
       await callContractFunction(
@@ -83,18 +91,18 @@ const VaultCard: React.FC<VaultCardProps> = ({
         params,
         0n,
         () => {
-          toast.success("Withdraw Initiated")
-          setLoadingMessage("")
+          toast.success("Withdraw Initiated");
+          setLoadingMessage("");
           setIsWithdrawLoading(false);
         },
         () => {
-          setLoadingMessage("")
+          setLoadingMessage("");
           setIsWithdrawLoading(false);
-          toast.success("Failed to withdraw initiate")
+          toast.success("Failed to withdraw initiate");
         }
       );
 
-      setLoadingMessage("Withdrawing")
+      setLoadingMessage("Withdrawing");
       await callContractFunction(
         InsurancePoolContract.abi,
         InsurancePoolContract.addresses[
@@ -104,48 +112,75 @@ const VaultCard: React.FC<VaultCardProps> = ({
         params,
         0n,
         () => {
-          toast.success("Withdraw Succeed")
-          setLoadingMessage("")
+          toast.success("Withdraw Succeed");
+          setLoadingMessage("");
           setIsWithdrawLoading(false);
         },
         () => {
-          setLoadingMessage("")
+          setLoadingMessage("");
           setIsWithdrawLoading(false);
-          toast.success("Failed to withdraw")
+          toast.success("Failed to withdraw");
         }
       );
     } catch (error) {
       console.log("error:", error);
     }
-  }
-  
+  };
+
   return (
     <div className="w-full flex items-center justify-between border border-[#6B7280] bg-[#6B72801A] py-24 px-27 rounded-10">
       <div className="bg-[#FFFFFF0D] border border-[#FFFFFF33] rounded-10 px-27 py-48 w-[70%]">
         <div className="grid grid-cols-3 gap-y-40">
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Pool Name</div>
+          <div className="flex flex-col items-center justify-start gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Strategy Name
+            </div>
+            <div className="">{vaultDetail?.vaultName}</div>
+          </div>
+          <div className="flex flex-col items-center justify-start gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Staked Amount
+            </div>
+            <div className="">
+              {bnToNumber(vaultDepositData?.amount)} {assetTokenName}
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-start gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              APY
+            </div>
+            <div className="">{Number(vaultDepositData?.vaultApy)} %</div>
+          </div>
+          <div className="flex flex-col items-center justify-start gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Pools Invested
+            </div>
+            <div className="flex flex-col justify-center gap-4 items-cetnter">
+              {pools.map((pool, index) => (
+                <span className="text-center text-12">{pool}</span>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-start gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              TVL
+            </div>
             <div className="">Pool1</div>
           </div>
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Staked Amount</div>
-            <div className="">Pool1</div>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Staked Amount</div>
-            <div className="">Pool1</div>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Risk</div>
-            <div className="">Pool1</div>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Tenure Period</div>
-            <div className="">Pool1</div>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-20">
-            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">Yield Returns</div>
-            <div className="">Pool1</div>
+          <div className="flex flex-col items-center justify-start gap-20">
+            <div className="bg-[#FFFFFF0D] border border-[#FFFFFF1A] rounded-10 w-210 h-40 flex items-center justify-center">
+              Tenure Period
+            </div>
+            <div className="">
+              {Math.round(
+                Math.abs(
+                  Number(vaultDepositData?.startDate) -
+                    Number(vaultDepositData?.expiryDate)
+                ) /
+                  (60 * 60 * 24)
+              )}{" "}
+              Days
+            </div>
           </div>
         </div>
       </div>
@@ -154,17 +189,21 @@ const VaultCard: React.FC<VaultCardProps> = ({
           isLoading={isWithdrawLoading}
           onClick={handleWithdrawStake}
           wrapperClassName="w-full"
-          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC]">Withdraw Stake</Button>
-        <Button 
+          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC]"
+        >
+          Withdraw Stake
+        </Button>
+        <Button
           isLoading={isClaimingLoading}
           onClick={handleClaimYeild}
           wrapperClassName="w-full"
-          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#007ADF66] to-[#007ADF80] border border-[#007ADF]">
+          className="w-full rounded-8 py-18 bg-gradient-to-r from-[#007ADF66] to-[#007ADF80] border border-[#007ADF]"
+        >
           {isClaimingLoading ? loadingMessage : "Claim Yield"}
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default VaultCard;
