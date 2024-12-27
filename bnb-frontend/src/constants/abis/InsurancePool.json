@@ -280,11 +280,6 @@
           },
           {
             "internalType": "uint256",
-            "name": "cost",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
             "name": "capacityAmount",
             "type": "uint256"
           },
@@ -372,19 +367,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimProposalFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -532,19 +514,6 @@
       }
     ],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getAllParticipants",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -792,11 +761,6 @@
           },
           {
             "internalType": "uint256",
-            "name": "cost",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
             "name": "capacityAmount",
             "type": "uint256"
           },
@@ -993,6 +957,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserBalanceinUSD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_poolId",
         "type": "uint256"
@@ -1076,25 +1059,6 @@
         "internalType": "struct CoverLib.GenericDepositDetails",
         "name": "",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "getUserParticipation",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1606,11 +1570,6 @@
           {
             "internalType": "uint256",
             "name": "capacity",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "cost",
             "type": "uint256"
           },
           {
