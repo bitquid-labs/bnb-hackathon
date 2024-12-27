@@ -18,6 +18,7 @@ import useCallContract from "hooks/contracts/useCallContract";
 import { useTokenName } from "hooks/contracts/useTokenName";
 import { usePoolDeposit } from "hooks/contracts/usePoolDeposit";
 import { getPoolRiskTypeName } from "lib/utils";
+import Button from "components/common/Button";
 
 type Props = {
   poolId: number;
@@ -333,12 +334,13 @@ const PoolDetail: React.FC<Props> = ({ poolId }) => {
                 <span className="text-14 font-[600]">15.6</span>
               </div> */}
               <div className="w-full">
-                <button
+                <Button
+                  isLoading={isLoading}
                   onClick={handleDeposit}
-                  className="bg-[#00ECBC66] border border-[#00ECBC] px-45 py-7 rounded-8 w-full"
+                  className="bg-[#00ECBC66] border border-[#00ECBC] px-45 py-10 rounded-8 w-full"
                 >
                   {isLoading ? loadingMessage : 'Deposit'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -17,6 +17,8 @@ import { useAccount, useWriteContract, useBalance } from "wagmi";
 import { toast } from "react-toastify";
 import { useTokenName } from "hooks/contracts/useTokenName";
 import { useVaultDeposit } from "hooks/contracts/useVaultDeposit";
+import { useVaultTVL } from "hooks/contracts/useVaultTVL";
+import Button from "components/common/Button";
 
 type Props = {
   id: number;
@@ -32,6 +34,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
   const { callContractFunction } = useCallContract();
 
   const vaultData = useVault(id);
+  const tvl = useVaultTVL(id);
 
   console.log("vault detail:", vaultData);
   const userDeposit = useVaultDeposit(id);
@@ -277,12 +280,13 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
                 />
               </div>
             </div>
-            <div
+            <Button
+              isLoading={isLoading}
               onClick={() => handleStake()}
               className="h-45 flex items-center justify-center  px-35 rounded-9 border border-[#6B728099] bg-gradient-to-r from-[rgba(0,236,188,0.8)] to-[rgba(32,81,102,0.096)] cursor-pointer"
             >
               {isLoading ? loadingMessage : "Stake Now"}
-            </div>
+            </Button>
           </div>
         </div>
         <div className="px-95 py-34 bg-[#1A1D22]">
@@ -326,9 +330,9 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  15,000
+                  {tvl}
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">USD</span>
+                <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
               </div>
             </div>
             <div className="flex flex-col items-start gap-7">

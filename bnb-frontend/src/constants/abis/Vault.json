@@ -784,6 +784,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "apy",
             "type": "uint256"
           },
@@ -941,6 +946,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "vaultId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getVaultTVL",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getVaults",
     "outputs": [
@@ -1052,6 +1076,11 @@
             "internalType": "struct CoverLib.Pool[]",
             "name": "pools",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -1461,6 +1490,11 @@
         "internalType": "enum CoverLib.RiskType",
         "name": "risk",
         "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
