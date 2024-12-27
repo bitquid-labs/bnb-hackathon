@@ -3,6 +3,7 @@ import REMainImg from '../assets/icons/IconREMain.svg';
 import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaDiscord } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const RiskEngine: React.FC = () => {
   return (
@@ -14,9 +15,11 @@ const RiskEngine: React.FC = () => {
         <p className="text-gray-400 mt-6 max-w-2xl mx-auto mb-16">
           Analyze the risks of covers, strategies, and pools with curated protocols, empowering you to choose between high, moderate, and low-risk investments confidently!
         </p>
+        <Link to='/riskengine/analyserisks'>
         <button className="mt-8 text-sm font-semibold px-48 py-10 border-2 border-white bg-transparent text-white rounded-lg shadow-lg hover:text-[#00ecbc] hover:border-[#00ecbc] transition-all duration-300 ease-in-out">
           Analyse Risks
         </button>
+        </Link>
       </header>
 
       <div className="flex justify-center py-12">
@@ -34,7 +37,7 @@ const RiskEngine: React.FC = () => {
         <div className="my-32 w-[85%] mx-auto bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2"></div>
 
 
-      <footer className="py-16">
+      <footer className="py-16 scale-110">
         <div className="flex flex-col space-y-12 items-center">
           <a
             href="https://example.com/docs"

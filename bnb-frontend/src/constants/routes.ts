@@ -6,6 +6,7 @@ import IconMyAssets from '../assets/icons/IconMyAssets';
 import IconCovers from 'assets/icons/IconCovers';
 import CoverDetailPage from 'pages/CoverDetailPage';
 import RiskEnginePage from 'pages/RiskEnginePage';
+import AnalyseRisk from 'pages/AnalyseRisk';
 import IconDeposits from 'assets/icons/IconDeposits';
 import IconRiskEngine from 'assets/icons/IconRiskEngine';
 
@@ -25,6 +26,7 @@ enum AppRoutes {
   DepositPage = '/deposit',
   DepositDetailPage = '/deposit/:id',
   RiskEnginePage = '/riskengine',
+  AnalyseRisk = '/riskengine/analyserisks',
 }
 
 export const appRoutes = [
@@ -36,6 +38,7 @@ export const appRoutes = [
   {key: 'deposit', path: AppRoutes.DepositPage, element: DepositPage},
   {key: 'depositdetail', path: AppRoutes.DepositDetailPage, element: DepositPage},
   {key: 'riskengine', path: AppRoutes.RiskEnginePage, element: RiskEnginePage},
+  {key: 'analyserisks', path: AppRoutes.AnalyseRisk, element: AnalyseRisk},
 ];
 
 export const headerLinks = [
