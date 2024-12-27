@@ -7,23 +7,117 @@ import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaDiscord } from "react-icons/fa";
 
-const AnalyseRisk: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<"de-pegging" | "slashing">("de-pegging");
-
-    const protocols = [
-        { name: "Protocol A", risk: "Low" },
-        { name: "Protocol A", risk: "Moderate" },
-        { name: "Protocol A", risk: "Low" },
-        { name: "Protocol A", risk: "Moderate" },
-        { name: "Protocol A", risk: "High" },
-        { name: "Protocol A", risk: "Low" },
-        { name: "Protocol A", risk: "Moderate" },
-        { name: "Protocol A", risk: "Low" },
-        { name: "Protocol A", risk: "High" },
-        { name: "Protocol A", risk: "Moderate" },
-        { name: "Protocol A", risk: "Low" },
-        { name: "Protocol A", risk: "Low" },
+const DepeggingProtocols = () => {
+    const stableCoins = [
+        { name: "Satoshi", risk: "Moderate" },
+        { name: "BIMA", risk: "Moderate" },
+        { name: "Lorenzo", risk: "Low" },
+        { name: "Bedrock", risk: "High" },
+        { name: "FDUSD", risk: "Low" },
+        { name: "LstBTC", risk: "Low" },
+        { name: "LBTC", risk: "Low" },
+        { name: "BounceBit_BTC", risk: "Low" },
+        { name: "USDe", risk: "High" },
+        { name: "TUSD", risk: "High" },
     ];
+
+    return (
+        <div className="flex-1 grid grid-cols-4 gap-16">
+            {stableCoins.map((stableCoin, index) => {
+                const riskColors = {
+                    Low: "s-low",
+                    Moderate: "s-moderate",
+                    High: "s-high",
+                };
+
+                const riskColorClass = riskColors[stableCoin.risk as keyof typeof riskColors] || "bg-gray-500";
+
+                const riskImages = {
+                    Low: lowImg,
+                    Moderate: moderateImg,
+                    High: highImg,
+                };
+
+                const imgSrc = riskImages[stableCoin.risk as keyof typeof riskImages] || "";
+
+                const riskTextColors = {
+                    Low: "text-emerald-500",
+                    Moderate: "text-yellow-600",
+                    High: "text-red-600",
+                };
+
+                const riskTextColorClass = riskTextColors[stableCoin.risk as keyof typeof riskTextColors] || "text-white";
+
+                return (
+                    <div
+                        key={index}
+                        className={`flex flex-col items-center justify-center p-6 ${riskColorClass} aspect-square rounded-full gap-4 m-3`}
+                    >
+                        <div>
+                            <img src={imgSrc} alt={stableCoin.risk} />
+                        </div>
+                        <div className="text-lg font-semibold mt-4">{stableCoin.name}</div>
+                        <div className={`text-sm ${riskTextColorClass}`}>{stableCoin.risk}</div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+const SlashingProtocols = () => {
+    const protocols = [
+        { name: "Protocol X", risk: "High" },
+        { name: "Protocol Y", risk: "Moderate" },
+        { name: "Protocol Z", risk: "Low" },
+    ];
+
+    return (
+        <div className="flex-1 grid grid-cols-4 gap-16">
+            {protocols.map((protocol, index) => {
+                const riskColors = {
+                    Low: "s-low",
+                    Moderate: "s-moderate",
+                    High: "s-high",
+                };
+
+                const riskColorClass = riskColors[protocol.risk as keyof typeof riskColors] || "bg-gray-500";
+
+                const riskImages = {
+                    Low: lowImg,
+                    Moderate: moderateImg,
+                    High: highImg,
+                };
+
+                const imgSrc = riskImages[protocol.risk as keyof typeof riskImages] || "";
+
+                const riskTextColors = {
+                    Low: "text-emerald-500",
+                    Moderate: "text-yellow-600",
+                    High: "text-red-600",
+                };
+
+                const riskTextColorClass = riskTextColors[protocol.risk as keyof typeof riskTextColors] || "text-white";
+
+                return (
+                    <div
+                        key={index}
+                        className={`flex flex-col items-center justify-center p-6 ${riskColorClass} aspect-square rounded-full gap-4 m-3`}
+                    >
+                        <div>
+                            <img src={imgSrc} alt={protocol.risk} />
+                        </div>
+                        <div className="text-lg font-semibold mt-4">{protocol.name}</div>
+                        <div className={`text-sm ${riskTextColorClass}`}>{protocol.risk}</div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+const AnalyseRisk = () => {
+    const [activeTab, setActiveTab] = useState<"de-pegging" | "slashing">("de-pegging");
 
     const options = ["De-pegging", "Slashing"];
 
@@ -74,46 +168,8 @@ const AnalyseRisk: React.FC = () => {
             </div>
 
             <div className="flex-1 flex p-6 gap-28">
-                <div className="flex-1 grid grid-cols-4 gap-16">
-                    {protocols.map((protocol, index) => {
-                        const riskColors = {
-                            Low: "s-low",
-                            Moderate: "s-moderate",
-                            High: "s-high",
-                        };
-
-                        const riskColorClass = riskColors[protocol.risk as keyof typeof riskColors] || "bg-gray-500";
-
-                        const riskImages: { [key: string]: string } = {
-                            Low: lowImg,
-                            Moderate: moderateImg,
-                            High: highImg,
-                        };
-
-                        const imgSrc = riskImages[protocol.risk] || "";
-
-                        const riskTextColors: { [key: string]: string } = {
-                            Low: "text-emerald-500",
-                            Moderate: "text-yellow-600",
-                            High: "text-red-600",
-                        };
-
-                        const riskTextColorClass = riskTextColors[protocol.risk] || "text-white";
-
-                        return (
-                            <div
-                                key={index}
-                                className={`flex flex-col items-center justify-center p-6 ${riskColorClass} aspect-square rounded-full gap-4 m-3`}
-                            >
-                                <div>
-                                    <img src={imgSrc} alt={protocol.risk} />
-                                </div>
-                                <div className="text-lg font-semibold mt-4">{protocol.name}</div>
-                                <div className={`text-sm ${riskTextColorClass}`}>{protocol.risk}</div>
-                            </div>
-                        );
-                    })}
-                </div>
+                {activeTab === "de-pegging" && <DepeggingProtocols />}
+                {activeTab === "slashing" && <SlashingProtocols />}
 
                 <div className="w-[16rem] p-10 glass-2 shadow-md flex flex-col items-center">
                     <div className="pt-16"><img src={tick} alt="" /></div>
@@ -131,54 +187,53 @@ const AnalyseRisk: React.FC = () => {
             <div className="my-32 w-full bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2 mt-[8rem] mb-[5rem]"></div>
 
             <footer className="py-16 mb-[4rem]">
-                    <div className="flex flex-col space-y-12 items-center scale-110">
-                      <a
+                <div className="flex flex-col space-y-12 items-center scale-110">
+                    <a
                         href="https://example.com/docs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
-                      >
+                    >
                         <div className='flex justify-between items-center'>
-                        <div className='flex items-center gap-12 justify-center'>
-                        <HiOutlineClipboardDocumentCheck />
-                        <span>Explore BQ Labs Docs.</span>
+                            <div className='flex items-center gap-12 justify-center'>
+                                <HiOutlineClipboardDocumentCheck />
+                                <span>Explore BQ Labs Docs.</span>
+                            </div>
+                            <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
                         </div>
-                        <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
-                        </div>
-                      </a>
-                      <a
+                    </a>
+                    <a
                         href="https://example.com/news"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
-                      >
+                    >
                         <div className='flex justify-between items-center'>
-                        <div className='flex items-center gap-12 justify-center'>
-                        <FaXTwitter />
-                        <span>Stay updated with our latest news and join the conversation.</span>
+                            <div className='flex items-center gap-12 justify-center'>
+                                <FaXTwitter />
+                                <span>Stay updated with our latest news and join the conversation.</span>
+                            </div>
+                            <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
                         </div>
-                        <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
-                        </div>
-                      </a>
-                      <a
+                    </a>
+                    <a
                         href="https://example.com/community"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
-                      >
+                    >
                         <div className='flex justify-between items-center'>
-                        <div className='flex items-center gap-12 justify-center'>
-                        <FaDiscord />
-                        <span>Join our community.</span>
+                            <div className='flex items-center gap-12 justify-center'>
+                                <FaDiscord />
+                                <span>Join our community.</span>
+                            </div>
+                            <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
                         </div>
-                        <span className="text-white text-2xl transform rotate-[320deg]">&rarr;</span>
-                        </div>
-                      </a>
-                    </div>
-                  </footer>
+                    </a>
+                </div>
+            </footer>
         </div>
     );
 };
 
 export default AnalyseRisk;
-
