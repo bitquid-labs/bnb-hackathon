@@ -19,6 +19,7 @@ import { useTokenName } from "hooks/contracts/useTokenName";
 import { useVaultDeposit } from "hooks/contracts/useVaultDeposit";
 import { useVaultTVL } from "hooks/contracts/useVaultTVL";
 import Button from "components/common/Button";
+import { getPoolRiskTypeName } from "lib/utils";
 
 type Props = {
   id: number;
@@ -291,7 +292,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
         </div>
         <div className="px-95 py-34 bg-[#1A1D22]">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-start gap-7">
+            {/* <div className="flex flex-col items-start gap-7">
               <div className="text-[#9DA3BA] text-13 font-[500]">
                 Min Investment
               </div>
@@ -301,16 +302,15 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
                 </span>
                 <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
               </div>
-            </div>
+            </div> */}
             <div className="flex flex-col items-start gap-7">
               <div className="text-[#9DA3BA] text-13 font-[500]">
-                Max Investment
+                Risk Type
               </div>
               <div className="flex items-end">
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
-                  {formatEther(vaultData?.maxInv || 0n)}
+                  {getPoolRiskTypeName(vaultData?.risk)}
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
               </div>
             </div>
             <div className="flex flex-col items-start gap-7">
@@ -332,7 +332,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
                 <span className="text-[#00ECBC] text-24 font-[700] leading-[25px]">
                   {tvl}
                 </span>
-                <span className="text-[#FFF] text-12 ml-4">{assetName}</span>
+                <span className="text-[#FFF] text-12 ml-4">{'USD'}</span>
               </div>
             </div>
             <div className="flex flex-col items-start gap-7">
