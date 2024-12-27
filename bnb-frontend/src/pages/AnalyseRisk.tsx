@@ -234,7 +234,7 @@ const AnalyseRisk = () => {
                             <div className="mb-32">Risk Score:</div> <div className="text-6xl font-bold text-emerald-600">{loading ? <MoonLoader color={"#05EBBC"} size={40}/> : selectedCoin?.riskScore || ""}</div>
                         </div>
                     </div>
-                    <button className="px-[30px] s-low py-3 rounded-lg">
+                    <button className="px-[30px] s-low py-3 rounded-lg mt-20">
                         Purchase Cover →
                     </button>
                 </div>
