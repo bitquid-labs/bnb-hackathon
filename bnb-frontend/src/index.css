@@ -1,13 +1,82 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.076);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background 0.3s ease;
+}
+.glass:hover {
+  background: rgba(255, 255, 255, 0.15); 
+}
+
+.s-low {
+  box-shadow: inset 0 0 40px rgba(6, 78, 59, 0.7);
+  cursor: pointer;
+  box-sizing: border-box; 
+  transition: all 0.3s ease;
+  border: 2px solid transparent; 
+}
+
+.s-low:hover {
+  border: 4px solid rgba(6, 78, 59, 0.7); 
+  box-shadow: inset 0 0 70px rgba(6, 78, 59, 0.7);
+}
+
+.s-moderate {
+  box-shadow: inset 0 0 40px rgba(124, 88, 0, 0.7);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.s-moderate:hover {
+  border: 4px solid rgba(124, 88, 0, 0.7); 
+  box-shadow: inset 0 0 70px rgba(124, 88, 0, 0.7);
+}
+
+.s-high {
+  box-shadow: inset 0 0 40px rgba(155, 28, 28, 0.7);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.s-high:hover {
+  border: 4px solid rgba(155, 28, 28, 0.7); 
+  box-shadow: inset 0 0 70px rgba(155, 28, 28, 0.7);
+}
+
+.glass-2{
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.416);
+  transition: background 0.3s ease;
+}
+
+.glass-3{
+  background: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.327);
+  transition: background 0.3s ease;
 }

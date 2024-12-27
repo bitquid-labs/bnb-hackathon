@@ -229,22 +229,20 @@ struct VaultDeposit {
 
 # Contract Address
 
-**BQ BTC Address**: 0x906637Ec0CbD4D0C59dfa16FAE1B6D4baf707E0E
+**BQ BTC Address**: 0x6Ff19D6EA7D23ac4cb9d52916A2F491dd51fffd5
 
-**Pool Address**: 0xcE129d80433863be81E6b7E80d5Cb63474105117
+**Pool Address**: 0x73a95Fe3A57206463f0d6F207785682F605F1d2f
 
-**Cover Address**: 0xda740E3C2ac41ba96704Aa51466534F0b6c4283F
+**Cover Address**: 0x8d562F19f8633dBA4587b9243448db1877700B07
 
-**Vault Address**: 0xB89cD1693489dD4Cb43a89b697C0050898504Ce1
+**Vault Address**: 0xDb9b6BDCc8aA8eBaDa8E5A221FaA9161c6E39f6a
 
-**Gov Address**: 0x01a3fA022Ec3625b2f339bC8981db3557Dd4df42
+**Gov Address**: 0xD54e616F237E5CBc288Fa1e709Ed43439216501c
 
 # Changes
 
 ## Pool Contract
 
-- (WIP) Allow users to deposit into pools and vaults multiple times.
+- getUserBalanceinUSD : To get user balance in USD
 
-## Vault Contract
-
-- (WIP) Function to get the TVL of vaults: `getVaultTVL`
+- getTotalUserDepositAmountinUSD: Get user total deposit in USD

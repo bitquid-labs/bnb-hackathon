@@ -27,9 +27,11 @@ const Header: React.FC = () => {
               to={link.url}
               target={!link.url.startsWith("/") ? "_blank" : undefined}
               key={index}
-              className={`hover:text-white border-b-2 border-t-2 border-transparent m-transition-color hidden md:flex md:justify-center md:items-center ${
+              className={`hover:text-white transition-all duration-300 ease-in-out border-b-2 border-t-2 border-transparent m-transition-color hidden md:flex md:justify-center md:items-center ${
                 pathname.includes(link.url)
                   ? " text-white border-b-primary"
+                  : link.name === "Risk Engine"
+                  ? "text-[#00ecbc] font-semibold hover:text-[#00ecbc]" 
                   : "text-light-300"
               }`}
             >
@@ -38,12 +40,22 @@ const Header: React.FC = () => {
                   pathname.includes(link.url)
                     ? "border border-[#FFFFFF66] bg-[#E6E6E61A] rounded-10"
                     : ""
+                } ${
+                  pathname.includes(link.url) && link.name === "Risk Engine"
+                    ? "border border-[#00ecbc]  text-[#00ecbc] font-semibold" 
+                    : ""
                 }`}
               >
                 <div className="relative w-18 h-18">
                   <link.icon className="w-18 h-18" />
                   {pathname.includes(link.url) && (
-                    <div className="absolute w-0 h-0 top-1/2 left-1/2 text-white rounded-lg before:content-[''] before:absolute before:inset-0 before:rounded-lg shadow-[0_0_50px_20px_rgba(255,255,255,0.8)]"></div>
+                    <div
+                      className={`absolute w-0 h-0 top-1/2 left-1/2 text-white rounded-lg before:content-[''] before:absolute before:inset-0 before:rounded-lg ${
+                        link.name === "Risk Engine"
+                          ? "shadow-[0_0_50px_20px_rgba(0,236,188,0.8)]" 
+                          : "shadow-[0_0_50px_20px_rgba(255,255,255,0.8)]" 
+                      }`}
+                    ></div>
                   )}
                 </div>
                 {link.name}
