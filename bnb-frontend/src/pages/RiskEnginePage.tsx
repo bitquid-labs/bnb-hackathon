@@ -1,9 +1,9 @@
-import React from 'react';
-import REMainImg from '../assets/icons/IconREMain.svg';
+import React, { useEffect } from 'react';
 import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaDiscord } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import lottie from 'lottie-web';
 
 const RiskEngine: React.FC = () => {
 
@@ -23,6 +23,26 @@ const RiskEngine: React.FC = () => {
         { title: 'Network Latency', description: 'Monitors delays in network communication.' },
     ];
 
+    useEffect(() => {
+        const container = document.getElementById('animation-container');
+        if (container) {
+            try {
+                const animation = lottie.loadAnimation({
+                    container: container,
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    animationData: require('../assets/Lottie Lego.json'),
+                });
+    
+                return () => animation.destroy();
+            } catch (error) {
+                console.error('Error loading Lottie animation:', error);
+            }
+        }
+    }, []);
+    
+
     return (
         <div className="bg-black min-h-screen text-white">
             <header className="text-center py-20 mt-20">
@@ -40,16 +60,14 @@ const RiskEngine: React.FC = () => {
             </header>
 
             <div className="flex justify-center py-12">
-                <img
-                    src={REMainImg}
-                    alt="Risk Engine Diagram"
-                    className="w-[60rem] max-w-xl"
-                />
+                <div id="animation-container" style={{ width: '60rem', maxWidth: '100%' }}></div>
             </div>
 
             <div className="my-40 w-[85%] mx-auto bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2"></div>
             <div className='flex justify-start items-center'>
-                <h2 className="text-2xl font-semibold pl-[8rem] pr-20">Parameters used</h2><div className="my-32 w-[25%] bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-1"></div></div>
+                <h2 className="text-2xl font-semibold pl-[8rem] pr-20">Parameters used</h2>
+                <div className="my-32 w-[25%] bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-1"></div>
+            </div>
 
             <div className="bg-black text-white py-10 px-6 sm:px-12 w-[75%] mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -89,11 +107,10 @@ const RiskEngine: React.FC = () => {
 
             <div className="my-32 w-[85%] mx-auto bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2"></div>
 
-
             <footer className="py-16 scale-110">
                 <div className="flex flex-col space-y-12 items-center">
                     <a
-                        href="https://example.com/docs"
+                        href="https://docs.bqlabs.xyz/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
@@ -107,7 +124,7 @@ const RiskEngine: React.FC = () => {
                         </div>
                     </a>
                     <a
-                        href="https://example.com/news"
+                        href="https://twitter.com/bitquidlabs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
@@ -121,7 +138,7 @@ const RiskEngine: React.FC = () => {
                         </div>
                     </a>
                     <a
-                        href="https://example.com/community"
+                        href="https://discord.gg/GzC7DZDN"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
