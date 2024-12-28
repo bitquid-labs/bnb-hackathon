@@ -456,11 +456,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "cost",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "capacityAmount",
         "type": "uint256"
       },
@@ -532,11 +527,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_cost",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_poolId",
         "type": "uint256"
       }
@@ -588,11 +578,6 @@
           {
             "internalType": "uint256",
             "name": "capacity",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "cost",
             "type": "uint256"
           },
           {
@@ -766,11 +751,6 @@
           {
             "internalType": "uint256",
             "name": "capacity",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "cost",
             "type": "uint256"
           },
           {
@@ -1123,11 +1103,6 @@
       {
         "internalType": "uint256",
         "name": "_capacity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_cost",
         "type": "uint256"
       },
       {
