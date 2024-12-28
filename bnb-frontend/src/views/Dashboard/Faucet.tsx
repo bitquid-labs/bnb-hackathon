@@ -86,7 +86,7 @@ const Faucet: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex items-start justify-between border border-[#6B7280] bg-[#6B72801A] px-40 py-62 rounded-32">
+    <div className="w-full flex items-start justify-between border border-[#6B7280] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-800 via-zinc-950 to-zinc-950 px-40 py-62 rounded-32 gridd">
       <div className="w-[30%] flex flex-col justify-between items-start">
         <h2 className="text-24 font-[800] text-[#FFFFFF]">BqBtc Testnet Faucet</h2>
         <p className="text-14 text-[#FFFFFFA3] my-25">
