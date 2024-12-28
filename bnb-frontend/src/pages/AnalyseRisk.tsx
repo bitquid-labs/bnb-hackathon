@@ -173,6 +173,13 @@ const AnalyseRisk = () => {
 
     const options = ["De-pegging", "Slashing"];
 
+    const handlePurchaseClick = () => {
+        const selectedName = activeTab === "de-pegging" ? Object.keys(coinData).find(coin => coinData[coin] === selectedCoin) 
+                                                        : Object.keys(protocolData).find(protocol => protocolData[protocol] === selectedCoin);
+        console.log(`Selected ${activeTab === "de-pegging" ? "coin" : "protocol"}: ${selectedName}`);
+    };
+    
+
     return (
         <div className="min-h-screen bg-black text-white flex flex-col w-[80%] mx-auto">
             <div className="flex justify-start p-4">
@@ -234,7 +241,7 @@ const AnalyseRisk = () => {
                             <div className="mb-32">Risk Score:</div> <div className="text-6xl font-bold text-emerald-600">{loading ? <MoonLoader color={"#05EBBC"} size={40}/> : selectedCoin?.riskScore || ""}</div>
                         </div>
                     </div>
-                    <button className="px-[30px] s-low py-3 rounded-lg mt-20">
+                    <button onClick={handlePurchaseClick} className="px-[30px] s-low py-3 rounded-lg mt-20">
                         Purchase Cover →
                     </button>
                 </div>
