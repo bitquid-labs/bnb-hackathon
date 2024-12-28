@@ -34,7 +34,7 @@ const RiskEngine: React.FC = () => {
                     renderer: 'svg',
                     loop: false,
                     autoplay: false,
-                    animationData: require('../assets/Lottie Lego.json'),
+                    animationData: require('../assets/riskengine.json'),
                 });
 
                 return () => animation.destroy();
@@ -52,11 +52,11 @@ const RiskEngine: React.FC = () => {
         }
         setTimeout(() => {
             navigate('/riskengine/analyserisks');
-        }, 2000);
+        }, 3000);
     };
 
     return (
-        <div className={`bg-black min-h-screen text-white ${isAnimating ? 'blur-[4px]' : ''}`}>
+        <div className={`bg-black min-h-screen text-white`}>
             <header className="text-center py-20 mt-20">
                 <h1 className="text-6xl font-semibold pb-5">
                     Welcome to <span className="text-[#00ecbc]">Risk Engine</span>
@@ -77,7 +77,7 @@ const RiskEngine: React.FC = () => {
                     isAnimating ? 'z-50 fixed inset-0 flex items-center justify-center bg-black' : ''
                 }`}
             >
-                <div id="animation-container" style={{ width: '60rem', maxWidth: '100%' }}></div>
+                <div id="animation-container" style={{ width: '40rem', maxWidth: '100%' }}></div>
             </div>
 
             {!isAnimating && (
