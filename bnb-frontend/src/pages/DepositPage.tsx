@@ -102,7 +102,7 @@ const DepositPage: React.FC = () => {
       ) : (
         <></>
       )}
-      <div className="mx-auto max-w-1220">
+      <div className="mx-auto max-w-1220 flex justify-center items-center">
         <div className="w-320 flex cursor-pointer items-center rounded border border-white/10 bg-white/5 p-[3px]">
           <div className="relative flex flex-col items-center w-full rounded cursor-pointer md:flex-row md:gap-0">
             {types.map((opt, index) => (
