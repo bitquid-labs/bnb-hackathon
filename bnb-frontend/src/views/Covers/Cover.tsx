@@ -14,6 +14,25 @@ export type CoverProps = {
   disabled: boolean;
 };
 
+const validatorData: Record<string, { yearlyCost: string }> = {
+  Satoshi: { yearlyCost: "10 %" },
+  BIMA: { yearlyCost: "11 %" },
+  Lorenzo: { yearlyCost: "5 %" },
+  Bedrock: { yearlyCost: "16 %" },
+  FDUSD: { yearlyCost: "8 %" },
+  LstBTC: { yearlyCost: "5 %" },
+  LBTC: { yearlyCost: "4 %" },
+  BounceBit_BTC: { yearlyCost: "6 %" },
+  USDe: { yearlyCost: "14 %" },
+  TUSD: { yearlyCost: "20 %" },
+  Infstone: { yearlyCost: "11 %" },
+  DAIC: { yearlyCost: "18 %" },
+  Stakecito: { yearlyCost: "5 %" },
+  Pier2: { yearlyCost: "6 %" },
+  "Babylon Validator": { yearlyCost: "8 %" },
+  "Core Validator": { yearlyCost: "10 %" },
+};
+
 export const Cover: React.FC<CoverProps> = (props) => {
   const { coverName, chains, cost, capacity, id, riskType, maxAmount, CID, adt, asset } = props.cover;
   const riskTypeName = getRiskTypeName(riskType);
@@ -42,6 +61,11 @@ export const Cover: React.FC<CoverProps> = (props) => {
       // router
   ]
   );
+
+  const yearlyCost =
+  coverName && validatorData[coverName]
+      ? parseFloat(validatorData[coverName].yearlyCost.replace(" %", ""))
+      : 0;
 
   return (
     <div className='flex w-full flex-col gap-20 rounded-15 bg-[#6B72801A] p-22 border border-[#6B7280]'>
@@ -74,7 +98,7 @@ export const Cover: React.FC<CoverProps> = (props) => {
           </div>
           <div className='flex items-center justify-between text-base capitalize leading-[20px]'>
             <div>Annual Cost</div>
-            <div className='font-semibold'>{annualCost} %</div>
+            <div className='font-semibold'>{yearlyCost} %</div>
           </div>
           <div className='flex items-center justify-between text-base capitalize leading-[20px]'>
             <div>Max Capacity</div>
