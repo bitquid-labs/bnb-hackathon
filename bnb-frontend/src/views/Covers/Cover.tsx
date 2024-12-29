@@ -25,7 +25,7 @@ const validatorData: Record<string, { yearlyCost: string }> = {
   BounceBit_BTC: { yearlyCost: "6 %" },
   USDe: { yearlyCost: "14 %" },
   TUSD: { yearlyCost: "20 %" },
-  Infstone: { yearlyCost: "11 %" },
+  InfStones: { yearlyCost: "11 %" },
   DAIC: { yearlyCost: "18 %" },
   Stakecito: { yearlyCost: "5 %" },
   Pier2: { yearlyCost: "6 %" },
