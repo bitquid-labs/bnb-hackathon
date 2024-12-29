@@ -73,9 +73,7 @@ const RiskEngine: React.FC = () => {
             </header>
 
             <div
-                className={`flex justify-center py-12 transition-all duration-300 ${
-                    isAnimating ? 'z-50 fixed inset-0 flex items-center justify-center bg-black' : ''
-                }`}
+                className="flex justify-center py-12 transition-all duration-300"
             >
                 <div id="animation-container" style={{ width: '40rem', maxWidth: '100%' }}></div>
             </div>
