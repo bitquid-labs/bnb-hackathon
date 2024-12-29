@@ -17,10 +17,10 @@ type CoinData = {
 };
 
 const coinIdMapping = {
-    Babylon: 1,
+    "Babylon Validator": 1,
     Infstone: 2,
     DAIC: 3,
-    "Core DAO": 1115,
+    "Core Validator": 1115,
     Stakecito: 4,
     Pier2: 5,
     BIMA: 6,

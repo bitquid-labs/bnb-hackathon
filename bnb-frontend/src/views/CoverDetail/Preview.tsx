@@ -36,8 +36,8 @@ const validatorData: Record<string, { yearlyCost: string }> = {
   DAIC: { yearlyCost: "18 %" },
   Stakecito: { yearlyCost: "5 %" },
   Pier2: { yearlyCost: "6 %" },
-  BabylonValidator: { yearlyCost: "8 %" },
-  CoreValidator: { yearlyCost: "10 %" },
+  "Babylon Validator": { yearlyCost: "8 %" },
+  "Core Validator": { yearlyCost: "10 %" },
 };
 
 const Preview: React.FC<PreviewProps> = (props) => {
@@ -127,7 +127,7 @@ const Preview: React.FC<PreviewProps> = (props) => {
             </div>
             {/* <div className="font-semibold">{annualCost}%</div> */}
             <div className="font-semibold">
-              {yearlyCost}
+              {yearlyCost}%
             </div>
           </div>
           <div className="bg-border-100 h-[0.5px] w-full"></div>
