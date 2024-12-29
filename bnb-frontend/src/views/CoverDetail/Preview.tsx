@@ -21,6 +21,25 @@ type PreviewProps = {
   loadingMessage: string;
 };
 
+const validatorData: Record<string, { yearlyCost: string }> = {
+  Satoshi: { yearlyCost: "10 %" },
+  BIMA: { yearlyCost: "11 %" },
+  Lorenzo: { yearlyCost: "5 %" },
+  Bedrock: { yearlyCost: "16 %" },
+  FDUSD: { yearlyCost: "8 %" },
+  LstBTC: { yearlyCost: "5 %" },
+  LBTC: { yearlyCost: "4 %" },
+  BounceBit_BTC: { yearlyCost: "6 %" },
+  USDe: { yearlyCost: "14 %" },
+  TUSD: { yearlyCost: "20 %" },
+  Infstone: { yearlyCost: "11 %" },
+  DAIC: { yearlyCost: "18 %" },
+  Stakecito: { yearlyCost: "5 %" },
+  Pier2: { yearlyCost: "6 %" },
+  BabylonValidator: { yearlyCost: "8 %" },
+  CoreValidator: { yearlyCost: "10 %" },
+};
+
 const Preview: React.FC<PreviewProps> = (props) => {
   const {
     handleBuyCover,
@@ -42,6 +61,14 @@ const Preview: React.FC<PreviewProps> = (props) => {
   const endDate = new Date(startDate);
   endDate.setDate((startDate.getDate() + coverPeriod) | 0);
   const { address } = useAccount();
+
+
+  const yearlyCost =
+    productName && validatorData[productName]
+      ? parseFloat(validatorData[productName].yearlyCost.replace(" %", ""))
+      : 0;
+
+  const coverFees = parseFloat(coverAmount) * (yearlyCost / 100) * (coverPeriod / 365);
 
   return (
     <div className="w-full h-full flex flex-col justify-between">
@@ -98,7 +125,10 @@ const Preview: React.FC<PreviewProps> = (props) => {
               <div>Yearly Cost</div>
               {/* <div className='bg-background-200 h-5 w-5 rounded-full' /> */}
             </div>
-            <div className="font-semibold">{annualCost}%</div>
+            {/* <div className="font-semibold">{annualCost}%</div> */}
+            <div className="font-semibold">
+              {yearlyCost}
+            </div>
           </div>
           <div className="bg-border-100 h-[0.5px] w-full"></div>
         </div>
@@ -106,16 +136,22 @@ const Preview: React.FC<PreviewProps> = (props) => {
         <div className="flex items-center justify-between">
           <div className="text-14 font-[600]">Cover fee</div>
           <div className="flex items-center gap-2">
-            {!!coverFee && (
+            {/* {!!coverFee && (
               <div>
                 {(coverFee / 10000).toFixed(coverFee ? Math.max(Math.round(Math.log10(1 / Math.abs(coverFee))), 5) : 5)}
               </div>
-            )}
+            )} */}
             {/* <Dropdown
               value={selectedToken}
               setValue={setSelectedToken}
               options={['WBTC', 'WETH', 'USDC']}
             /> */}
+
+            <div>{isNaN(coverFees) || coverFees === 0 ? null : (
+              <p className="text-lg font-semibold text-emerald-400">{coverFees}</p>
+            )}
+            </div>
+
             <div className="ml-10 rounded-6 bg-[#D9D9D933] px-[25px] py-[5px]">{BQBTC.symbol}</div>
           </div>
         </div>
