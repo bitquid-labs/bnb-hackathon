@@ -17,7 +17,6 @@ library CoverLib {
         RiskType riskType;
         string chains;
         uint256 capacity; // Capacity/percentage assigned to the cover from the pool
-        uint256 cost;
         uint256 capacityAmount; // Total capacity amount based on the balance of the pool
         uint256 coverValues;
         uint256 maxAmount; // Max unit of asset available

@@ -229,24 +229,41 @@ struct VaultDeposit {
 
 # Contract Address
 
-**BQ BTC Address**: 0xC66bB4CCc4Ba1F7479a03B0e30e75c2094b69b11
+**BQ BTC Address**: 0xa1EcB7aD03c31740109d88c7a693bE5a008C6D5b
 
-**Pool Address**: 0x050b2A3073eE2A2aCE043D4FA00aF9c5d8932daD
+**Pool Address**: 0x043acf6719835c3435f9f5212C7D21D0Fe44644F
 
-**Cover Address**: 0xBC01562960A40B170FaADeaF72869F8814CA8c59
+**Cover Address**: 0x31ec64f65E9608cE20092034Aa7A524a7B4B5d49
 
-**Vault Address**: 0x713BC6fE7daF0fafE0AD52E8b816d02442EdC73B
+**Vault Address**: 0x6DD69b56af1156A9fF45D95e3F1506B8b09b5B41
 
-**Gov Address**: 0x0e1538DF7327E9e3E5F21783e5bA9818920d1E59
+**Gov Address**: 0xAEF44f26efE41C2F360C27461B47C143879B9F08
 
 # Changes
 
 ## Pool Contract
 
-- (WIP) Allow users to deposit into pools and vaults multiple times.
+- getUserBalanceinUSD : To get user balance in USD
 
-- Adding of `rating` and `risk` to `getPoolsByAddress`
+- getTotalUserDepositAmountinUSD: Get user total deposit in USD
 
-## Cover Contract
+# Cover IDs
 
-- Function to easily add funds to the cover contract without purchasing
+| Network       | Testnet Chain ID |
+| ------------- | ---------------- |
+| Babylon       | 1                |
+| Infstone      | 2                |
+| DAIC          | 3                |
+| Core DAO      | 1115             |
+| Stakecito     | 4                |
+| Pier2         | 5                |
+| BIMA          | 6                |
+| Satoshi       | 7                |
+| LstBTC        | 8                |
+| BounceBit_BTC | 9                |
+| FDUSD         | 10               |
+| Lorenzo       | 83291            |
+| LBTC          | 11               |
+| TUSD          | 12               |
+| USDe          | 13               |
+| Bedrock       | 14               |

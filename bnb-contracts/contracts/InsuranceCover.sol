@@ -23,6 +23,7 @@ interface IVault {
         string vaultName;
         CoverLib.RiskType risk;
         CoverLib.Pool[] pools;
+        uint256 amount;
         uint256 apy;
         uint256 minInv;
         uint256 maxInv;
@@ -165,7 +166,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         string memory _coverName,
         string memory _chains,
         uint256 _capacity,
-        uint256 _cost,
         uint256 _poolId
     ) public onlyOwner {
         (uint256 _maxAmount, address _asset, CoverLib.AssetDepositType _adt) = _validateAndGetPoolInfo(
@@ -184,7 +184,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             riskType: _riskType,
             chains: _chains,
             capacity: _capacity,
-            cost: _cost,
             capacityAmount: _maxAmount,
             coverValues: 0,
             maxAmount: _maxAmount,
@@ -233,7 +232,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         string memory _cid,
         string memory _chains,
         uint256 _capacity,
-        uint256 _cost,
         uint256 _poolId
     ) public onlyOwner {
         CoverLib.Pool memory pool = lpContract.getPool(_poolId);
@@ -268,7 +266,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         cover.coverName = _coverName;
         cover.chains = _chains;
         cover.capacity = _capacity;
-        cover.cost = _cost;
         cover.CID = _cid;
         cover.capacityAmount = _maxAmount;
         cover.poolId = _poolId;

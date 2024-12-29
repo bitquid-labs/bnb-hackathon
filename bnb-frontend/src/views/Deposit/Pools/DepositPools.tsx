@@ -11,6 +11,7 @@ import useWallet from "hooks/useWallet";
 import { ChainType } from "lib/wagmi";
 import PoolList from "./PoolList";
 import PoolDetail from "./PoolDetail";
+import { scrollToTop } from "lib/utils";
 // import { usePoolByAddress } from "hooks/contracts/usePoolByAddress";
 
 type IPoolWithDetails = IPool & {
@@ -32,7 +33,7 @@ const DepositPools: React.FC = () => {
     undefined
   );
 
-  console.log('all pools:', pools)
+  console.log("all pools:", pools);
 
   useEffect(() => {
     if (!pools) return;
@@ -45,42 +46,15 @@ const DepositPools: React.FC = () => {
   }, [pools]);
 
   const handleDeposit = async (poolId: number) => {
+    scrollToTop();
     setCurrentPoolId(poolId);
-    return;
-    const params = [
-      address,
-      poolId,
-      parseUnits("0.001", 18),
-      150,
-      DepositType.Normal,
-      ADT.Native,
-      "0x0000000000000000000000000000000000000000",
-    ];
-
-    console.log("params:", params);
-    return;
-
-    try {
-      await writeContractAsync({
-        abi: InsurancePoolContract.abi,
-        address:
-          InsurancePoolContract.addresses[
-            (chain as ChainType)?.chainNickName || "bscTest"
-          ],
-        functionName: "deposit",
-        args: [params],
-        value: parseUnits("0.001", 18),
-      });
-    } catch (e) {
-      console.log("error:", e);
-    }
   };
 
   return (
     <>
       {currentPoolId !== undefined ? (
         <div className="mt-20">
-          <PoolDetail 
+          <PoolDetail
             poolId={currentPoolId}
             // isDeposited={depositedPoolIds.includes(currentPoolId!)}
           />
@@ -113,7 +87,7 @@ const DepositPools: React.FC = () => {
     //       <tbody>
     //         {poolsData.map((pool, index) => (
     //           <>
-    //             <tr className="text-center px-8">
+    //             <tr className="px-8 text-center">
     //               <td className="font-[400] bg-[#1F1F1F] py-24 rounded-l-8">
     //                 {pool.poolName}
     //               </td>
@@ -183,7 +157,7 @@ const DepositPools: React.FC = () => {
     //                     </div>
     //                   )}
     //                   <div
-    //                     className="w-full flex items-center justify-center gap-5 cursor-pointer py-8"
+    //                     className="flex items-center justify-center w-full gap-5 py-8 cursor-pointer"
     //                     onClick={() => {
     //                       setPoolsData((prev) =>
     //                         prev.map((pool, i) =>

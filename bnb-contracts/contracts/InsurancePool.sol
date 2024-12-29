@@ -29,6 +29,7 @@ interface IVault {
         string vaultName;
         CoverLib.RiskType risk;
         CoverLib.Pool[] pools;
+        uint256 amount;
         uint256 apy;
         uint256 minInv;
         uint256 maxInv;
@@ -73,6 +74,9 @@ interface IbqBTC {
         address to,
         uint256 amount
     ) external returns (bool);
+    function balanceOf(
+        address account
+    ) external view returns (uint256);
 }
 
 interface IGov {
@@ -504,7 +508,8 @@ contract InsurancePool is ReentrancyGuard, Ownable {
 
         if (selectedPool.assetType == CoverLib.AssetDepositType.ERC20) {
             require(depositParam.amount > 0, "Amount must be greater than 0");
-            IERC20(depositParam.asset).transferFrom(depositParam.depositor, address(this), depositParam.amount);
+            bool success = IERC20(depositParam.asset).transferFrom(depositParam.depositor, address(this), depositParam.amount);
+            require(success, "Token transfer failed");
             selectedPool.totalUnit += depositParam.amount;
             price = depositParam.amount;
 
@@ -615,54 +620,73 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         return (price, dailyPayout);
     }
 
-    function claimProposalFunds(uint256 _proposalId) public nonReentrant {
-        IGov.Proposal memory proposal = IGovernanceContract.getProposalDetails(
-            _proposalId
-        );
-        IGov.ProposalParams memory proposalParam = proposal.proposalParam;
-        require(
-            proposal.status == IGov.ProposalStaus.Approved && proposal.executed,
-            "Proposal not approved"
-        );
-        CoverLib.Pool storage pool = pools[proposalParam.poolId];
-        require(msg.sender == proposalParam.user, "Not a valid proposal");
-        require(pool.isActive, "Pool is not active");
-        require(
-            pool.totalUnit >= proposalParam.claimAmount,
-            "Not enough funds in the pool"
-        );
+    // function claimProposalFunds(uint256 _proposalId) public nonReentrant {
+    //     IGov.Proposal memory proposal = IGovernanceContract.getProposalDetails(
+    //         _proposalId
+    //     );
+    //     IGov.ProposalParams memory proposalParam = proposal.proposalParam;
+    //     require(
+    //         proposal.status == IGov.ProposalStaus.Approved && proposal.executed,
+    //         "Proposal not approved"
+    //     );
+    //     CoverLib.Pool storage pool = pools[proposalParam.poolId];
+    //     require(msg.sender == proposalParam.user, "Not a valid proposal");
+    //     require(pool.isActive, "Pool is not active");
+    //     require(
+    //         pool.totalUnit >= proposalParam.claimAmount,
+    //         "Not enough funds in the pool"
+    //     );
 
-        pool.tcp += proposalParam.claimAmount;
-        pool.totalUnit -= proposalParam.claimAmount;
-        CoverLib.Cover[] memory poolCovers = getPoolCovers(
-            proposalParam.poolId
-        );
-        for (uint i = 0; i < poolCovers.length; i++) {
-            ICoverContract.updateMaxAmount(poolCovers[i].id);
-        }
+    //     pool.tcp += proposalParam.claimAmount;
+    //     pool.totalUnit -= proposalParam.claimAmount;
+    //     CoverLib.Cover[] memory poolCovers = getPoolCovers(
+    //         proposalParam.poolId
+    //     );
+    //     for (uint i = 0; i < poolCovers.length; i++) {
+    //         ICoverContract.updateMaxAmount(poolCovers[i].id);
+    //     }
 
-        IGovernanceContract.updateProposalStatusToClaimed(_proposalId);
+    //     IGovernanceContract.updateProposalStatusToClaimed(_proposalId);
 
-        emit ClaimAttempt(
-            proposalParam.poolId,
-            proposalParam.claimAmount,
-            proposalParam.user
-        );
+    //     emit ClaimAttempt(
+    //         proposalParam.poolId,
+    //         proposalParam.claimAmount,
+    //         proposalParam.user
+    //     );
 
-        if (proposalParam.adt == CoverLib.AssetDepositType.ERC20) {
-            bool success = IERC20(proposalParam.asset).transfer(
-                msg.sender,
-                proposalParam.claimAmount
-            );
-            require(success, "ERC20 transfer failed");
-        } else {
-            (bool success, ) = msg.sender.call{value: proposalParam.claimAmount}("");
-            require(success, "Native asset transfer failed");
-        }
+    //     if (proposalParam.adt == CoverLib.AssetDepositType.ERC20) {
+    //         bool success = IERC20(proposalParam.asset).transfer(
+    //             msg.sender,
+    //             proposalParam.claimAmount
+    //         );
+    //         require(success, "ERC20 transfer failed");
+    //     } else {
+    //         (bool success, ) = msg.sender.call{value: proposalParam.claimAmount}("");
+    //         require(success, "Native asset transfer failed");
+    //     }
 
-        bqBTC.bqMint(msg.sender, proposalParam.claimAmount);
+    //     bqBTC.bqMint(msg.sender, proposalParam.claimAmount);
 
-        emit ClaimPaid(msg.sender, pool.poolName, proposalParam.claimAmount);
+    //     emit ClaimPaid(msg.sender, pool.poolName, proposalParam.claimAmount);
+    // }
+
+    function getUserBalanceinUSD(address user) public view returns(uint256) {
+        uint256 totalBalance;
+
+        uint256 bqBTCBalance = bqBTC.balanceOf(user);
+        uint256 bqPrice = getPriceInUSD(bqBTCAddress);
+        IERC20Extended token = IERC20Extended(bqBTCAddress);
+        uint256 decimals = token.decimals();
+        uint256 scaledTotalUnit = bqBTCBalance * (10 ** (18 - decimals));
+        uint256 bqBalanceUSD = (bqPrice * scaledTotalUnit) / 1e18;
+
+        uint256 nativeTokenBalance = user.balance;
+        uint256 nativePrice = getPriceInUSD(nullAsset);
+        uint256 nativeBalanceUSD = (nativePrice * nativeTokenBalance) / 1e18;
+
+        totalBalance = nativeBalanceUSD + bqBalanceUSD;
+
+        return totalBalance;
     }
 
     function getUserPoolDeposit(
@@ -839,13 +863,13 @@ contract InsurancePool is ReentrancyGuard, Ownable {
         return pool.isActive;
     }
 
-    function getAllParticipants() public view returns (address[] memory) {
-        return participants;
-    }
+    // function getAllParticipants() public view returns (address[] memory) {
+    //     return participants;
+    // }
 
-    function getUserParticipation(address user) public view returns (uint256) {
-        return participation[user];
-    }
+    // function getUserParticipation(address user) public view returns (uint256) {
+    //     return participation[user];
+    // }
 
     function getPriceInUSD(address asset) public view returns (uint256) {
         AggregatorV3Interface priceFeed = assetPriceFeeds[asset];

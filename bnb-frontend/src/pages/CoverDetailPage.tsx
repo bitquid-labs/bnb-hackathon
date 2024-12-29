@@ -83,13 +83,13 @@ const CoverDetailPage: React.FC = () => {
         ],
         0n,
         () => {
-          toast.success("Token Approved")
+          toast.success("Token Approved");
           setIsLoading(false);
           setLoadingMessage("");
         },
         () => {
           setIsLoading(false);
-          toast.success("Failed to approved token")
+          toast.success("Failed to approved token");
           setLoadingMessage("");
         }
       );
@@ -216,7 +216,7 @@ const CoverDetailPage: React.FC = () => {
       //   console.log(err);
       // }
     } else {
-      if (approvedTokenAmount < (coverFee / 10000)) {
+      if (approvedTokenAmount < coverFee / 10000) {
         setLoadingMessage("Approve Tokens");
         await approveTokenTransfer(parseFloat(coverAmount));
         setIsLoading(false);
@@ -225,19 +225,13 @@ const CoverDetailPage: React.FC = () => {
 
       setLoadingMessage("Buying");
 
-      await purchaseCover(
-        Number(id),
-        coverAmount,
-        coverPeriod,
-        '0',
-        coverFee
-      );
+      await purchaseCover(Number(id), coverAmount, coverPeriod, "0", coverFee);
     }
   };
 
   return (
-    <div className="w-full max-w-1220 mx-auto pt-70">
-      <div className="w-full flex justify-start">
+    <div className="w-full mx-auto max-w-1220 pt-70">
+      <div className="flex justify-start w-full">
         <div
           className="flex items-center p-14 border border-[#6B7280] bg-[#6B72801A] rounded-10 cursor-pointer"
           onClick={() => navigate("/covers")}
@@ -267,7 +261,7 @@ const CoverDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="w-full my-20">
-          <div className="w-full flex justify-between">
+          <div className="flex justify-between w-full">
             <div className="w-[40%]">
               <Buy
                 id={Number(id)}
@@ -302,7 +296,7 @@ const CoverDetailPage: React.FC = () => {
         </div>
       </div>
       <div className="w-full mt-60">
-        <div className="w-full flex relative items-center justify-center mb-20">
+        <div className="relative flex items-center justify-center w-full mb-20">
           <h2 className="z-10 text-center font-[600] text-30 text-[#FFF] bg-[#000000] px-20">
             Explore More Covers
           </h2>

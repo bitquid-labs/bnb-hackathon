@@ -1,11 +1,11 @@
-import { Address } from 'viem';
-import { JsonFragment } from '@ethersproject/abi';
-import Gov from './abis/Gov.json';
-import ICoverABI from './abis/InsuranceCover.json';
-import InsurancePool from './abis/InsurancePool.json';
-import BQToken from './abis/BQToken.json';
-import bqBTC from './abis/bqBTC.json';
-import VaultABI from './abis/Vault.json';
+import { Address } from "viem";
+import { JsonFragment } from "@ethersproject/abi";
+import Gov from "./abis/Gov.json";
+import ICoverABI from "./abis/InsuranceCover.json";
+import InsurancePool from "./abis/InsurancePool.json";
+import BQToken from "./abis/BQToken.json";
+import bqBTC from "./abis/bqBTC.json";
+import VaultABI from "./abis/Vault.json";
 
 export type AddressesType = {
   [key: string]: Address;
@@ -71,7 +71,6 @@ export const BQBTCTokenContract: ContractType = {
     bscTest: '0xa1EcB7aD03c31740109d88c7a693bE5a008C6D5b',
   },
 };
-
 
 export const VaultContract: ContractType = {
   abi: VaultABI,

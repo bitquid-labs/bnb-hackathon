@@ -15,7 +15,7 @@ export const enum RiskType {
 export const enum PoolRiskType {
   Low,
   Medium,
-  High
+  High,
 }
 
 export const enum DepositType {
@@ -25,13 +25,13 @@ export const enum DepositType {
 
 export const enum ADT {
   Native,
-  ERC20
+  ERC20,
 }
 
 export const enum Status {
   Active,
   Due,
-  Withdrawn
+  Withdrawn,
 }
 
 export interface ICover {
@@ -54,51 +54,51 @@ export interface ICover {
 }
 
 export interface IPoolInfo {
-  poolName?: string | undefined,
-  rating?: string | undefined,
-  risk?: PoolRiskType | undefined,
-  poolId?: bigint | undefined,
-  dailyPayout?: bigint | undefined,
-  depositAmount?: bigint | undefined,
-  apy?: bigint | undefined,
-  minPeriod?: bigint | undefined,
-  totalUnit?: bigint | undefined,
-  tcp?: bigint | undefined,
-  isActive?: boolean | undefined,
-  accruedPayout?: bigint | undefined,
+  poolName?: string | undefined;
+  rating?: string | undefined;
+  risk?: PoolRiskType | undefined;
+  poolId?: bigint | undefined;
+  dailyPayout?: bigint | undefined;
+  depositAmount?: bigint | undefined;
+  apy?: bigint | undefined;
+  minPeriod?: bigint | undefined;
+  totalUnit?: bigint | undefined;
+  tcp?: bigint | undefined;
+  isActive?: boolean | undefined;
+  accruedPayout?: bigint | undefined;
 }
 
 export interface IPool {
-  id?: bigint | undefined,
-  poolName?: string | undefined,
-  rating?: string | undefined,
-  riskType?: PoolRiskType | undefined,
-  apy?: bigint | undefined,
-  minPeriod?: bigint | undefined,
-  totalUnit?: bigint | undefined,
-  tvl?: bigint | undefined,
-  baseValue?: bigint | undefined,
-  coverUnits?: bigint | undefined,
-  tcp?: bigint | undefined,
-  isActive?: boolean | undefined,
-  percentageSplitBalance?: bigint | undefined,
-  investmentArmPercent?: bigint | undefined,
-  leverage?: bigint | undefined,
-  asset?: Address | undefined,
-  assetType?: ADT | undefined,
+  id?: bigint | undefined;
+  poolName?: string | undefined;
+  rating?: string | undefined;
+  riskType?: PoolRiskType | undefined;
+  apy?: bigint | undefined;
+  minPeriod?: bigint | undefined;
+  totalUnit?: bigint | undefined;
+  tvl?: bigint | undefined;
+  baseValue?: bigint | undefined;
+  coverUnits?: bigint | undefined;
+  tcp?: bigint | undefined;
+  isActive?: boolean | undefined;
+  percentageSplitBalance?: bigint | undefined;
+  investmentArmPercent?: bigint | undefined;
+  leverage?: bigint | undefined;
+  asset?: Address | undefined;
+  assetType?: ADT | undefined;
 }
 
 export interface IVault {
-  id?: bigint | undefined,
-  vaultName?: string | undefined,
-  risk?: PoolRiskType | undefined,
-  pools?: IPool[] | [],
-  apy?: bigint | undefined,
-  minInv?: bigint | undefined,
-  maxInv?: bigint | undefined,
-  minPeriod?: bigint | undefined,
-  assetType?: ADT | undefined,
-  asset?: Address | undefined,
+  id?: bigint | undefined;
+  vaultName?: string | undefined;
+  risk?: PoolRiskType | undefined;
+  pools?: IPool[] | [];
+  apy?: bigint | undefined;
+  minInv?: bigint | undefined;
+  maxInv?: bigint | undefined;
+  minPeriod?: bigint | undefined;
+  assetType?: ADT | undefined;
+  asset?: Address | undefined;
 }
 
 export interface IUserCover {
@@ -113,7 +113,6 @@ export interface IUserCover {
   isActive?: boolean | undefined;
 }
 
-
 export interface IVaultDeposit {
   lp: string | undefined;
   amount: bigint | undefined;
@@ -127,21 +126,17 @@ export interface IVaultDeposit {
   accruedPayout: bigint | undefined;
   assetType: ADT | undefined;
   asset: string | undefined;
+  vaultApy: bigint | undefined;
 }
 
 export const riskTypeNames = [
-  'Slashing Vulnerability',
-  'SmartContract Vulnerability',
-  'Stablecoin Vulnerability',
-  'Protocol Vulnerability',
+  "Slashing Vulnerability",
+  "SmartContract Vulnerability",
+  "Stablecoin Vulnerability",
+  "Protocol Vulnerability",
 ];
 
-export const poolRiskTypeNames = [
-  "Low",
-  "Medium",
-  "High"
-]
-
+export const poolRiskTypeNames = ["Low", "Medium", "High"];
 
 export const enum CoverDueTo {
   NoneSelected,
