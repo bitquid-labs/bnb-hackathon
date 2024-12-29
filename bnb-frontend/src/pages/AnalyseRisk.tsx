@@ -4,6 +4,7 @@ import moderateImg from "../assets/icons/lines-y.svg";
 import highImg from "../assets/icons/lines-red.svg";
 import tick from "../assets/icons/tick-re.svg";
 import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
+import { useNavigate } from "react-router-dom";
 import { MoonLoader } from "react-spinners";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaDiscord } from "react-icons/fa";
@@ -13,6 +14,25 @@ type CoinData = {
         premium: string;
         riskScore: string;
     };
+};
+
+const coinIdMapping = {
+    Babylon: 1,
+    Infstone: 2,
+    DAIC: 3,
+    "Core DAO": 1115,
+    Stakecito: 4,
+    Pier2: 5,
+    BIMA: 6,
+    Satoshi: 7,
+    LstBTC: 8,
+    BounceBit_BTC: 9,
+    FDUSD: 10,
+    Lorenzo: 83291,
+    LBTC: 11,
+    TUSD: 12,
+    USDe: 13,
+    Bedrock: 14,
 };
 
 const coinData: CoinData = {
@@ -173,6 +193,25 @@ const AnalyseRisk = () => {
 
     const options = ["De-pegging", "Slashing"];
 
+    const navigate = useNavigate();
+
+    const handlePurchaseClick = () => {
+        const selectedName = activeTab === "de-pegging" 
+            ? Object.keys(coinData).find(coin => coinData[coin] === selectedCoin)
+            : Object.keys(protocolData).find(protocol => protocolData[protocol] === selectedCoin);
+        
+        console.log(`Selected ${activeTab === "de-pegging" ? "coin" : "protocol"}: ${selectedName}`);
+
+        if (selectedName && coinIdMapping[selectedName as keyof typeof coinIdMapping]) {
+            const id = coinIdMapping[selectedName as keyof typeof coinIdMapping];
+            console.log(`Redirecting to /coverdetail/${id}`);
+            navigate(`/coverdetail/${id}`); 
+        } else {
+            console.log("No matching ID found for the selected name.");
+        }
+    };
+    
+
     return (
         <div className="min-h-screen bg-black text-white flex flex-col w-[80%] mx-auto">
             <div className="flex justify-start p-4">
@@ -234,7 +273,7 @@ const AnalyseRisk = () => {
                             <div className="mb-32">Risk Score:</div> <div className="text-6xl font-bold text-emerald-600">{loading ? <MoonLoader color={"#05EBBC"} size={40}/> : selectedCoin?.riskScore || ""}</div>
                         </div>
                     </div>
-                    <button className="px-[30px] s-low py-3 rounded-lg mt-20">
+                    <button onClick={handlePurchaseClick} className="px-[30px] s-low py-3 rounded-lg mt-20">
                         Purchase Cover →
                     </button>
                 </div>

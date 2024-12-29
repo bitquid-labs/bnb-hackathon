@@ -80,3 +80,9 @@ code {
   border: 1px solid rgba(255, 255, 255, 0.327);
   transition: background 0.3s ease;
 }
+
+.gridd {
+  background-image: linear-gradient(to right, #80808012 1px, transparent 1px),
+    linear-gradient(to bottom, #80808012 1px, transparent 1px);
+  background-size: 1.4px 1px;
+}

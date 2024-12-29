@@ -2,12 +2,14 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Button from "components/common/Button";
 import ConnectWalletButton from "components/ConnectWalletButton";
 import React from "react";
+import btc from "../../assets/images/Cam1.png";
 
 const IntroText: React.FC = () => {
   const { openConnectModal } = useConnectModal();
 
   return (
-    <div className="w-full flex flex-col items-center justify-center">
+    <div className="w-full flex flex-col items-center justify-center relative">
+      <div className="absolute right-[6rem] top-[-0.8rem]"><img src={btc} alt="" /></div>
       <h2 className="text-50 font-[700]">
         Bitcoin <span className="text-[#00ECBC]">Risk Management Layer</span>
       </h2>
