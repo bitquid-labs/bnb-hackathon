@@ -18,7 +18,7 @@ type CoinData = {
 
 const coinIdMapping = {
     "Babylon Validator": 1,
-    Infstone: 2,
+    InfStones: 2,
     DAIC: 3,
     "Core Validator": 1115,
     Stakecito: 4,
@@ -49,7 +49,7 @@ const coinData: CoinData = {
 };
 
 const protocolData: CoinData = {
-    "Infstone": { premium: "11%", riskScore: "0.49" },
+    "InfStones": { premium: "11%", riskScore: "0.49" },
     "DAIC": { premium: "18%", riskScore: "0.82" },
     "Stakecito": { premium: "5%", riskScore: "0.11" },
     "Pier2": { premium: "6%", riskScore: "0.15" },
@@ -118,7 +118,7 @@ const DepeggingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) 
 
 const SlashingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) => {
     const protocols = [
-        { name: "Infstone", risk: "Moderate" },
+        { name: "InfStones", risk: "Moderate" },
         { name: "DAIC", risk: "High" },
         { name: "Stakecito", risk: "Low" },
         { name: "Pier2", risk: "Low" },
