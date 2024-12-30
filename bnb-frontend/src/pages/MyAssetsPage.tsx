@@ -4,7 +4,8 @@ import InvestedPools from "views/MyAssets/Pools/InvestedPools";
 import VaultsOverview from "views/MyAssets/Vaults/VaultsOverview";
 import metamask from "../assets/images/metamask.svg";
 import btc from "../assets/images/bitcoin.svg";
-import { ethers } from "ethers";
+import { Web3Provider } from "@ethersproject/providers"; 
+import { ethers } from "ethers"; 
 
 const MyAssetsPage = () => {
   const types = ["Pools", "Strategies"];
@@ -16,12 +17,12 @@ const MyAssetsPage = () => {
     const getWalletDetails = async () => {
       if (window.ethereum) {
         try {
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const provider = new Web3Provider(window.ethereum); 
           const signer = provider.getSigner();
           const address = await signer.getAddress();
           const balance = await provider.getBalance(address);
-          const formattedBalance = ethers.utils.formatEther(balance);
-          
+          const formattedBalance = ethers.formatEther(balance.toString());
+
           setWalletAddress(address);
           setWalletBalance(formattedBalance);
         } catch (error) {
@@ -40,7 +41,7 @@ const MyAssetsPage = () => {
       <div className="flex gap-16 bg-black text-white p-6 mb-44">
         {/* First Card */}
         <div className="glass rounded-2xl shadow-lg p-6 w-[80%] px-40 py-32 space-y-56">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col gap-48 justify-between items-center mb-6 mt-20">
             <div>
               <p className="text-sm text-gray-400">Your Wallet:</p>
               <div className="flex items-center gap-5 justify-center mt-10">
@@ -56,10 +57,10 @@ const MyAssetsPage = () => {
               </div>
             </div>
           </div>
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <p className="text-sm text-gray-400">Total Value Staked</p>
             <p className="text-3xl font-bold text-green-400">0</p>
-          </div>
+          </div> */}
         </div>
 
         {/* Second Card */}
@@ -105,7 +106,6 @@ const MyAssetsPage = () => {
                   </svg>
                 </div>
               </div>
-
               <div>
                 <div className="flex items-center space-x-2">
                   <div className="w-10 h-10 rounded-xl bg-gray-400"></div>
