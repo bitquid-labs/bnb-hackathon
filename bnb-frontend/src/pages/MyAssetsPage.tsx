@@ -4,8 +4,7 @@ import InvestedPools from "views/MyAssets/Pools/InvestedPools";
 import VaultsOverview from "views/MyAssets/Vaults/VaultsOverview";
 import metamask from "../assets/images/metamask.svg";
 import btc from "../assets/images/bitcoin.svg";
-import { Web3Provider } from "@ethersproject/providers"; 
-import { ethers } from "ethers"; 
+import { ethers } from "ethers";
 
 const MyAssetsPage = () => {
   const types = ["Pools", "Strategies"];
@@ -17,11 +16,13 @@ const MyAssetsPage = () => {
     const getWalletDetails = async () => {
       if (window.ethereum) {
         try {
-          const provider = new Web3Provider(window.ethereum); 
-          const signer = provider.getSigner();
+
+          const provider = new ethers.BrowserProvider(window.ethereum); 
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const signer = await provider.getSigner();
           const address = await signer.getAddress();
           const balance = await provider.getBalance(address);
-          const formattedBalance = ethers.formatEther(balance.toString());
+          const formattedBalance = ethers.formatEther(balance); 
 
           setWalletAddress(address);
           setWalletBalance(formattedBalance);
@@ -35,6 +36,7 @@ const MyAssetsPage = () => {
 
     getWalletDetails();
   }, []);
+
 
   return (
     <div className="w-[80%] mx-auto pt-70">
