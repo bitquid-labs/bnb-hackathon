@@ -13,6 +13,8 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   return (
+    <div>
+    <div className="bg-gradient-to-t from-black via-black to-emerald-900 absolute h-[15rem] z-[-1] blur-[100rem] w-full"></div>
     <div className="w-full bg-dark-200 text-white border-b-[1px] border-b-white/10 px-20 py-20 flex items-center gap-16 relative">
       <div className="flex items-center justify-between w-full mx-auto max-w-1220">
         <Link
@@ -84,6 +86,7 @@ const Header: React.FC = () => {
       </nav> */}
         <ConnectWalletButton />
       </div>
+    </div>
     </div>
   );
 };
