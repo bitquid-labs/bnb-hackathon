@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 import { feeDecimals } from "constants/config";
 import { useTokenName } from "hooks/contracts/useTokenName";
 import useCallContract from "hooks/contracts/useCallContract";
+import premiumById from '../assets/premiumById.json';
 
 const CoverDetailPage: React.FC = () => {
   const { id } = useParams();
@@ -161,7 +162,9 @@ const CoverDetailPage: React.FC = () => {
   const coverFee = useMemo(() => {
     return calculateCoverFee(
       parseFloat(coverAmount),
-      Number(coverDetail?.cost || 0),
+
+      Number(premiumById[id as keyof typeof premiumById]),
+      // Number(coverDetail?.cost), //pass premium value, 
       coverPeriod
     );
   }, [coverAmount, coverDetail?.cost, coverPeriod]);
@@ -189,6 +192,9 @@ const CoverDetailPage: React.FC = () => {
 
     setIsLoading(true);
     if (coverADT === ADT.Native) {
+
+      console.log(Number(id), coverAmount, coverPeriod, "0", coverFee)
+
       setLoadingMessage("Submitting");
       await purchaseCover(
         Number(id),
@@ -224,6 +230,7 @@ const CoverDetailPage: React.FC = () => {
       }
 
       setLoadingMessage("Buying");
+      
 
       await purchaseCover(Number(id), coverAmount, coverPeriod, "0", coverFee);
     }
