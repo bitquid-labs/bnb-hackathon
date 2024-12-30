@@ -7,7 +7,9 @@ import ConnectWalletButton from "components/ConnectWalletButton";
 
 const DashboardPage: React.FC = () => {
   return (
-    <div className="w-full max-w-1220 mx-auto pt-70">
+    <div>
+    <div className="bg-gradient-to-t from-black via-black to-emerald-900 absolute h-[60rem] blur-[100rem] w-full"></div>
+    <div className="w-full max-w-1220 mx-auto pt-70 ">
       <IntroText />
       <div className="mt-98">
         <Features />
@@ -18,6 +20,8 @@ const DashboardPage: React.FC = () => {
       <div className="my-95 w-full bg-gradient bg-gradient-to-r from-[#FFFFFF] to-[#161618] h-2"></div>
       <SocialLinks />
     </div>
+    </div>
+
   );
 };
 
