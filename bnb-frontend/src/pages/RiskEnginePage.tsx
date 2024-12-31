@@ -141,7 +141,7 @@ const RiskEngine: React.FC = () => {
                                 </div>
                             </a>
                             <a
-                                href="https://twitter.com/bitquidlabs"
+                                href="https://twitter.com/BQ_Labs"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="glass w-[60rem] py-8 px-24"

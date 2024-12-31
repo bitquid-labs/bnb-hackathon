@@ -90,7 +90,7 @@ const Faucet: React.FC = () => {
       <div className="w-[30%] flex flex-col justify-between items-start">
         <h2 className="text-24 font-[800] text-[#FFFFFF]">BqBtc Testnet Faucet</h2>
         <p className="text-14 text-[#FFFFFFA3] my-25">
-          We support Bitlayer, BoB, Holesky, and lorenzo testnets.Soon we will onboard other chains as well.Connect your
+          We support BNB testnets. Soon we will onboard other chains as well. Connect your
           wallet, to get Testnet BqBtc and start Testing !
         </p>
         {!address && (
