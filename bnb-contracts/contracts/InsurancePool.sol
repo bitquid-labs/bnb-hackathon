@@ -351,7 +351,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
             CoverLib.DepositType.Normal
         ];
 
-        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 seconds);
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
 
         require(userDeposit.amount > 0, "No deposit found for this address");
         require(
@@ -417,7 +417,7 @@ contract InsurancePool is ReentrancyGuard, Ownable {
     ) public nonReentrant onlyVault {
         CoverLib.Pool memory selectedPool = pools[_poolId];
         CoverLib.Deposits storage userDeposit = deposits[depositor][_poolId][pdt];
-        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 seconds);
+        uint256 expiry = userDeposit.startDate + (selectedPool.minPeriod * 1 days);
 
         require(userDeposit.amount > 0, "No deposit found for this address");
         require(

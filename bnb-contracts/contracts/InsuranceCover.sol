@@ -328,8 +328,8 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             _coverId
         ];
 
-        if (userCover.coverValue == 0) {
-            userCovers[msg.sender][_coverId] = CoverLib.GenericCoverInfo({
+        require(userCover.coverValue == 0, "User already purchased cover");
+        userCovers[msg.sender][_coverId] = CoverLib.GenericCoverInfo({
                 user: msg.sender,
                 coverId: _coverId,
                 riskType: cover.riskType,
@@ -340,9 +340,6 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
                 endDay: block.timestamp + (_coverPeriod * 1 days),
                 isActive: true
             });
-        } else {
-            revert UserHaveAlreadyPurchasedCover();
-        }
 
         bool userExists = false;
         for (uint i = 0; i < participants.length; i++) {
@@ -480,9 +477,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             currentTime = depositInfo.withdrawalInitiated;
         }
 
-        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
-
-        uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
         require (claimableDays > 0, "No claimable rewards");
         
@@ -537,9 +532,7 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
             currentTime = deposits[0].withdrawalInitiated;
         }
 
-        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
-
-        uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
         for (uint256 i = 0; i < deposits.length; i++) {
             CoverLib.Deposits memory deposit = deposits[i];
@@ -596,9 +589,8 @@ contract InsuranceCover is ReentrancyGuard, Ownable {
         if (depositInfo.status != CoverLib.Status.Active) {
             currentTime = depositInfo.withdrawalInitiated;
         }
-        // uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
-        uint256 claimableDays = (currentTime - lastClaimTime) / 1 minutes;
+        uint256 claimableDays = (currentTime - lastClaimTime) / 1 days;
 
         return claimableDays;
     }
