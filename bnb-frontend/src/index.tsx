@@ -3,8 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import './global.css';
 
-import './global.css'
+// Mobile detection logic
+if (window.innerWidth <= 768) {
+  alert("This website is not optimized for mobile devices. Kindly use on desktop.");
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
