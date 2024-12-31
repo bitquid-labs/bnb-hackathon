@@ -32,7 +32,7 @@ The BQ Risk Engine performs risk analysis on different cover products to provide
    The platform employs dynamic pricing algorithms to calculate cover capacity, pool ratios, and claim-based price discovery. This ensures that pricing remains fair and reflective of real-time risk assessments.
 
 4. **Vaults**:
-    
+   Allows users to make deposits into multiple pools in a single unit
 
 [Read more](https://github.com/bitquid-labs/bnb-hackathon/blob/main/bnb-contracts/README.md)
 
