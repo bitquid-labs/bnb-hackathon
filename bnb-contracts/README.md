@@ -1,6 +1,22 @@
 # BQ Labs Insurance Contracts
 
-# Insurance Pool
+# Major Components
+
+- Insurance Pool
+
+For managing pools activities and paying claims for approved proposals
+
+- Insurance Cover
+
+For managing covers activities by users and paying yields for pool and vault liquidity providers
+
+- Vault
+
+For managing vaults which allow users to deposit into multiple pools in a single unit.
+
+# Integation Docs
+
+## Insurance Pool
 
 ### createPool
 
@@ -130,7 +146,7 @@ struct Deposits {
 }
 ```
 
-# Vaults
+## Vaults
 
 ### createVault
 
@@ -229,15 +245,15 @@ struct VaultDeposit {
 
 # Contract Address
 
-**BQ BTC Address**: 0xa1EcB7aD03c31740109d88c7a693bE5a008C6D5b
+**BQ BTC Address**: 0x295eDf61d4368db80ad512c2f4030BfB2244cBa2
 
-**Pool Address**: 0x043acf6719835c3435f9f5212C7D21D0Fe44644F
+**Pool Address**: 0xFc226a099aE3068C3A7C7389bcFa0d7FfDa37C0e
 
-**Cover Address**: 0x31ec64f65E9608cE20092034Aa7A524a7B4B5d49
+**Cover Address**: 0xEe5bbDB9FC36Db581E54d47Fc55dBFEb6d03f47E
 
-**Vault Address**: 0x6DD69b56af1156A9fF45D95e3F1506B8b09b5B41
+**Vault Address**: 0xBda761B689b5b9D05E36f8D5A3A5D9be51aCe6c9
 
-**Gov Address**: 0xAEF44f26efE41C2F360C27461B47C143879B9F08
+**Gov Address**: 0x794D44550A38632B2e7bACb52B4C4353e13d11B4
 
 # Changes
 
