@@ -25,9 +25,15 @@ const IntroText: React.FC = () => {
           Connect Wallet
         </Button> */}
         <ConnectWalletButton className="min-w-[216px] rounded-8 bg-gradient-to-r from-[#00ECBC66] to-[#00ECBC80] border border-[#00ECBC] w-full py-12" />
-        <Button variant="outline" size="lg" className="rounded-8">
+        <Button
+          variant="outline"
+          size="lg"
+          className="rounded-8"
+          onClick={() => window.open('https://www.docs.bqlabs.xyz', '_blank')}
+        >
           Read BQ Labs Docs
         </Button>
+
       </div>
     </div>
   );

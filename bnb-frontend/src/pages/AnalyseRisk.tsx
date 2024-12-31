@@ -284,7 +284,7 @@ const AnalyseRisk = () => {
             <footer className="py-16 mb-[4rem]">
                 <div className="flex flex-col space-y-12 items-center scale-110">
                     <a
-                        href="https://example.com/docs"
+                        href="http://www.docs.bqlabs.xyz/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
@@ -298,7 +298,7 @@ const AnalyseRisk = () => {
                         </div>
                     </a>
                     <a
-                        href="https://example.com/news"
+                        href="https://twitter.com/bitquidlabs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
@@ -315,7 +315,7 @@ const AnalyseRisk = () => {
                         </div>
                     </a>
                     <a
-                        href="https://example.com/community"
+                        href="https://discord.gg/GzC7DZDN"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"

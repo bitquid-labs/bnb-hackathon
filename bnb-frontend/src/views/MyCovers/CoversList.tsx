@@ -52,16 +52,18 @@ const CoversList: React.FC<Props> = ({ coversData }) => {
                   {Math.ceil(
                     (new Date(Number(cover.endDay) * 1000).getTime() -
                       new Date().getTime()) /
-                      (1000 * 60 * 60 * 24)
+                    (1000 * 60 * 60 * 24)
                   )}{" "}
                   Days
                 </td>
-                <td className="bg-transparent">
+                <td className="bg-transparent pl-32">
                   <button
-                    onClick={() => {handleClaim(Number(cover.coverId))}}
-                    className="bg-[#00ECBC66] border border-[#00ECBC] px-45 py-7 rounded-8"
+                    className="bg-[#1F1F1F] border border-gray-600 w-[7.3rem] h-[3.2rem] px-3 py-7 rounded-8 text-gray-700 cursor-not-allowed hover:bg-[#323232] group flex items-center justify-center  transition-all duration-300"
+                    onClick={() => { }}
+                    disabled
                   >
-                    Claim
+                    <span className="group-hover:hidden transition-opacity duration-300">Claim</span>
+                    <span className="hidden group-hover:inline text-emerald-700 transition-opacity duration-300">Coming Soon</span>
                   </button>
                 </td>
               </tr>
