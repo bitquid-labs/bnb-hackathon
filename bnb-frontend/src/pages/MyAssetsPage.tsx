@@ -16,15 +16,20 @@ const MyAssetsPage = () => {
     const getWalletDetails = async () => {
       if (window.ethereum) {
         try {
-
-          const provider = new ethers.BrowserProvider(window.ethereum); 
+          const provider = new ethers.BrowserProvider(window.ethereum);
           await window.ethereum.request({ method: 'eth_requestAccounts' });
           const signer = await provider.getSigner();
           const address = await signer.getAddress();
-          const balance = await provider.getBalance(address);
-          const formattedBalance = ethers.formatEther(balance); 
-
           setWalletAddress(address);
+
+          const poolContractAddress = "0xFc226a099aE3068C3A7C7389bcFa0d7FfDa37C0e";
+          const poolAbi = [
+            "function getUserBalanceinUSD(address user) public view returns(uint256)"
+          ];
+          const poolContract = new ethers.Contract(poolContractAddress, poolAbi, provider);
+
+          const balanceInUSD = await poolContract.getUserBalanceinUSD(address);
+          const formattedBalance = ethers.formatEther(balanceInUSD);
           setWalletBalance(formattedBalance);
         } catch (error) {
           console.error("Error fetching wallet details:", error);
@@ -37,7 +42,6 @@ const MyAssetsPage = () => {
     getWalletDetails();
   }, []);
 
-
   return (
     <div className="w-[80%] mx-auto pt-70">
       <div className="flex gap-16 bg-black text-white p-6 mb-44">
@@ -48,7 +52,7 @@ const MyAssetsPage = () => {
               <p className="text-sm text-gray-400">Your Wallet:</p>
               <div className="flex items-center gap-5 justify-center mt-10">
                 <img src={metamask} alt="" />
-                <p className="text-xl font-bold">{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</p>
+                <p className="text-xl font-bold">{walletAddress.slice(0, 10)}...{walletAddress.slice(-9)}</p>
               </div>
             </div>
             <div>
@@ -59,10 +63,6 @@ const MyAssetsPage = () => {
               </div>
             </div>
           </div>
-          {/* <div className="mb-6">
-            <p className="text-sm text-gray-400">Total Value Staked</p>
-            <p className="text-3xl font-bold text-green-400">0</p>
-          </div> */}
         </div>
 
         {/* Second Card */}
