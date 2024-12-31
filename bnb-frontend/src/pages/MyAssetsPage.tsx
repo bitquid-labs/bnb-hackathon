@@ -66,9 +66,14 @@ const MyAssetsPage = () => {
           console.log("Vault Deposits:", vaultDepositsData);
           console.log("Pool Details:", poolDetails);
 
-          const vaultDetails = await vaultContract.getVault(vaultDepositsData[0][2]);
-          console.log("Vault name:", vaultDetails[1]);
-          setVaultNames([vaultDetails[1]]);
+          // Fetching vault names for all vault IDs
+          const names = [];
+          for (let i = 0; i < vaultDepositsData.length; i++) {
+            const vaultDetails = await vaultContract.getVault(vaultDepositsData[i][2]);
+            console.log("Vault name:", vaultDetails[1]);
+            names.push(vaultDetails[1]);
+          }
+          setVaultNames(names);
 
         } catch (error) {
           console.error("Error fetching wallet details:", error);
@@ -80,7 +85,6 @@ const MyAssetsPage = () => {
 
     getWalletDetails();
   }, []);
-
 
   return (
     <div className="w-[80%] mx-auto pt-70">
@@ -125,8 +129,6 @@ const MyAssetsPage = () => {
                 </div>
               ))}
             </div>
-
-
           </div>
         </div>
       </div>
