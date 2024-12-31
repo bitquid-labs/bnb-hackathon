@@ -11,6 +11,12 @@ const MyAssetsPage = () => {
   const [currentAsset, setCurretAsset] = useState(0);
   const [walletAddress, setWalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState("");
+  interface Pool {
+    poolName: string;
+    depositAmount: bigint;
+  }
+
+  const [pools, setPools] = useState<Pool[]>([]);
 
   useEffect(() => {
     const getWalletDetails = async () => {
@@ -24,11 +30,19 @@ const MyAssetsPage = () => {
 
           const poolContractAddress = "0xFc226a099aE3068C3A7C7389bcFa0d7FfDa37C0e";
           const poolAbi = [
-            "function getUserBalanceinUSD(address user) public view returns(uint256)"
+            "function getPoolsByAddress(address _userAddress) public view returns (tuple(string poolName, uint256 depositAmount)[])"
           ];
           const poolContract = new ethers.Contract(poolContractAddress, poolAbi, provider);
 
-          const balanceInUSD = await poolContract.getUserBalanceinUSD(address);
+          const userPools = await poolContract.getPoolsByAddress(address);
+          setPools(userPools);
+
+          const balanceAbi = [
+            "function getUserBalanceinUSD(address user) public view returns(uint256)"
+          ];
+          const balanceContract = new ethers.Contract(poolContractAddress, balanceAbi, provider);
+
+          const balanceInUSD = await balanceContract.getUserBalanceinUSD(address);
           const formattedBalance = ethers.formatEther(balanceInUSD);
           setWalletBalance(formattedBalance);
         } catch (error) {
@@ -66,101 +80,17 @@ const MyAssetsPage = () => {
         </div>
 
         {/* Second Card */}
-        <div className="glass rounded-2xl shadow-xl p-6 w-[80%] px-40 py-32 ">
-          <p className="text-sm text-gray-400 mb-10">Invested Strategies</p>
-          <div className="flex flex-col items-center">
-            <div className="flex justify-start items-center w-full">
-              <div className="w-[60%] flex justify-center items-center overflow-visible">
-                <div className="relative w-[11rem] h-[11rem]">
-                  <svg
-                    className="w-full h-full"
-                    viewBox="0 0 46 46"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="23"
-                      cy="23"
-                      r="15"
-                      fill="transparent"
-                      stroke="#444"
-                      strokeWidth="9"
-                    ></circle>
-                    <circle
-                      cx="23"
-                      cy="23"
-                      r="15"
-                      fill="transparent"
-                      stroke="#fff"
-                      strokeWidth="9"
-                      strokeDasharray="70,100"
-                      strokeDashoffset="25"
-                    ></circle>
-                    <circle
-                      cx="23"
-                      cy="23"
-                      r="15"
-                      fill="transparent"
-                      stroke="#999"
-                      strokeWidth="9"
-                      strokeDasharray="50,100"
-                      strokeDashoffset="60"
-                    ></circle>
-                  </svg>
-                </div>
+        <div className="glass rounded-2xl shadow-xl p-6 w-[80%] px-40 py-32">
+          <p className="text-sm text-gray-400 mb-10">Invested Pools</p>
+          <div className="flex flex-col gap-4">
+            {pools.map((pool, index) => (
+              <div key={index} className="flex justify-between items-center gap-10">
+                <p className="font-semibold">{pool.poolName}</p>
+                <p className="text-orange-400">${ethers.formatEther(pool.depositAmount)}</p>
               </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-10 h-10 rounded-xl bg-gray-400"></div>
-                  <p className="font-semibold">Strategy 1</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-10 h-10 rounded-xl bg-gray-400"></div>
-                  <p className="font-semibold">Strategy 2</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-10 h-10 rounded-xl bg-gray-400"></div>
-                  <p className="font-semibold">Strategy 3</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-1/2 space-y-4 scale-90 flex justify-center items-center gap-[15rem]" >
-              <div className=" flex flex-col gap-20">
-                <div className="flex justify-between items-center gap-10">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500"></div>
-                    <p className="font-semibold">AAA</p>
-                  </div>
-                  <p>65%</p>
-                </div>
-                <div className="flex justify-between items-center gap-10">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 rounded-xl bg-green-400"></div>
-                    <p className="font-semibold">BB</p>
-                  </div>
-                  <p>28%</p>
-                </div>
-              </div>
-
-              <div className=" flex flex-col gap-20">
-                <div className="flex justify-between items-center gap-10">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 rounded-xl bg-blue-400"></div>
-                    <p className="font-semibold">C</p>
-                  </div>
-                  <p>15%</p>
-                </div>
-                <div className="flex justify-between items-center gap-10">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 rounded-xl bg-gray-400"></div>
-                    <p className="font-semibold">A</p>
-                  </div>
-                  <p>2%</p>
-                </div>
-              </div>
-
-            </div>
+            ))}
           </div>
+          <div>getUserVaultDeposits</div>
         </div>
       </div>
       <div className="mx-auto w-320">
