@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { MoonLoader } from "react-spinners";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaDiscord } from "react-icons/fa";
+import { toast } from 'react-toastify';
 
 type CoinData = {
     [key: string]: {
@@ -124,7 +125,7 @@ const SlashingProtocols = ({ onSelect }: { onSelect: (name: string) => void }) =
         { name: "Pier2", risk: "Low" },
         { name: "Babylon Validator", risk: "Low" },
         { name: "Core Validator", risk: "Moderate" },
-    ];    
+    ];
 
     return (
         <div className="flex-1 grid grid-cols-4 gap-16">
@@ -196,21 +197,25 @@ const AnalyseRisk = () => {
     const navigate = useNavigate();
 
     const handlePurchaseClick = () => {
-        const selectedName = activeTab === "de-pegging" 
+        const selectedName = activeTab === "de-pegging"
             ? Object.keys(coinData).find(coin => coinData[coin] === selectedCoin)
             : Object.keys(protocolData).find(protocol => protocolData[protocol] === selectedCoin);
-        
+        if (!selectedName) {
+            toast.error("Please select any coin or protocol.");
+            return null;
+        }
+
         console.log(`Selected ${activeTab === "de-pegging" ? "coin" : "protocol"}: ${selectedName}`);
 
         if (selectedName && coinIdMapping[selectedName as keyof typeof coinIdMapping]) {
             const id = coinIdMapping[selectedName as keyof typeof coinIdMapping];
             console.log(`Redirecting to /coverdetail/${id}`);
-            navigate(`/coverdetail/${id}`); 
+            navigate(`/coverdetail/${id}`);
         } else {
             console.log("No matching ID found for the selected name.");
         }
     };
-    
+
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col w-[80%] mx-auto">
@@ -270,7 +275,7 @@ const AnalyseRisk = () => {
                     </div>
                     <div className="h-[12rem] w-[12rem] glass-3 my-8 flex flex-row justify-center items-start py-12 px-8">
                         <div className="text-lg font-medium flex flex-col justify-center items-center">
-                            <div className="mb-32">Risk Score:</div> <div className="text-6xl font-bold text-emerald-600">{loading ? <MoonLoader color={"#05EBBC"} size={40}/> : selectedCoin?.riskScore || ""}</div>
+                            <div className="mb-32">Risk Score:</div> <div className="text-6xl font-bold text-emerald-600">{loading ? <MoonLoader color={"#05EBBC"} size={40} /> : selectedCoin?.riskScore || ""}</div>
                         </div>
                     </div>
                     <button onClick={handlePurchaseClick} className="px-[30px] s-low py-3 rounded-lg mt-20">
@@ -284,7 +289,7 @@ const AnalyseRisk = () => {
             <footer className="py-16 mb-[4rem]">
                 <div className="flex flex-col space-y-12 items-center scale-110">
                     <a
-                        href="http://www.docs.bqlabs.xyz/"
+                        href="https://docs.bqlabs.xyz/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"
@@ -298,7 +303,7 @@ const AnalyseRisk = () => {
                         </div>
                     </a>
                     <a
-                        href="https://twitter.com/bitquidlabs"
+                        href="https://twitter.com/BQ_Labs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass w-[60rem] py-8 px-24"

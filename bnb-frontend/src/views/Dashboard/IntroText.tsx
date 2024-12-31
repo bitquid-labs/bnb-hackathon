@@ -29,7 +29,7 @@ const IntroText: React.FC = () => {
           variant="outline"
           size="lg"
           className="rounded-8"
-          onClick={() => window.open('https://www.docs.bqlabs.xyz', '_blank')}
+          onClick={() => window.open('https://docs.bqlabs.xyz/', '_blank')}
         >
           Read BQ Labs Docs
         </Button>
