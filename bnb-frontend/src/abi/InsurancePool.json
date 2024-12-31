@@ -1,0 +1,1647 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_initialOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_bqBtc",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "ClaimAttempt",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "pool",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "ClaimPaid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "pool",
+        "type": "string"
+      }
+    ],
+    "name": "Deposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "poolName",
+        "type": "string"
+      }
+    ],
+    "name": "PoolCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "apy",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "PoolUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "pool",
+        "type": "string"
+      }
+    ],
+    "name": "Withdraw",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "ICoverContract",
+    "outputs": [
+      {
+        "internalType": "contract ICover",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "IGovernanceContract",
+    "outputs": [
+      {
+        "internalType": "contract IGov",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "IVaultContract",
+    "outputs": [
+      {
+        "internalType": "contract IVault",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "coverName",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "chains",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "capacity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "capacityAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "coverValues",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "CID",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "adt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CoverLib.Cover",
+        "name": "_cover",
+        "type": "tuple"
+      }
+    ],
+    "name": "addPoolCover",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "assetPriceFeeds",
+    "outputs": [
+      {
+        "internalType": "contract AggregatorV3Interface",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "bqBTC",
+    "outputs": [
+      {
+        "internalType": "contract IbqBTC",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "bqBTCAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "coverContract",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "poolName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "rating",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "apy",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "leverage",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "investmentArm",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "adt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CoverLib.PoolParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "createPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "deactivatePool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "depositor",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.DepositType",
+            "name": "pdt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "adt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CoverLib.DepositParams",
+        "name": "depositParam",
+        "type": "tuple"
+      }
+    ],
+    "name": "deposit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllPools",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "poolName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "rating",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "apy",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tvl",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "baseValue",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "coverUnits",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tcp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "percentageSplitBalance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "investmentArmPercent",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "leverage",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "assetType",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct CoverLib.Pool[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPool",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "poolName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "rating",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "apy",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tvl",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "baseValue",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "coverUnits",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tcp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "percentageSplitBalance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "investmentArmPercent",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "leverage",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "assetType",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct CoverLib.Pool",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPoolCovers",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "coverName",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "chains",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "capacity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "capacityAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "coverValues",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "CID",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "adt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CoverLib.Cover[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPoolTVL",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getPoolsByAddress",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "poolName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "rating",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "risk",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dailyPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "apy",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tcp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "accruedPayout",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CoverLib.PoolInfo[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      }
+    ],
+    "name": "getPriceInUSD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTotalTVL",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getTotalUserDepositAmountinUSD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserBalanceinUSD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "enum CoverLib.DepositType",
+        "name": "pdt",
+        "type": "uint8"
+      }
+    ],
+    "name": "getUserGenericDeposit",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "lp",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dailyPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.Status",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "daysLeft",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalInitiated",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "accruedPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.DepositType",
+            "name": "pdt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "adt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CoverLib.GenericDepositDetails",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserPoolDeposit",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "lp",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "dailyPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.Status",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "daysLeft",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalInitiated",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "accruedPayout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CoverLib.DepositType",
+            "name": "pdt",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct CoverLib.Deposits",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "governance",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "__poolPercentageSplit",
+        "type": "uint256"
+      }
+    ],
+    "name": "increasePercentageSplit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "initialOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum CoverLib.DepositType",
+        "name": "pdt",
+        "type": "uint8"
+      }
+    ],
+    "name": "initialVaultWithdrawUpdate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "participants",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "participation",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "poolActive",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "poolCanister",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "poolCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "poolWithdrawal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "pools",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "poolName",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "rating",
+        "type": "string"
+      },
+      {
+        "internalType": "enum CoverLib.RiskType",
+        "name": "riskType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "apy",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalUnit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tvl",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "baseValue",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "coverUnits",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tcp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "percentageSplitBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "investmentArmPercent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "leverage",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "internalType": "enum CoverLib.AssetDepositType",
+        "name": "assetType",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "__poolPercentageSplit",
+        "type": "uint256"
+      }
+    ],
+    "name": "reducePercentageSplit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_coverContract",
+        "type": "address"
+      }
+    ],
+    "name": "setCover",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_governance",
+        "type": "address"
+      }
+    ],
+    "name": "setGovernance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "enum CoverLib.DepositType",
+        "name": "pdt",
+        "type": "uint8"
+      }
+    ],
+    "name": "setUserDepositToZero",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vaultContract",
+        "type": "address"
+      }
+    ],
+    "name": "setVault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_apy",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "updatePool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "coverName",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.RiskType",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "chains",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "capacity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "capacityAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "coverValues",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "CID",
+            "type": "string"
+          },
+          {
+            "internalType": "enum CoverLib.AssetDepositType",
+            "name": "adt",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CoverLib.Cover",
+        "name": "_cover",
+        "type": "tuple"
+      }
+    ],
+    "name": "updatePoolCovers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vaultContract",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_vaultId",
+        "type": "uint256"
+      }
+    ],
+    "name": "vaultWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

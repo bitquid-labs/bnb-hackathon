@@ -5,18 +5,26 @@ import VaultsOverview from "views/MyAssets/Vaults/VaultsOverview";
 import metamask from "../assets/images/metamask.svg";
 import btc from "../assets/images/bitcoin.svg";
 import { ethers } from "ethers";
+import vaultABI from '../abi/Vaults.json';
 
 const MyAssetsPage = () => {
   const types = ["Pools", "Strategies"];
   const [currentAsset, setCurretAsset] = useState(0);
   const [walletAddress, setWalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState("");
+
+  interface VaultDeposit {
+    amount: bigint;
+    vaultId: number;
+  }
+
   interface Pool {
     poolName: string;
     depositAmount: bigint;
   }
 
   const [pools, setPools] = useState<Pool[]>([]);
+  const [vaultNames, setVaultNames] = useState<string[]>([]);
 
   useEffect(() => {
     const getWalletDetails = async () => {
@@ -28,6 +36,9 @@ const MyAssetsPage = () => {
           const address = await signer.getAddress();
           setWalletAddress(address);
 
+          console.log("Wallet Address:", address);
+
+          // Fetching pools
           const poolContractAddress = "0xFc226a099aE3068C3A7C7389bcFa0d7FfDa37C0e";
           const poolAbi = [
             "function getPoolsByAddress(address _userAddress) public view returns (tuple(string poolName, uint256 depositAmount)[])"
@@ -37,6 +48,7 @@ const MyAssetsPage = () => {
           const userPools = await poolContract.getPoolsByAddress(address);
           setPools(userPools);
 
+          // Fetching wallet balance
           const balanceAbi = [
             "function getUserBalanceinUSD(address user) public view returns(uint256)"
           ];
@@ -44,7 +56,20 @@ const MyAssetsPage = () => {
 
           const balanceInUSD = await balanceContract.getUserBalanceinUSD(address);
           const formattedBalance = ethers.formatEther(balanceInUSD);
+          console.log("Wallet Balance (USD):", formattedBalance);
           setWalletBalance(formattedBalance);
+
+          const vaultContractAddress = "0xBda761B689b5b9D05E36f8D5A3A5D9be51aCe6c9";
+          const vaultContract = new ethers.Contract(vaultContractAddress, vaultABI, provider);
+
+          const [vaultDepositsData, poolDetails] = await vaultContract.getUserVaultDeposits(address);
+          console.log("Vault Deposits:", vaultDepositsData);
+          console.log("Pool Details:", poolDetails);
+
+          const vaultDetails = await vaultContract.getVault(vaultDepositsData[0][2]);
+          console.log("Vault name:", vaultDetails[1]);
+          setVaultNames([vaultDetails[1]]);
+
         } catch (error) {
           console.error("Error fetching wallet details:", error);
         }
@@ -55,6 +80,7 @@ const MyAssetsPage = () => {
 
     getWalletDetails();
   }, []);
+
 
   return (
     <div className="w-[80%] mx-auto pt-70">
@@ -90,7 +116,18 @@ const MyAssetsPage = () => {
               </div>
             ))}
           </div>
-          <div>getUserVaultDeposits</div>
+          <div className="mt-20">
+            <p className="text-sm text-gray-400 mb-10">Vault Deposits</p>
+            <div className="flex flex-col gap-4">
+              {vaultNames.map((vaultName, index) => (
+                <div key={index} className="flex flex-col gap-2">
+                  <p className="font-semibold text-orange-400">{vaultName}</p>
+                </div>
+              ))}
+            </div>
+
+
+          </div>
         </div>
       </div>
       <div className="mx-auto w-320">
@@ -145,9 +182,7 @@ const MyAssetsPage = () => {
         </div>
       </div>
       <div className="mt-65">
-        {
-          currentAsset === 0 ? <InvestedPools /> : <VaultsOverview />
-        }
+        {currentAsset === 0 ? <InvestedPools /> : <VaultsOverview />}
       </div>
     </div>
   );
