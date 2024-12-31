@@ -21,7 +21,7 @@ import { useVaultTVL } from "hooks/contracts/useVaultTVL";
 import Button from "components/common/Button";
 import { getPoolRiskTypeName } from "lib/utils";
 import bqBTCImg from "assets/images/bqbtc.svg";
-import bitcoinImg from "assets/images/bitcoin.svg";
+import bnb from "assets/icons/bnb-logo.png";
 
 type Props = {
   id: number;
@@ -277,7 +277,7 @@ const VaultDetail: React.FC<Props> = ({ id }) => {
                 <div className="flex items-center justify-center overflow-hidden rounded-full w-27 h-27">
                   <img
                     className="w-full"
-                    src={assetType === ADT.Native ? bitcoinImg : bqBTCImg}
+                    src={assetType === ADT.Native ? bnb : bqBTCImg}
                     alt=""
                   />
                 </div>

@@ -1,10 +1,22 @@
 export const filters = [
   {
     index: undefined,
-    riskType: 'slashing'
+    riskType: 'all cover product'
   },
   {
     index: 0,
-    riskType: 'De-pegging',
+    riskType: 'slashing',
+  },
+  {
+    index: 1,
+    riskType: 'smart contract risks',
+  },
+  {
+    index: 2,
+    riskType: 'stable coin'
+  },
+  {
+    index: 3,
+    riskType: 'protocol risks'
   },
 ];
