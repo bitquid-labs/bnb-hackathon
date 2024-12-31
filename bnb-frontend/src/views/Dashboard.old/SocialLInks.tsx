@@ -11,17 +11,17 @@ const SocialLinks: React.FC = () => {
       <ExternalLink
         iconComponent={IconDocs}
         title="Explore BQ Labs Docs."
-        url="#"
+        url="http://www.docs.bqlabs.xyz/"
       />
       <ExternalLink
         iconComponent={IconTwitter}
         title="Stay updated with our latest news and join the conversation."
-        url="#"
+        url="https://twitter.com/bitquidlabs"
       />
       <ExternalLink
         iconComponent={IconDiscord}
         title="Join our community."
-        url="#"
+        url="https://discord.gg/GzC7DZDN"
       />
     </div>
   )
