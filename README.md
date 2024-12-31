@@ -16,10 +16,7 @@ The BQ Protocol is structured around three primary user roles, each interacting 
 - **Stakers (Liquidity Providers):**  
    Stakers provide liquidity to insurance pools, and vaults earning returns on their investments. The protocol ensures full transparency of risk and yield details, allowing Stakers to make informed decisions. The capital provided by Stakers is deployed to cover risks during adverse events, ensuring a resilient insurance framework.
 
-- **Governance Participants (BQ Token Holders):**  
-   Governance participants hold BQ Tokens, enabling them to vote on proposals and participate in the decision-making process. The protocol incentivizes active participation by rewarding governance activities with BQ Tokens, fostering an engaged and informed community.
-
-### Risk Infrastructure Layer
+# Risk Infrastructure Layer (Risk Engine)
 
 The BQ Risk Engine performs risk analysis on different cover products to provides scores and premium calculation models enabling precise risk assessment and dynamic premium adjustments. [Read more](https://github.com/bitquid-labs/bnb-hackathon/blob/main/risk-engine/README.md)
 
@@ -33,6 +30,9 @@ The BQ Risk Engine performs risk analysis on different cover products to provide
 
 3. **Dynamic Pricing:**  
    The platform employs dynamic pricing algorithms to calculate cover capacity, pool ratios, and claim-based price discovery. This ensures that pricing remains fair and reflective of real-time risk assessments.
+
+4. **Vaults**:
+    
 
 [Read more](https://github.com/bitquid-labs/bnb-hackathon/blob/main/bnb-contracts/README.md)
 
