@@ -92,9 +92,15 @@ const DepositPage: React.FC = () => {
           <Button variant="outline" size="lg" className="rounded-8">
             Read BQ Labs Docs
           </Button> */}
-              <Button variant="outline" size="lg" className="rounded-8">
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-8"
+                onClick={() => window.open("https://www.docs.bqlabs.xyz", "_blank")}
+              >
                 Read BQ Labs Docs
               </Button>
+
             </div>
           </div>
           <div className="my-98 max-w-1220 mx-auto h-1 bg-gradient-to-r from-[#FFFFFF] to-[#161618]"></div>
@@ -134,10 +140,9 @@ const DepositPage: React.FC = () => {
               )}
               style={{
                 width: `${100 / types.length}%`,
-                transform: `translateX(${
-                  (currentDepositType === undefined ? 0 : currentDepositType) *
+                transform: `translateX(${(currentDepositType === undefined ? 0 : currentDepositType) *
                   100
-                }%)`,
+                  }%)`,
               }}
             />
             <div
@@ -146,10 +151,9 @@ const DepositPage: React.FC = () => {
               )}
               style={{
                 height: `${100 / types.length}%`,
-                transform: `translateY(${
-                  (currentDepositType === undefined ? 0 : currentDepositType) *
+                transform: `translateY(${(currentDepositType === undefined ? 0 : currentDepositType) *
                   100
-                }%)`,
+                  }%)`,
               }}
             />
           </div>
@@ -161,7 +165,7 @@ const DepositPage: React.FC = () => {
             <div className="mt-57">
               <VaultDetail
                 id={currentVaultId}
-                // isDeposited={userVaultIds.includes(currentVaultId)}
+              // isDeposited={userVaultIds.includes(currentVaultId)}
               />
             </div>
           ) : (
@@ -186,7 +190,7 @@ const DepositPage: React.FC = () => {
             <div className="mt-20">
               <PoolDetail
                 poolId={currentPoolId}
-                // isDeposited={depositedPoolIds.includes(currentPoolId!)}
+              // isDeposited={depositedPoolIds.includes(currentPoolId!)}
               />
             </div>
           ) : (
